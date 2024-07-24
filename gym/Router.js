@@ -120,7 +120,7 @@ router.get("/deletecliente/:id", (req, res) => {
   );
 });
 
-//Enrutamiento de cruds
+//Enrutamiento de crud Roles
 const crud = require("./controllers/crud");
 router.post("/save", crud.save);
 router.post("/savecliente", crud.savec);
