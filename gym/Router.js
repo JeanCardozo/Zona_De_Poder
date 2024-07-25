@@ -31,7 +31,7 @@ router.get("/create_rol", (req, res) => {
 });
 
 // Ruta para editar
-router.get("/edit/:id", (req, res) => {
+router.get("/actualizar/:id", (req, res) => {
   const id = req.params.id;
 
   // Uso de parametrización en la consulta
@@ -44,7 +44,7 @@ router.get("/edit/:id", (req, res) => {
       }
 
       if (results.rowCount > 0) {
-        res.render("edit", { user: results.rows[0] });
+        res.render("actualizar", { user: results.rows[0] });
       } else {
         res.status(404).json({ error: "User not found" });
       }
@@ -60,7 +60,7 @@ router.get("/delete/:id", (req, res) => {
     if (error) {
       return res.status(500).json({ error: error.message });
     }
-    res.redirect("/");
+    res.redirect("roles/ver_roles");
   });
 });
 
@@ -124,7 +124,7 @@ router.get("/deletecliente/:id", (req, res) => {
 const crud = require("./controllers/crud");
 router.post("/save", crud.save);
 router.post("/savecliente", crud.savec);
-router.post("/update", crud.update);
+router.post("/actualizar", crud.update);
 router.post("/updatecliente", crud.updatecliente);
 
 module.exports = router;

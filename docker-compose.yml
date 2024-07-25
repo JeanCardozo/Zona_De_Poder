@@ -1,0 +1,31 @@
+services:
+  # Servicio para la base de datos (PostgreSQL)
+  db:
+    image: postgres:16.3
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: master
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: zona_de_poder_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  pdAdmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=123456
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+      - ./pgadmin:/certs/server.cert
+      - ./pgadmin:/certs/server.key
+      - ./pgadmin:/pgadmin4/servers.json
+volumes:
+  db_data:
