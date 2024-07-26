@@ -15,7 +15,7 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Crud Clientes</title>
+    <title>Crud Roles</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -67,15 +67,28 @@
     </nav>
 
     <div class="container">
-      <a href="/create_rol" class="btn btn-outline-primary mt-4"
-        ><i class="bx bx-plus-circle br-md"></i> Crear Usuario</a
+      <a href="/create_clientes" class="btn btn-outline-primary mt-4"
+        ><i class="bx bx-plus-circle br-md"></i> Crear Cliente</a
       >
       <a href="/" class="btn btn-outline-danger mt-4"> Volver</a>
       <table class="table table-borderd table-strped text-center mt-4">
         <thead class="bg-primary text-white">
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">ROLES</th>
+            <th scope="col">IDENTIFICACION</th>
+            <th scope="col">NOMBRE</th>
+            <th scope="col">APELLIDO</th>
+            <th scope="col">EDAD</th>
+            <th scope="col">SEXO</th>
+            <th scope="col">FECHA DE INSCRIPCION</th>
+            <th scope="col">PESO</th>
+            <th scope="col">ALTURA</th>
+            <th scope="col">CORREO</th>
+            <th scope="col">TELEFONO</th>
+            <th scope="col">MENSUALIDAD</th>
+            <th scope="col">TIEMPO</th>
+            <th scope="col">ESTADO</th>
+            <th scope="col">USUARIO</th>
+            <th scope="col">TALLA</th>
             <th scope="col">ACCIONES</th>
           </tr>
         </thead>
@@ -83,9 +96,23 @@
           <% results.forEach((user) => { %>
           <tr>
             <td id="ide"><%= user.id %></td>
-            <td><%= user.tipo_de_rol %></td>
+            <td><%= user.nombre%></td>
+            <td><%= user.apellido%></td>
+            <td><%= user.edad%></td>
+            <td><%= user.sexo%></td>
+            <td><%= user.fecha_de_inscripcion%></td>
+            <td><%= user.peso%></td>
+            <td><%= user.altura%></td>
+            <td><%= user.correo_electronico%></td>
+            <td><%= user.numero_telefono%></td>
+            <td>$<%= user.total_pagar%></td>
+            <td><%= user.nombre%></td>
+            <td><%= user.id_tallas%></td>
+
             <td>
-              <a href="/actualizar/<%= user.id %>" class="btn btn-outline-info"
+              <a
+                href="/actualizar_clientes/<%= user.id %>"
+                class="btn btn-outline-info"
                 >Editar</a
               >
 

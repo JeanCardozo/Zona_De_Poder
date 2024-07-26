@@ -2,45 +2,41 @@ const express = require("express");
 const router = express.Router();
 const conexion = require("./database/zona_de_poder_db");
 
-router.get("/", (req, res) => {
-  conexion.query("SELECT * FROM roles", (error, results) => {
-    if (error) {
-      return res.status(500).json({ error: error.message }); // Manejo de error
-    }
+//raiz de todo
 
-    res.render("index", { results: results.rows });
-  });
+router.get("/", (req, res) => {
+  res.render("index");
 });
 
-//ruta para ver todo
+//ver ROLES
 
 router.get("/ver_roles", (req, res) => {
   conexion.query("SELECT * FROM roles", (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message }); // Manejo de error
+      return res.status(500).json({ error: error.message });
     }
 
     res.render("roles/ver_roles", { results: results.rows });
   });
 });
 
-//ruta para crear registros
+// Crear ROLES
 
 router.get("/create_rol", (req, res) => {
   res.render("roles/create_rol");
 });
 
-// Ruta para editar
+// Editar Roles
+
 router.get("/actualizar/:id", (req, res) => {
   const id = req.params.id;
 
-  // Uso de parametrización en la consulta
   conexion.query(
     "SELECT * FROM roles WHERE id = $1",
     [id],
     (error, results) => {
       if (error) {
-        return res.status(500).json({ error: error.message }); // Manejo de error
+        return res.status(500).json({ error: error.message });
       }
 
       if (results.rowCount > 0) {
@@ -52,15 +48,16 @@ router.get("/actualizar/:id", (req, res) => {
   );
 });
 
-// Ruta para eliminar
-router.get("/delete/:id", (req, res) => {
-  const id = req.params.id;
+// Eliminar Roles
+
+router.get("/eliminar/:id", (req, res) => {
+  const id = parseInt(req.params.id);
 
   conexion.query("DELETE FROM roles WHERE id = $1", [id], (error, results) => {
     if (error) {
       return res.status(500).json({ error: error.message });
     }
-    res.redirect("roles/ver_roles");
+    res.redirect("/ver_roles");
   });
 });
 
@@ -68,19 +65,32 @@ router.get("/delete/:id", (req, res) => {
 
 //ruta para ver clientes
 
-router.get("/vercliente", (req, res) => {
-  conexion.query("SELECT * FROM cliente", (error, results) => {
-    if (error) {
-      return res.status(500).json({ error: error.message }); // Manejo de error
-    }
+router.get("/ver_clientes", (req, res) => {
+  conexion.query(
+    "SELECT * FROM clientes AS c INNER JOIN mensualidades AS m ON m.id_cliente = c.id",
+    // "SELECT * FROM clientes AS c INNER JOIN mensualidades AS m ON WHERE m.id_cliente = c.id",
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message }); // Manejo de error
+      }
 
-    res.render("vercliente", { results: results.rows });
-  });
+      res.render("clientes/ver_clientes", { results: results.rows });
+    }
+  );
 });
 
 // crear clientes
-router.get("/crearcliente", (req, res) => {
-  res.render("crearcliente");
+router.get("/create_clientes", (req, res) => {
+  conexion.query(
+    "SELECT id, total_pagar FROM mensualidades",
+
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+      res.render("clientes/create_clientes", { results: results.rows });
+    }
+  );
 });
 
 // para editar clientes
@@ -120,11 +130,14 @@ router.get("/deletecliente/:id", (req, res) => {
   );
 });
 
-//Enrutamiento de crud Roles
+//Enrutamiento al crud para roles
 const crud = require("./controllers/crud");
-router.post("/crear", crud.crear);
-router.post("/savecliente", crud.savec);
-router.post("/update", crud.update);
-router.post("/updatecliente", crud.updatecliente);
 
+router.post("/crear", crud.crear);
+router.post("/update", crud.update);
+
+//Enrutamiento al crud para Clientes
+router.post("/crearclientes", crud.crearcliente);
+
+// router.post("/savecliente", crud.savecliente);
 module.exports = router;
