@@ -44,7 +44,7 @@ router.get("/actualizar/:id", (req, res) => {
       }
 
       if (results.rowCount > 0) {
-        res.render("actualizar", { user: results.rows[0] });
+        res.render("roles/actualizar", { user: results.rows[0] });
       } else {
         res.status(404).json({ error: "User not found" });
       }
@@ -122,9 +122,9 @@ router.get("/deletecliente/:id", (req, res) => {
 
 //Enrutamiento de crud Roles
 const crud = require("./controllers/crud");
-router.post("/save", crud.save);
+router.post("/crear", crud.crear);
 router.post("/savecliente", crud.savec);
-router.post("/actualizar", crud.update);
+router.post("/update", crud.update);
 router.post("/updatecliente", crud.updatecliente);
 
 module.exports = router;

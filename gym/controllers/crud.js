@@ -1,6 +1,6 @@
 const conexion = require("../database/zona_de_poder_db");
 
-exports.save = (req, res) => {
+exports.crear = (req, res) => {
   const id = req.body.id;
   const rol = req.body.rol;
 
@@ -18,19 +18,24 @@ exports.save = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  const id = req.body.id;
-  const nombre = req.body.nombre;
-  const rol = req.body.rol;
+  const id = parseInt(req.body.id, 10);
+  const tipo_de_rol = req.body.tipo_de_rol;
 
-  const query = "UPDATE roles SET nombre = $1, rol = $2 WHERE id = $3";
-  const values = [nombre, rol, id];
+  // Verifica que el ID sea un número válido
+  if (isNaN(id)) {
+    console.log("Invalid ID:", req.body.id);
+    return res.status(400).json({ error: "Invalid ID" });
+  }
+
+  const query = "UPDATE roles SET tipo_de_rol = $1 WHERE id = $2";
+  const values = [tipo_de_rol, id];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver");
+      res.redirect("/ver_roles");
     }
   });
 };
