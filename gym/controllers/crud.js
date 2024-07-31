@@ -1,4 +1,6 @@
 const conexion = require("../database/zona_de_poder_db");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 //ROLES--------------------------------------------------------------
 
@@ -89,23 +91,94 @@ exports.crearcliente = (req, res) => {
   });
 };
 
-exports.savecliente = (req, res) => {
+exports.update_cliente = (req, res) => {
   const id = req.body.id;
   const nombre = req.body.nombre;
   const apellido = req.body.apellido;
-  const direccion = req.body.direccion;
-  const genero = req.body.genero;
+  const peso = req.body.peso;
+  const altura = req.body.altura;
+  const correo = req.body.correo;
+  const telefono = req.body.telefono;
+  const mensualidad_id = req.body.mensualidad;
 
-  const query =
-    "UPDATE cliente SET nombre = $1, apellido = $2, direccion = $3, genero = $4 WHERE id = $5";
-  const values = [nombre, apellido, direccion, genero, id];
+  const query = `
+    UPDATE clientes 
+    SET nombre = $1, apellido = $2, peso = $3, altura = $4, 
+        correo_electronico = $5, numero_telefono = $6, 
+        id_mensualidad = $7
+    WHERE id = $8
+  `;
+  const values = [
+    nombre,
+    apellido,
+    peso,
+    altura,
+    correo,
+    telefono,
+    mensualidad_id,
+    id,
+  ];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/vercliente");
+      res.redirect("/ver_clientes");
     }
+  });
+};
+
+// desactivar usuario
+
+exports.crearusu = async (req, res) => {
+  const ide = req.body.id;
+  const nom = req.body.nombre;
+  const ape = req.body.ape;
+  const tele = parseInt(req.body.telefono);
+  const correo = req.body.correo;
+  const contra = req.body.contra;
+  const rol = req.body.roles;
+
+  try {
+    // Encriptar la contraseña
+    const hashedPassword = await bcrypt.hash(contra, saltRounds);
+
+    // Preparar la consulta con la contraseña encriptada
+    const query =
+      "INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado) VALUES ($1, $2, $3, $4, $5, $6, $7,$8)";
+    const values = [ide, nom, ape, tele, correo, hashedPassword, rol, "Activo"];
+
+    // Ejecutar la consulta
+    conexion.query(query, values, (error, results) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: error.message });
+      } else {
+        res.redirect("/ver_usuarios");
+      }
+    });
+  } catch (error) {
+    console.error("Error al encriptar la contraseña:", error);
+    res.status(500).json({ error: "Error al procesar la solicitud" });
+  }
+};
+
+exports.desactivarusuario = (req, res) => {
+  const id = req.body.id;
+
+  if (!id) {
+    return res.status(400).json({ error: "ID es requerido" });
+  }
+
+  const query = "UPDATE usuarios SET estado = 'Inactivo' WHERE id = $1";
+  const values = [id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.error("Error al desactivar el usuario:", error);
+      return res.status(500).json({ error: "Error al procesar la solicitud" });
+    }
+    res.redirect("/ver_usuarios");
   });
 };

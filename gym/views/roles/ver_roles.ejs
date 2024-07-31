@@ -80,18 +80,18 @@
           </tr>
         </thead>
         <tbody>
-          <% results.forEach((user) => { %>
+          <% results.forEach((roles) => { %>
           <tr>
-            <td id="ide"><%= user.id %></td>
-            <td><%= user.tipo_de_rol %></td>
+            <td id="iden"><%= roles.id %></td>
+            <td><%= roles.tipo_de_rol %></td>
             <td>
-              <a href="/actualizar/<%= user.id %>" class="btn btn-outline-info"
+              <a href="/actualizar/<%= roles.id %>" class="btn btn-outline-info"
                 >Editar</a
               >
 
               <a
                 class="btn btn-outline-danger"
-                onclick="verificar('<%= user.id %>')"
+                onclick="verificar('<%= roles.id %>')"
                 >Borrar</a
               >
             </td>
@@ -122,12 +122,11 @@
           })
           .then((result) => {
             if (result.isConfirmed) {
-              // Redirige a la ruta de eliminación con el ID del usuario
               window.location.href = `/eliminar/${id}`;
             } else if (result.dismiss === Swal.DismissReason.cancel) {
               swalWithBootstrapButtons.fire({
                 title: "Cancelado",
-                text: "Tus datos estan a salvo :)",
+                text: "Tus datos están a salvo :)",
                 icon: "error",
               });
             }

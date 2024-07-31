@@ -5,6 +5,7 @@
   "scripts": {
     "start": "concurrently \"nodemon app.js\"",
     "build": "react-scripts build",
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./src/styles.css",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -26,13 +27,10 @@
     "nth-check": "^2.1.1",
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-scripts": "^5.0.1",
     "resolve-url-loader": "^5.0.0",
     "sequelize": "^6.37.3",
     "svgo": "^3.3.2",
-    "sweetalert2": "^11.12.3",
+    "sweetalert2": "^11.6.13",
     "tailwindcss": "^3.4.6"
   },
   "devDependencies": {
