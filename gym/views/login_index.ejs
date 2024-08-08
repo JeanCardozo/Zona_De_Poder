@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login con Node Js</title>
+  </head>
+  <body>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+      }
+
+      .login-form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 300px;
+      }
+
+      .login-form h1 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #333;
+      }
+
+      .login-form input[type="number"],
+      .login-form input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+
+      .login-form .btn-login {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .login-form .btn-login:hover {
+        background-color: #0056b3;
+      }
+
+      .login-form .btn-register {
+        display: block;
+        margin-top: 10px;
+        color: #007bff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .login-form .btn-register:hover {
+        text-decoration: underline;
+      }
+    </style>
+    <div class="login-form">
+      <h1>Login con Node Js</h1>
+      <form action="/login" method="post">
+        <input
+          type="number"
+          id="user"
+          name="user"
+          placeholder="IDENTIFICACION"
+          autofocus
+          required
+        />
+        <input
+          type="password"
+          id="pass"
+          name="pass"
+          placeholder="CONTRASEÑA"
+          required
+        />
+        <input type="submit" class="btn-login" value="Iniciar" />
+      </form>
+      <a href="registrar" class="btn-register">Registrar</a>
+    </div>
+
+    <!-- SweetAlert2 Script -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <!-- Script para mostrar la alerta si hay una -->
+    <% if (typeof alert !== "undefined") { %>
+    <script>
+      Swal.fire({
+        title: "<%= alertTitle %>",
+        text: "<%= alertMessage %>",
+        icon: "<%= alertIcon %>",
+        showConfirmButton: "<%= showConfirmButton %>",
+        timer: "<%= timer %>",
+      }).then(() => {
+        if ("<%= ruta %>") {
+          window.location.href = "<%= ruta %>";
+        }
+      });
+    </script>
+    <% } %>
+  </body>
+</html>

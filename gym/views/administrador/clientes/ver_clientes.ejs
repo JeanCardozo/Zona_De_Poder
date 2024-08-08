@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../src/output.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Ver clientes</title>
+  </head>
+  <body>
+    <nav class="bg-gray-100 border-b border-gray-200">
+      <div
+        class="container mx-auto px-4 flex justify-between items-center py-2"
+      >
+        <a class="text-lg font-semibold" href="#">Navbar</a>
+        <button
+          class="lg:hidden flex items-center px-3 py-2 border rounded text-gray-600 border-gray-400 hover:text-gray-800 hover:border-blue-600"
+          id="navbar-toggle"
+        >
+          <svg class="fill-current h-3 w-3" viewBox="0 0 20 20">
+            <path d="M0 3h20v2H0zM0 8h20v2H0zM0 13h20v2H0z" />
+          </svg>
+        </button>
+        <div
+          class="hidden lg:flex lg:items-center lg:w-auto w-full"
+          id="navbar-menu"
+        >
+          <ul
+            class="lg:flex items-center justify-between text-base text-gray-600 pt-4 lg:pt-0"
+          >
+            <li class="nav-item">
+              <a
+                class="lg:p-4 py-3 px-0 block hover:text-gray-900"
+                aria-current="page"
+                href="#"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="lg:p-4 py-3 px-0 block hover:text-gray-900" href="#"
+                >Link</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="lg:p-4 py-3 px-0 block text-gray-400 cursor-not-allowed"
+                href="#"
+                tabindex="-1"
+                aria-disabled="true"
+                >Disabled</a
+              >
+            </li>
+          </ul>
+          <form class="flex items-center">
+            <input
+              class="form-input mr-2"
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+            />
+            <button
+              class="btn border border-green-700 text-green-700 hover:bg-green-700 hover:text-white"
+              type="submit"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+    <div class="w-full bg-blue-500">
+      <h1 class="text-6xl text-center">CLIENTES</h1>
+    </div>
+    <div class="container mx-auto mt-4">
+      <a
+        href="/create_clientes"
+        class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white mt-4 inline-flex items-center"
+        ><i class="bx bx-plus-circle br-md mr-2"></i> Crear Cliente</a
+      >
+      <a
+        href="/index_admin"
+        class="btn border border-red-500 text-white bg-red-500 hover:bg-red-700 mt-4 ml-2 inline-flex items-center"
+      >
+        Volver</a
+      >
+      <div class="overflow-x-auto mt-4">
+        <table class="min-w-full bg-white border border-gray-300">
+          <thead class="bg-blue-500">
+            <tr>
+              <th scope="col" class="text-red-800 px-4 py-2">IDENTIFICACION</th>
+              <th scope="col" class="px-4 py-2">NOMBRE</th>
+              <th scope="col" class="px-4 py-2">APELLIDO</th>
+              <th scope="col" class="px-4 py-2">EDAD</th>
+              <th scope="col" class="px-4 py-2">SEXO</th>
+              <th scope="col" class="px-4 py-2">FECHA DE INSCRIPCION</th>
+              <th scope="col" class="px-4 py-2">CORREO</th>
+              <th scope="col" class="px-4 py-2">TELEFONO</th>
+              <th scope="col" class="px-4 py-2">MENSUALIDAD</th>
+              <th scope="col" class="px-4 py-2">TOTAL A PAGAR</th>
+              <th scope="col" class="px-4 py-2">ESTADO</th>
+              <th scope="col" class="px-4 py-2">USUARIO</th>
+              <th scope="col" class="px-4 py-2">TALLAS</th>
+              <th scope="col" class="px-4 py-2">ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% results.forEach((user) => { %>
+            <tr class="border-t">
+              <td class="px-4 py-2 text-center"><%= user.id %></td>
+              <td class="px-4 py-2 text-center"><%= user.nombre %></td>
+              <td class="px-4 py-2 text-center"><%= user.apellido %></td>
+              <td class="px-4 py-2 text-center"><%= user.edad %></td>
+              <td class="px-4 py-2 text-center"><%= user.sexo %></td>
+              <td class="px-4 py-2 text-center">
+                <%= user.fecha_de_inscripcion %>
+              </td>
+              <td class="px-4 py-2 text-center">
+                <%= user.correo_electronico %>
+              </td>
+              <td class="px-4 py-2 text-center"><%= user.numero_telefono %></td>
+              <td class="px-4 py-2 text-center"><%= user.tiempo_plan %></td>
+              <td class="px-4 py-2 text-center"><%= user.total_pagar %></td>
+              <td
+                class="px-4 py-2 text-center <%= user.estado === 'Inactivo' ? 'border border-red-500 text-red-500' : 'border border-green-500 text-green-500' %>"
+              >
+                <%= user.estado %>
+              </td>
+              <td class="px-4 py-2 text-center"><%= user.nom_usu %></td>
+              <td class="px-4 py-2 text-center">
+                <a
+                  href="/actualizar_tallas/<%= user.id %>"
+                  class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                  >Ver</a
+                >
+              </td>
+              <td class="px-4 py-2 text-center">
+                <a
+                  href="/actualizar_clientes/<%= user.id %>"
+                  class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                  >Editar</a
+                >
+                <% if (user.estado === 'Inactivo') { %>
+                <form action="/activarcliente" method="post" class="inline">
+                  <input type="hidden" name="id" value="<%= user.id %>" />
+                  <button
+                    type="submit"
+                    class="btn border border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                  >
+                    Activar
+                  </button>
+                </form>
+                <% } else if (user.estado === 'Activo') { %>
+                <form action="/desactivarcliente" method="post" class="inline">
+                  <input type="hidden" name="id" value="<%= user.id %>" />
+                  <button
+                    type="submit"
+                    class="btn border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  >
+                    Desactivar
+                  </button>
+                </form>
+                <% } %>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

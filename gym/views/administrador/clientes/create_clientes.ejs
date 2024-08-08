@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <title>Crear cliente</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link disabled"
+                href="#"
+                tabindex="-1"
+                aria-disabled="true"
+                >Disabled</a
+              >
+            </li>
+          </ul>
+          <form class="d-flex">
+            <input
+              class="form-control me-2"
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+            />
+            <button class="btn btn-outline-success" type="submit">
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <div class="card border-secondary">
+        <div class="card-header">Nuevo Registro</div>
+        <div class="card-body">
+          <form action="/crearclienteS" method="post">
+            <div class="mb-3">
+              <label for="id" class="form-label">IDENTIFICACION</label>
+              <input
+                type="number"
+                class="form-control"
+                id="id"
+                name="id"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="nombre" class="form-label">NOMBRE</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombre"
+                name="nombre"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="ape" class="form-label">APELLIDO</label>
+              <input
+                type="text"
+                class="form-control"
+                id="apellido"
+                name="apellido"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="edad" class="form-label">EDAD</label>
+              <input
+                type="number"
+                class="form-control"
+                id="edad"
+                name="edad"
+                tabindex="1"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="sexo" class="form-label">SEXO</label><br>
+              <select id="sexo" name="sexo" class="form-select" aria-label="Default select example" required >
+                <option  disabled selected>Seleccione un sexo</option>
+                <option value="hombre">Hombre</option>
+                <option value="mujer">Mujer</option>
+                
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="inscripcion" class="form-label"
+                >FECHA DE INSCRIPCION</label
+              >
+             <input
+                type="datetime-local"
+                class="form-control"
+                id="inscripcion"
+                name="inscripcion"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="peso" class="form-label">CORREO</label>
+              <input
+                type="email"
+                class="form-control"
+                id="correo"
+                name="correo"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="peso" class="form-label">TELEFONO</label>
+              <input
+                type="number"
+                class="form-control"
+                id="numero"
+                name="numero"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="mensualidad" class="form-label">MENSUALIDADES</label>
+              <select id="mensualidad" name="mensualidad" class="form-select" aria-label="Default select example" required>
+                <option value="" disabled selected>Seleccione una mensualidad</option>
+                <% mensualidades.forEach(function(mensual) { %>
+                <option value="<%= mensual.id %>">
+                  <%= mensual.total_pagar%> -
+                  <%= mensual.tiempo_plan%>
+
+                </option>
+                <% }) %>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="usuario" class="form-label">USUARIOS</label>
+              <select id="usuario" name="usuario" class="form-select" aria-label="Default select example" required>
+                <option value="" disabled selected>Seleccione un usuario</option>
+                <% usuarios.forEach(function(usuario) { %>
+                <option value="<%= usuario.id %>">
+                  <%= usuario.nombre %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+            
+
+          
+
+            
+            </div>
+            <button type="submit" class="btn btn-primary" tabindex="5">
+              Guardar
+            </button>
+            <a href="/ver_clientes" class="btn btn-secondary">cancelar</a>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

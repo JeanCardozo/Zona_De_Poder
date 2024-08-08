@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    .register-form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    .register-form h1 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .register-form input[type="text"],
+    .register-form input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .register-form .btn-login {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .register-form .btn-login:hover {
+      background-color: #0056b3;
+    }
+
+    .register-form .btn-register {
+      display: block;
+      margin-top: 10px;
+      color: #007bff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .register-form .btn-register:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <body>
+    <div class="register-form">
+      <h1>Form Register</h1>
+      <form id="registerForm" action="/register" method="post">
+        <label for="user">IDENTIFICACION</label>
+        <input type="text" id="id" name="id" required />
+
+        <label for="user">NOMBRE</label>
+        <input type="text" id="nombre" name="nombre" required />
+
+        <label for="user">APELLIDO</label>
+        <input type="text" id="apellido" name="apellido" required />
+
+        <label for="user">CORREO ELECTRONICO</label>
+        <input type="text" id="correo" name="correo" required />
+
+        <label for="user">NUMERO DE TELEFONO</label>
+        <input type="text" id="telefono" name="telefono" required />
+
+        <label for="pass">CONTRASEÑA</label>
+        <input type="password" id="pass" name="pass" required />
+
+        <label for="pass">CONFIRMAR CONTRASEÑA</label>
+        <input
+          type="password"
+          id="confirmarpass"
+          name="confirmarpass"
+          required
+        />
+
+        <div style="display: inline">
+          <a href="/login_index" class="btn-cancel">Cancel</a>
+          <input type="submit" class="btn-save" value="Save" />
+        </div>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", function (e) {
+          const pass = document.getElementById("pass").value;
+          const confirmarPass = document.getElementById("confirmarpass").value;
+
+          if (pass !== confirmarPass) {
+            e.preventDefault(); // Detiene el envío del formulario
+            Swal.fire({
+              title: "Error",
+              text: "Las contraseñas no coinciden",
+              icon: "error",
+              confirmButtonText: "OK",
+            });
+          }
+        });
+    </script>
+
+    <% if (typeof alert !== "undefined") { %>
+    <script>
+      Swal.fire({
+        title: "<%= alertTitle %>",
+        text: "<%= alertMessage %>",
+        icon: "<%= alertIcon %>",
+        showConfirmButton: "<%= showConfirmButton %>",
+        timer: "<%= timer %>",
+      }).then(() => {
+        window.location = "<%= ruta %>";
+      });
+    </script>
+    <% } %>
+  </body>
+</html>
