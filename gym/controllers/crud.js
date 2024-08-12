@@ -63,7 +63,7 @@ exports.crearclienteS = (req, res) => {
   const usu = req.body.usuario;
 
   const queryClientes =
-    "INSERT INTO clientes (id,nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,$11) RETURNING id";
+    "INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id";
   const valuesClientes = [
     id,
     nom,
@@ -116,13 +116,37 @@ exports.crearclienteS = (req, res) => {
             });
           }
 
-          conexion.query("COMMIT", (commitErr) => {
-            if (commitErr) {
-              console.log(commitErr);
-              return res.status(500).json({ error: commitErr.message });
+          // Nueva consulta para insertar en la tabla mensualidad_clientes
+          const queryMensualidad =
+            "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio ,tiempo_plan, estado) VALUES ($1, $2, $3, $4 ,$5)";
+          const valuesMensualidad = [ide, nom, fecha, mensu, "Activo"];
+
+          conexion.query(
+            queryMensualidad,
+            valuesMensualidad,
+            (errorMensualidad, resultsMensualidad) => {
+              if (errorMensualidad) {
+                return conexion.query("ROLLBACK", (rollbackErr) => {
+                  if (rollbackErr) {
+                    console.log(rollbackErr);
+                    return res.status(500).json({ error: rollbackErr.message });
+                  }
+                  console.log(errorMensualidad);
+                  return res
+                    .status(500)
+                    .json({ error: errorMensualidad.message });
+                });
+              }
+
+              conexion.query("COMMIT", (commitErr) => {
+                if (commitErr) {
+                  console.log(commitErr);
+                  return res.status(500).json({ error: commitErr.message });
+                }
+                res.redirect(`/actualizar_tallas/${ide}`);
+              });
             }
-            res.redirect(`/actualizar_tallas/${ide}`); // Redirigir a /ver_tallas con el ID del cliente
-          });
+          );
         }
       );
     });
@@ -135,30 +159,25 @@ exports.update_cliente = (req, res) => {
   const apellido = req.body.apellido;
   const edad = req.body.edad;
   const sexo = req.body.sexo;
-  const fecha_inscripcion = req.body.fecha_de_inscripcion;
   const correo_electronico = req.body.correo_electronico;
   const numero_telefono = req.body.numero_telefono;
   const id_mensualidad = parseInt(req.body.id_mensualidad);
-  const estado = req.body.estado;
 
   const query = `
     UPDATE clientes 
     SET nombre = $1, apellido = $2, edad = $3, sexo = $4, 
-        fecha_de_inscripcion = $5, 
-        correo_electronico = $6, numero_telefono = $7, 
-        id_mensualidad = $8, estado = $9
-    WHERE id = $10
+        correo_electronico = $5, numero_telefono = $6, 
+        id_mensualidad = $7
+    WHERE id = $8
   `;
   const values = [
     nombre,
     apellido,
     edad,
     sexo,
-    fecha_inscripcion,
     correo_electronico,
     numero_telefono,
     id_mensualidad,
-    estado,
     id,
   ];
 
@@ -245,6 +264,34 @@ exports.crearusu = async (req, res) => {
   }
 };
 
+exports.update_usuarios = (req, res) => {
+  const id = parseInt(req.body.id, 10);
+  const nombre = parseFloat(req.body.nombre);
+  const ape = parseFloat(req.body.apellido);
+  const telefono = parseFloat(req.body.telefono);
+  const correo = parseFloat(req.body.correo_electronico);
+  const contraseña = parseFloat(req.body.contra);
+
+  // Verifica que el ID sea un número válido
+  if (isNaN(id)) {
+    console.log("Invalid ID:", req.body.id);
+    return res.status(400).json({ error: "Invalid ID" });
+  }
+
+  const query =
+    "UPDATE usuarios SET nombre = $1, apellido = $2, telefono = $3, correo = $4, contraseña = $5 WHERE id = $6";
+  const values = [nombre, ape, telefono, correo, contraseña, id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_talla");
+    }
+  });
+};
+
 exports.desactivarusuario = (req, res) => {
   const id = req.body.id;
 
@@ -279,7 +326,7 @@ exports.activarusuario = (req, res) => {
       console.error("Error al desactivar el usuario:", error);
       return res.status(500).json({ error: "Error al procesar la solicitud" });
     }
-    res.redirect("/ver_mensualidad");
+    res.redirect("/ver_usuarios");
   });
 };
 
@@ -295,7 +342,7 @@ exports.update_tallas = (req, res) => {
   const medida_abdomen = parseFloat(req.body.medida_abdomen);
   const medida_cadera = parseFloat(req.body.medida_cadera);
   const medida_pierna = parseFloat(req.body.medida_pierna);
-  const medida_pantorilla = parseFloat(req.body.medida_pantorilla);
+  const medida_pantorrilla = parseFloat(req.body.medida_pantorrilla);
 
   // Verifica que el ID sea un número válido
   if (isNaN(id)) {
@@ -304,7 +351,7 @@ exports.update_tallas = (req, res) => {
   }
 
   const query =
-    "UPDATE tallas SET medida_pecho = $1, medida_brazo = $2, medida_cintura = $3, medida_abdomen = $4, medida_cadera = $5, medida_pierna = $6, medida_pantorilla = $7 WHERE id = $8";
+    "UPDATE tallas SET medida_pecho = $1, medida_brazo = $2, medida_cintura = $3, medida_abdomen = $4, medida_cadera = $5, medida_pierna = $6, medida_pantorrilla = $7 WHERE id = $8";
   const values = [
     medida_pecho,
     medida_brazo,
@@ -312,7 +359,7 @@ exports.update_tallas = (req, res) => {
     medida_abdomen,
     medida_cadera,
     medida_pierna,
-    medida_pantorilla,
+    medida_pantorrilla,
     id,
   ];
 
@@ -326,26 +373,110 @@ exports.update_tallas = (req, res) => {
   });
 };
 
-// Crear mensualidad
-exports.crearMensu = (req, res) => {
+// Crear convenio
+exports.crearConvenio = (req, res) => {
   const id = req.body.id;
   const tipo = req.body.tipo;
 
   const query =
-    "INSERT INTO mensualidades (id,tipo_de_mensualidad) VALUES ($1,$2)";
-  const values = [id, tipo];
+    "INSERT INTO mensualidad_convencional (id,tipo_de_mensualidad,estado) VALUES ($1,$2,$3)";
+  const values = [id, tipo, "Activo"];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_mensualidades");
+      res.redirect("/ver_convenio");
     }
   });
 };
 
-// INICIO DE SESION
+// actualizar convenio
+exports.update_convenio = (req, res) => {
+  const id = parseInt(req.body.id, 10);
+  const tipo = req.body.tipo;
+
+  // Verifica que el ID sea un número válido
+  if (isNaN(id)) {
+    console.log("Invalid ID:", req.body.id);
+    return res.status(400).json({ error: "Invalid ID" });
+  }
+
+  const query =
+    "UPDATE mensualidad_convencional SET tipo_de_mensualidad = $1 WHERE id = $2";
+  const values = [tipo, id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_convenio");
+    }
+  });
+};
+
+exports.desactivarconvenio = (req, res) => {
+  const id = req.body.id;
+
+  if (!id) {
+    return res.status(400).json({ error: "ID es requerido" });
+  }
+
+  const query =
+    "UPDATE mensualidad_convencional SET estado = 'Inactivo' WHERE id = $1";
+  const values = [id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.error("Error al desactivar el usuario:", error);
+      return res.status(500).json({ error: "Error al procesar la solicitud" });
+    }
+    res.redirect("/ver_convenio");
+  });
+};
+
+exports.activarconvenio = (req, res) => {
+  const id = req.body.id;
+
+  if (!id) {
+    return res.status(400).json({ error: "ID es requerido" });
+  }
+
+  const query =
+    "UPDATE mensualidad_convencional SET estado = 'Activo' WHERE id = $1";
+  const values = [id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.error("Error al desactivar el usuario:", error);
+      return res.status(500).json({ error: "Error al procesar la solicitud" });
+    }
+    res.redirect("/ver_convenio");
+  });
+};
+
+// crear mensualidad fija
+exports.crearMensu = (req, res) => {
+  const id = req.body.id;
+  const tipo = req.body.tipo;
+
+  const query =
+    "INSERT INTO mensualidad_convencional (id,tipo_de_mensualidad,estado) VALUES ($1,$2,$3)";
+  const values = [id, tipo, "Activo"];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_convenio");
+    }
+  });
+};
+
+// REGISTRAR --------------------------------------------------------------------------
 exports.register = async (req, res) => {
   const id = req.body.id;
   const nombre = req.body.nombre;
@@ -397,6 +528,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// INICIO DE SESION --------------------------------------------------------------------------------------------------
 exports.login = async (req, res) => {
   const user = req.body.user; // Captura el ID del usuario ingresado en el formulario
   const pass = req.body.pass; // Captura la contraseña ingresada
@@ -469,4 +601,108 @@ exports.login = async (req, res) => {
       ruta: "login_index",
     });
   }
+};
+
+// GRUPOS MUSCULARES ---------------------------------------------------
+
+//CREAR
+exports.crear_gm = (req, res) => {
+  const id = req.body.id;
+  const nombre = req.body.nombre_grupo;
+  const seccion = req.body.seccion;
+
+  const query =
+    "INSERT INTO grupos_musculares (id,nombre,seccion) VALUES ($1,$2,$3)";
+  const values = [id, nombre, seccion];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_grupo_muscular");
+    }
+  });
+};
+
+// actualizar
+exports.update_gm = (req, res) => {
+  const id = req.body.id; // El ID de la fila que se quiere actualizar
+  const nombre = req.body.nombre_grupo;
+  const seccion = req.body.seccion; // Asegúrate de que 'seccion' es el nombre correcto en el formulario
+
+  // Asegúrate de que la consulta solo actualiza los campos 'nombre' y 'seccion' para la fila con el ID correspondiente
+  const query = `
+    UPDATE grupos_musculares 
+    SET nombre = $1, seccion = $2
+    WHERE id = $3
+  `;
+  const values = [nombre, seccion, id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_grupo_muscular");
+    }
+  });
+};
+
+// ACTIVIDAD FISICA -------------------------------------------------------
+
+//CREAR
+exports.crear_af = (req, res) => {
+  const id = req.body.id;
+  const nombre_ejercicio = req.body.nombre_ejercicio;
+  const series = req.body.series;
+  const reps = req.body.reps;
+  const video_ejemplo = req.body.video_ejemplo;
+  const gm = req.body.gm;
+
+  const query =
+    "INSERT INTO actividad_fisica (id, nombre_ejercicio, series, repeticiones, video_ejemplo, id_grupo_muscular) VALUES ($1,$2,$3,$4,$5,$6)";
+  const values = [id, nombre_ejercicio, series, reps, video_ejemplo, gm];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_acti_fisica");
+    }
+  });
+};
+
+// actualizar
+exports.update_af = (req, res) => {
+  const id = req.body.id; // Aquí debe ser 'id', no 'idd'
+  const nombre = req.body.nombre_ejercicio;
+  const series = req.body.series;
+  const reps = req.body.reps;
+  const video_ejemplo = req.body.video_ejemplo;
+  const gm = req.body.gm;
+
+  console.log("ID Actividad Física:", id); // Aquí debería imprimir el ID de la actividad física
+  console.log("Nombre Ejercicio:", nombre);
+  console.log("Series:", series);
+  console.log("Repeticiones:", reps);
+  console.log("Video Ejemplo:", video_ejemplo);
+  console.log("Grupo Muscular ID:", gm);
+
+  const query = `
+    UPDATE actividad_fisica
+    SET nombre_ejercicio = $1, series = $2, repeticiones = $3, video_ejemplo = $4, id_grupo_muscular = $5
+    WHERE id = $6
+  `;
+  const values = [nombre, series, reps, video_ejemplo, gm, id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ver_acti_fisica");
+    }
+  });
 };

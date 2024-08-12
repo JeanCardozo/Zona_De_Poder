@@ -82,7 +82,6 @@
                 name="id"
                 tabindex="1"
                 value="<%= user.id_cliente %>"
-                
               />
             </div>
             <div class="mb-3">
@@ -134,21 +133,6 @@
                 <option value="Femenino" <%= user.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
               </select>
             </div>
-            
-
-            <div class="mb-3">
-              <label for="inscripcion" class="form-label"
-                >FECHA DE INSCRIPCION</label
-              >
-              <input
-                type="datetime-local"
-                class="form-control"
-                id="fecha_de_inscripcion"
-                name="fecha_de_inscripcion"
-                value="<%= user.fecha_de_inscripcion%>"
-                tabindex="1"
-              />
-            </div>
 
             <div class="mb-3">
               <label for="correo_electronico" class="form-label">CORREO</label>
@@ -189,23 +173,7 @@
                   </option>
                 <% }) %>
               </select>
-            </div>
-            
-            <div class="mb-3">
-              <label for="estado" class="form-label">ESTADO</label>
-              <select
-                name="estado"
-                id="estado"
-                class="form-select"
-                required
-              >
-                <option value="" disabled>Seleccione el estado</option>
-                <option value="Activo" <%= user.estado === "Activo" ? 'selected' : '' %>>Activo</option>
-                <option value="Inactivo" <%= user.estado === "Inactivo" ? 'selected' : '' %>>Inactivo</option>
-              </select>
-            </div>
-            
-
+            </div>         
             <button type="submit" class="btn btn-primary" tabindex="5">
               Guardar
             </button>

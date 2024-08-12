@@ -8,20 +8,30 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../src/output.css" />
+    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
+
+    <style>
+      .bg-fondo {
+        background-image: url("../../../imgs/fondo.jpeg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+      }
+    </style>
     <title>DashBoard Admin</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <nav class="bg-white border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 p-1">
         <div class="flex justify-between h-16">
           <div class="flex">
             <a class="navbar-brand text-lg font-semibold" href="#">Navbar</a>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <!-- <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
               <a
                 href="#"
                 class="border-b-2 border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
@@ -37,30 +47,30 @@
                 class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-not-allowed"
                 >Disabled</a
               >
-            </div>
+            </div> -->
           </div>
           <div class="flex items-center justify-center w-full p-4">
             <form class="flex w-full max-w-4xl">
               <input
-                class="flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2"
+                class="max-w-5xl flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2"
                 type="search"
                 placeholder="¿Que deseas buscar?..."
                 aria-label="Search"
               />
-              <button
-                class="ml-2 btn bg-green-500 text-white rounded-2xl px-4 py-2"
-                type="submit"
-              >
-                Buscar
-              </button>
+              <div class="flex justify-end">
+                <button
+                  class="ml-2 btn bg-green-500 text-white rounded-2xl px-4 py-2"
+                  type="submit"
+                >
+                  Buscar
+                </button>
 
-              <li>
                 <a
-                  class="py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+                  class="ml-2 py-2 px-4 border border-transparent rounded-2xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
                   href="/logout"
                   >Logout</a
                 >
-              </li>
+              </div>
             </form>
           </div>
         </div>
@@ -90,7 +100,7 @@
           </h3>
 
           <div class="space-y-2 w-full h-full w-64 bg-gray-900">
-            <ul>
+            <ul class="p-3">
               <li>
                 <a
                   href="/ver_roles"
@@ -167,6 +177,58 @@
                     class="w-6 h-6 mr-3"
                   />
                   <span>Mensualidad</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/ver_ventas"
+                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+                >
+                  <img
+                    src="../../imgs/"
+                    alt="Icono Convenios"
+                    class="w-6 h-6 mr-3"
+                  />
+                  <span>Ventas</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/ver_grupo_muscular"
+                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+                >
+                  <img
+                    src="../../imgs/"
+                    alt="Icono Convenios"
+                    class="w-6 h-6 mr-3"
+                  />
+                  <span>Grupo Muscular</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/ver_acti_fisica"
+                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+                >
+                  <img
+                    src="../../imgs/"
+                    alt="Icono Convenios"
+                    class="w-6 h-6 mr-3"
+                  />
+                  <span>Actividad Fisica</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/ver_plan_ent"
+                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+                >
+                  <img
+                    src="../../imgs/"
+                    alt="Icono Convenios"
+                    class="w-6 h-6 mr-3"
+                  />
+                  <span>Plan De Entrenamiento</span>
                 </a>
               </li>
             </ul>

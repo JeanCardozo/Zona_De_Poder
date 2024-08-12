@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- para llamar a Tailwind Css -->
-    <link rel="stylesheet" href="../../src/output.css" />
+    <!-- !!Lammar a Tailwind Css -->
+    <link rel="stylesheet" href="./src/styles.css" />
 
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
@@ -17,11 +17,11 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <title>clientes</title>
+    <title>Crud Roles</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
+      <div class="container-fluid bg-blue-500">
         <a class="navbar-brand" href="#">Navbar</a>
         <button
           class="navbar-toggler"
@@ -72,9 +72,9 @@
       <div class="card border-secondary">
         <div class="card-header">Editar Registro</div>
         <div class="card-body">
-          <form action="/update_cliente" method="post">
+          <form action="/update_af" method="post">
             <div class="mb-3">
-              <label for="id" class="form-label">IDENTIFICACION</label>
+              <label for="id" class="form-label">ID</label>
               <input
                 type="number"
                 class="form-control"
@@ -87,131 +87,79 @@
             </div>
 
             <div class="mb-3">
-              <label for="nombre" class="form-label">NOMBRE</label>
+              <label for="nombre_ejercicio" class="form-label"
+                >NOMBRE DEL EJERCICIO</label
+              >
               <input
                 type="text"
                 class="form-control"
-                id="nombre"
-                name="nombre"
-                value="<%= user.nombre %>"
+                id="nombre_ejercicio"
+                name="nombre_ejercicio"
+                value="<%= user.nombre_ejercicio %>"
                 tabindex="1"
               />
             </div>
 
             <div class="mb-3">
-              <label for="ape" class="form-label">APELLIDO</label>
+              <label for="series" class="form-label">SERIES</label>
               <input
                 type="text"
                 class="form-control"
-                id="apellido"
-                name="apellido"
-                value="<%= user.apellido %>"
+                id="series"
+                name="series"
+                value="<%= user.series %>"
                 tabindex="1"
               />
             </div>
 
             <div class="mb-3">
-              <label for="edad" class="form-label">EDAD</label>
+              <label for="reps" class="form-label">REPETICIONES</label>
               <input
                 type="text"
                 class="form-control"
-                id="edad"
-                name="edad"
-                value="<%= user.edad %>"
+                id="reps"
+                name="reps"
+                value="<%= user.repeticiones %>"
                 tabindex="1"
               />
             </div>
+
             <div class="mb-3">
-              <label for="sexo" class="form-label">SEXO</label>
+              <label for="video_ejemplo" class="form-label"
+                >VIDEO DE EJEMPLO</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="video_ejemplo"
+                name="video_ejemplo"
+                value="<%= user.video_ejemplo %>"
+                tabindex="1"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="gm" class="form-label">GRUPOS MUSCULARES</label>
               <select
-                name="sexo"
-                id="sexo"
+                id="gm"
+                name="gm"
                 class="form-select"
+                aria-label="Default select example"
                 required
               >
-           
-                <option value="" disabled <%= !user.sexo ? 'selected' : '' %>>Seleccione el Sexo</option>
-                <option value="Masculino" <%= user.sexo === "Masculino" ? 'selected' : '' %>>Masculino</option>
-                <option value="Femenino" <%= user.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
-              </select>
-            </div>
-            
-
-            <div class="mb-3">
-              <label for="inscripcion" class="form-label"
-                >FECHA DE INSCRIPCION</label
-              >
-              <input
-                type="datetime-local"
-                class="form-control"
-                id="fecha_de_inscripcion"
-                name="fecha_de_inscripcion"
-                value="<%= user.fecha_de_inscripcion%>"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="correo_electronico" class="form-label">CORREO</label>
-              <input
-                type="email"
-                class="form-control"
-                id="correo_electronico"
-                name="correo_electronico"
-                value="<%= user.correo_electronico %>"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="peso" class="form-label">TELEFONO</label>
-              <input
-                type="number"
-                class="form-control"
-                id="numero_telefono"
-                name="numero_telefono"
-                value="<%= user.numero_telefono %>"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="mensualidad" class="form-label">MENSUALIDADES</label>
-              <select
-                class="bx bx-plus-circle br-md"
-                name="id_mensualidad"
-                id="id_mensualidad"
-                required
-              >
-                <option value="" disabled>Seleccione una mensualidad</option>
-                <% mensualidades.forEach(function(mensual) { %>
-                <option value="<%= mensual.id %>" <%= user.id_mensualidad == mensual.id ? 'selected' : '' %>>
-                  <%= mensual.tiempo_plan %> -
-                  <%= mensual.total_pagar%>
+                <option value="" disabled selected>
+                  Seleccione un grupo muscular
                 </option>
+                <% grupos_musculares.forEach(function(gm) { %>
+                <option value="<%= gm.id %>"><%= gm.nombre %></option>
                 <% }) %>
               </select>
             </div>
-            
-            <div class="mb-3">
-              <label for="estado" class="form-label">ESTADO</label>
-              <select
-                name="estado"
-                id="estado"
-                class="bx bx-plus-circle br-md"
-                required
-              >
-                <option value="" disabled>Seleccione el estado</option>
-                <option value="Activo" <%= user.estado === "Activo" ? 'selected' : '' %>>Activo</option>
-                <option value="Inactivo" <%= user.estado === "Inactivo" ? 'selected' : '' %>>Inactivo</option>
-              </select>
-            </div>
-            
 
             <button type="submit" class="btn btn-primary" tabindex="5">
               Guardar
             </button>
-            <a href="/ver_clientes" class="btn btn-secondary">Cancelar</a>
+            <a href="/ver_acti_fisica" class="btn btn-secondary">Cancelar</a>
           </form>
         </div>
       </div>

@@ -68,7 +68,7 @@
     <div class="w-full bg-blue-500">
       <h1 class="text-6xl text-center">MENSUALIDADES</h1>
       <div class="container">
-        <a href="/create_mensualidad" class="btn btn-outline-primary mt-4">
+        <a href="/crear_mensualidad" class="btn btn-outline-primary mt-4">
           <i class="bx bx-plus-circle br-md"></i> Crear Mensualidad
         </a>
         <a href="/index_admin" class="btn btn-outline-danger mt-4 bg-red-500">Volver</a>
@@ -76,25 +76,20 @@
           <thead class="bg-primary text-white">
             <tr class="bg-blue-500">
               <th scope="col" class="text-red-800">IDENTIFICACION</th>
-              <th scope="col">CLIENTE</th>
-              <th scope="col">FECHA DE INICIO</th>
-              <th scope="col">TOTAL A PAGAR</th>
-              <th scope="col">MENSUALIDAD</th>
-              <th scope="col">TIPO DEL PLAN</th>
-              <th scope="col">ESTADO</th>
+              <th scope="col">Total Pagar</th>
+              <th scope="col">Tipo Mensualidad</th>
+              <th scope="col">Tiempo Plan</th>
               <th scope="col">ACCIONES</th>
             </tr>
           </thead>
           <tbody>
             <% results.forEach((mensu) => { %>
               <tr>
-                <td><%= mensu.id_mensu%></td>
-                <td><%= mensu.nombre %></td>
-                <td><%= mensu.fecha_inicio %></td>
+                <td><%= mensu.id_mensualidad%></td>
                 <td><%= mensu.total_pagar %></td>
-                <td><%= mensu.tipo%></td>
+                <td><%= mensu.tipo_de_mensualidad %></td>
                 <td><%= mensu.tiempo_plan %></td>
-                <td><%= mensu.estado %></td>
+
                 <td>
                   <a href="/actualizar_clientes/<%= mensu.id %>" class="btn btn-outline-info">Editar</a>
                   <% if (mensu.estado === 'Inactivo') { %>

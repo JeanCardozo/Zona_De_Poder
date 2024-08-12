@@ -69,7 +69,7 @@
       <div class="card border-secondary">
         <div class="card-header">Nuevo Registro</div>
         <div class="card-body">
-          <form action="/crearusu" method="post">
+          <form action="/crear_mensu" method="post">
             <div class="mb-3">
               <label for="id" class="form-label">ID</label>
               <input
@@ -82,7 +82,7 @@
             </div>
 
             <div class="mb-3">
-              <label for="rol" class="form-label">Nombre</label>
+              <label for="rol" class="form-label">TOTAL PAGAR</label>
               <input
                 type="text"
                 class="form-control"
@@ -93,60 +93,13 @@
             </div>
 
             <div class="mb-3">
-              <label for="rol" class="form-label">apellido</label>
-              <input
-                type="text"
-                class="form-control"
-                id="ape"
-                name="ape"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="rol" class="form-label">telefono</label>
-              <input
-                type="text"
-                class="form-control"
-                id="telefono"
-                name="telefono"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="rol" class="form-label">correo electronico</label>
-              <input
-                type="text"
-                class="form-control"
-                id="correo"
-                name="correo"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="rol" class="form-label">contraseña</label>
-              <input
-                type="password"
-                class="form-control"
-                id="contra"
-                name="contra"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="roles" class="form-label">Roles</label>
-              <select
-                class="bx bx-plus-circle br-md"
-                name="roles"
-                id="roles"
-                required
-              >
-                <option value="">Seleccione un rol</option>
-                <% results.forEach(function(rol) { %>
-                <option value="<%= rol.id %>"><%= rol.tipo_de_rol %></option>
+              <label for="roles" class="form-label">MENSUALIDADES</label>
+              <select class="form-select" name="tipo" id="tipo" required>
+                <option value="">Seleccione una mensualidad</option>
+                <% results.forEach(function(mensu) { %>
+                <option value="<%= mensu.id %>">
+                  <%= mensu.tipo_de_mensualidad %>
+                </option>
                 <% }) %>
               </select>
             </div>

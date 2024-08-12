@@ -34,7 +34,7 @@ function autenticateToken(req, res, next) {
         ruta: "login_index",
       });
     }
-    req.user = user;
+    req.user = user; // Guarda la información del usuario en req.user
     next();
   });
 }
@@ -243,7 +243,7 @@ router.get("/actualizar_clientes/:id", (req, res) => {
 // /ver_usuarios
 router.get("/ver_usuarios", (req, res) => {
   conexion.query(
-    "SELECT u.id AS id_usuario ,u.nombre ,u.apellido,u.telefono,u.correo_electronico,u.contraseña, u.id_rol, u.estado,r.id AS id_roles, r.tipo_de_rol AS rol FROM usuarios AS u INNER JOIN roles AS r ON u.id_rol=r.id ",
+    "SELECT u.id AS id_usuario ,u.nombre ,u.apellido,u.telefono,u.correo_electronico,u.contraseña, u.id_rol, u.estado,r.id AS id_roles, r.tipo_de_rol AS rol FROM usuarios AS u INNER JOIN roles AS r ON u.id_rol=r.id ORDER BY u.id ",
 
     (error, results) => {
       if (error) {
@@ -270,6 +270,28 @@ router.get("/create_usuarios", (req, res) => {
       res.render("administrador/usuarios/create_usuarios", {
         results: results.rows,
       });
+    }
+  );
+});
+
+router.get("/actualizar_usuarios/:id", (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  conexion.query(
+    "SELECT * FROM usuarios WHERE id = $1",
+    [id],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      if (results.rowCount > 0) {
+        res.render("administrador/usuarios/actualizar_usuarios", {
+          user: results.rows[0],
+        });
+      } else {
+        res.status(404).json({ error: "User not found" });
+      }
     }
   );
 });
@@ -336,13 +358,12 @@ router.get("/actualizar_tallas/:id", (req, res) => {
 // ver comvenios
 router.get("/ver_convenio", (req, res) => {
   conexion.query(
-    "SELECT * FROM mensualidad_convencional",
+    "SELECT * FROM mensualidad_convencional ORDER BY id",
 
     (error, results) => {
       if (error) {
         return res.status(500).json({ error: error.message }); // Manejo de error
       }
-
       res.render("administrador/convenio/ver_mensualidad", {
         results: results.rows,
       });
@@ -350,54 +371,283 @@ router.get("/ver_convenio", (req, res) => {
   );
 });
 
+// crear convenio
+router.get("/create_convenio", (req, res) => {
+  res.render("administrador/convenio/create_convenio");
+});
+
+// actualizar convenio
+router.get("/actualizar_convenio/:id", (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  conexion.query(
+    "SELECT * FROM mensualidad_convencional WHERE id = $1",
+    [id],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      if (results.rowCount > 0) {
+        res.render("administrador/convenio/actualizar_convenio", {
+          user: results.rows[0],
+        });
+      } else {
+        res.status(404).json({ error: "User not found" });
+      }
+    }
+  );
+});
+
 // Ver mensualidad
 router.get("/ver_mensualidad", (req, res) => {
-  const query = `
-    SELECT 
-      m.id AS id_mensu,
-      m.fecha_inicio,
-      m.fecha_fin,
-      m.total_pagar,
-      m.id_cliente,
-      m.id_mensualidad_convencional AS convenio,
-      m.tiempo_plan,
-      m.estado,
-      mc.id AS id_mensualidad,
-      mc.tipo_de_mensualidad AS tipo,
-      c.id AS id_person,
-      c.nombre 
-    FROM 
-      mensualidades AS m 
-      INNER JOIN mensualidad_convencional AS mc ON m.id_mensualidad_convencional = mc.id 
-      INNER JOIN clientes AS c ON m.id_cliente = c.id
-  `;
+  // Corrige la consulta SQL
+  const query =
+    "SELECT  m.id AS id_mensualidad,m.total_pagar,mc.tipo_de_mensualidad,m.tiempo_plan FROM mensualidades AS m INNER JOIN mensualidad_convencional AS mc ON m.id_mensualidad_convencional =mc.id ORDER BY m.id";
 
   conexion.query(query, (error, results) => {
     if (error) {
       return res.status(500).json({ error: error.message });
     }
+
     res.render("administrador/mensualidades/ver_mensualidad", {
-      results: results.rows,
+      results: results.rows || results,
     });
   });
 });
 
-router.get("/create_mensualidad", (req, res) => {
+router.get("/crear_mensualidad", (req, res) => {
   conexion.query(
-    "SELECT m.id AS id_mensu,m.fecha_inicio,m.fecha_fin,m.total_pagar,m.id_cliente,m.id_mensualidad_convencional AS convenio,m.tiempo_plan,m.estado,mc.id AS id_mensualidad,mc.tipo_de_mensualidad AS tipo,c.id AS id_person,c.nombre FROM mensualidades AS m INNER JOIN mensualidad_convencional AS mc ON m.id_mensualidad_convencional = mc.id INNER JOIN clientes AS c ON m.id_cliente = c.id",
+    "SELECT * FROM roles",
 
     (error, results) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
-      res.render("administrador/mensualidades/create_mensualidad", {
+      res.render("administrador/mensualidades/crear_mensualidad", {
         results: results.rows,
       });
     }
   );
 });
 
-//Enrutamiento al crud para roles
+// -------------------------------------------------------------------------------------
+
+//GRUPOS MUSCULARES
+
+// ver grupo muscular
+router.get("/ver_grupo_muscular", (req, res) => {
+  conexion.query(
+    "SELECT * FROM grupos_musculares ORDER BY id",
+
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message }); // Manejo de error
+      }
+
+      res.render("administrador/grupo_muscular/ver_grupo_muscular", {
+        results: results.rows,
+      });
+    }
+  );
+});
+
+// crear grupo muscular
+router.get("/create_grupo_muscular", (req, res) => {
+  res.render("administrador/grupo_muscular/create_grupo_muscular");
+});
+
+// editar grupo muscular
+router.get("/actualizar_g/:id", (req, res) => {
+  const id = req.params.id;
+
+  conexion.query(
+    "SELECT * FROM grupos_musculares WHERE id = $1",
+    [id],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      if (results.rowCount > 0) {
+        res.render("administrador/grupo_muscular/actualizar_g", {
+          user: results.rows[0],
+        });
+      } else {
+        res.status(404).json({ error: "User not found" });
+      }
+    }
+  );
+});
+
+/////////////////////////////////////////////////////7
+
+//VENTAS
+
+router.get("/ver_ventas", (req, res) => {
+  conexion.query(
+    "SELECT * FROM mensualidad_clientes ORDER BY id",
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message }); // Manejo de error
+      }
+      res.render("administrador/ventas/ver_ventas", {
+        results: results.rows,
+      });
+    }
+  );
+});
+
+/////////////////////////////////////////////////////////////////
+
+//ACTIVIDAD FISICA
+
+//VER
+router.get("/ver_acti_fisica", autenticateToken, (req, res) => {
+  const query = `
+    SELECT 
+      af.id AS af_id, 
+      af.nombre_ejercicio AS af_nombre, 
+      af.series AS af_series, 
+      af.repeticiones AS af_reps, 
+      af.video_ejemplo AS af_video,
+      gm.id AS gm_id, 
+      gm.nombre AS gm_nombre 
+    FROM 
+      actividad_fisica af 
+    INNER JOIN 
+      grupos_musculares gm 
+    ON 
+      af.id_grupo_muscular = gm.id 
+    ORDER BY 
+      af.id
+  `;
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.render("administrador/actividad_fisica/ver_acti_fisica", {
+      results: results.rows,
+    });
+  });
+});
+
+//CREAR
+router.get("/create_acti_fisica", (req, res) => {
+  // Realizamos la consulta para obtener los grupos musculares
+  conexion.query(
+    "SELECT id, nombre FROM grupos_musculares",
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Pasamos los resultados a la vista
+      res.render("administrador/actividad_fisica/create_acti_fisica", {
+        grupos_musculares: results.rows, // results.rows contiene los datos de la consulta
+      });
+    }
+  );
+});
+
+//ACTUALIZAR
+router.get("/actualizar_f/:id", (req, res) => {
+  const id = req.params.id;
+
+  const queryActividadFisica = `
+  SELECT af.*, gm.nombre AS grupo_muscular_nombre 
+  FROM actividad_fisica af 
+  INNER JOIN grupos_musculares gm ON af.id_grupo_muscular = gm.id 
+  WHERE af.id = $1
+`;
+
+  const queryGruposMusculares = `
+    SELECT * FROM grupos_musculares
+  `;
+
+  // Ejecutamos ambas consultas en paralelo
+  Promise.all([
+    conexion.query(queryActividadFisica, [id]),
+    conexion.query(queryGruposMusculares),
+  ])
+    .then(([actividadFisicaResult, gruposMuscularesResult]) => {
+      if (actividadFisicaResult.rowCount > 0) {
+        res.render("administrador/actividad_fisica/actualizar_f", {
+          user: actividadFisicaResult.rows[0],
+          grupos_musculares: gruposMuscularesResult.rows,
+        });
+      } else {
+        res.status(404).json({ error: "Actividad física no encontrada" });
+      }
+    })
+    .catch((error) => {
+      res.status(500).json({ error: error.message });
+    });
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+//PLAN DE ENTRENAMIENTO
+
+//VER
+router.get("/ver_plan_ent", autenticateToken, (req, res) => {
+  const query = `
+    SELECT 
+      pe.id AS pe_id, 
+      pe.dia AS pe_dia_de_la_semana, 
+      c.id AS c_id_cliente, 
+      c.nombre AS c_nombre,
+      af.id AS af_id_acti_fisica,
+      af.nombre_ejercicio AS af_nombre,
+      af.series AS af_series,
+      af.repeticiones AS af_reps
+
+    FROM 
+      plan_entrenamiento pe 
+    INNER JOIN 
+      clientes c
+    ON 
+      pe.id_cliente = c.id 
+    INNER JOIN
+      actividad_fisica af
+    ON
+      pe.id_actividad_fisica = af.id
+    ORDER BY 
+      pe.id
+  `;
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.render("administrador/plan_de_entrenamiento/ver_plan_ent", {
+      results: results.rows,
+    });
+  });
+});
+
+//CREAR
+router.get("/create_plan_ent", (req, res) => {
+  // Realizamos la consulta para obtener los grupos musculares
+  conexion.query(
+    "SELECT id, nombre FROM grupos_musculares",
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Pasamos los resultados a la vista
+      res.render("administrador/actividad_fisica/create_acti_fisica", {
+        grupos_musculares: results.rows, // results.rows contiene los datos de la consulta
+      });
+    }
+  );
+});
+
+//Enrutamiento al crud
 const crud = require("./controllers/crud");
 
 //roles
@@ -412,14 +662,37 @@ router.post("/activarcliente", crud.activarcliente);
 
 //crear usuarios
 router.post("/crearusu", crud.crearusu);
+router.post("/update_cliente", crud.update_cliente);
 router.post("/desactivarusuario", crud.desactivarusuario);
 router.post("/activarusuario", crud.activarusuario);
 
-//crear mensualidades
-router.post("/mondas", crud.crearMensu);
+//crear convenio
+router.post("/crearConvenio", crud.crearConvenio);
+router.post("/update_convenio", crud.update_convenio);
+router.post("/desactivarconvenio", crud.desactivarconvenio);
+router.post("/activarconvenio", crud.activarconvenio);
 
 //INCIO DE SESION
 router.post("/register", crud.register);
 router.post("/login", crud.login);
+
+//mensualidades fijas
+// router.post("/crear_mensu", crud.crearMensu);
+
+//mensualidades_compradas
+
+//tallas
+router.post("/update_tallas", crud.update_tallas);
+
+//GRUPO MUSCULAR
+router.post("/crear_gm", crud.crear_gm);
+router.post("/update_gm", crud.update_gm);
+
+//ACTIVIDAD FISICA
+router.post("/crear_af", crud.crear_af);
+router.post("/update_af", crud.update_af);
+
+//PLAN DE ENTRENAMIENTO
+router.post("/crear_af", crud.crear_af);
 
 module.exports = router;
