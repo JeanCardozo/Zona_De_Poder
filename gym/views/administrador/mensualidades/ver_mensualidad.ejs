@@ -1,114 +1,366 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="../../src/output.css" />
+    <!-- Tailwind CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="../../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
+
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Ver mensualidades</title>
+    <title>Ver Mensualidad</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
+    <%- include('../plantillas/navbar.ejs') %>
 
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
-    <div class="w-full bg-blue-500">
-      <h1 class="text-6xl text-center">MENSUALIDADES</h1>
+    <div class="flex justify-center p-5">
       <div class="container">
-        <a href="/crear_mensualidad" class="btn btn-outline-primary mt-4">
-          <i class="bx bx-plus-circle br-md"></i> Crear Mensualidad
-        </a>
-        <a href="/index_admin" class="btn btn-outline-danger mt-4 bg-red-500">Volver</a>
-        <table class="table table-striped table table-bordered border-primary">
-          <thead class="bg-primary text-white">
-            <tr class="bg-blue-500">
-              <th scope="col" class="text-red-800">IDENTIFICACION</th>
-              <th scope="col">Total Pagar</th>
-              <th scope="col">Tipo Mensualidad</th>
-              <th scope="col">Tiempo Plan</th>
-              <th scope="col">ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% results.forEach((mensu) => { %>
-              <tr>
-                <td><%= mensu.id_mensualidad%></td>
-                <td><%= mensu.total_pagar %></td>
-                <td><%= mensu.tipo_de_mensualidad %></td>
-                <td><%= mensu.tiempo_plan %></td>
-
-                <td>
-                  <a href="/actualizar_clientes/<%= mensu.id %>" class="btn btn-outline-info">Editar</a>
-                  <% if (mensu.estado === 'Inactivo') { %>
-                    <form action="/activarcliente" method="post" style="display: inline">
-                      <input type="hidden" name="id" id="id" value="<%= mensu.id %>" />
-                      <button type="submit" class="btn btn-outline-success">Activar</button>
-                    </form>
-                  <% } else if(mensu.estado === 'Activo') { %>
-                    <form action="/desactivarcliente" method="post" style="display: inline">
-                      <input type="hidden" name="id" id="id" value="<%= mensu.id %>" />
-                      <button type="submit" class="btn btn-outline-danger">Desactivar</button>
-                    </form>
-                  <% } %>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
+        <div class="flex space-x-4 my-4">
+          <a
+            href="#"
+            class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+            id="crearMensualidadBtn"
+          >
+            <i class="bx bx-plus-circle mr-2 br-md"></i>Crear Mensualidad
+          </a>
+          <a
+            href="/index_admin"
+            class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+          >
+            Volver
+          </a>
+        </div>
+        <div class="max-w-7xl mx-auto p-4">
+          <div class="overflow-x-auto">
+            <table
+              class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
+            >
+              <thead class="bg-gray-500 text-white text-center">
+                <tr>
+                  <th scope="col" class="px-4 py-6 text-sm font-medium">
+                    IDENTIFICACION
+                  </th>
+                  <th scope="col" class="px-4 py-6 text-sm font-medium">
+                    Total Pagar
+                  </th>
+                  <th scope="col" class="px-4 py-6 text-sm font-medium">
+                    Tipo Mensualidad
+                  </th>
+                  <th scope="col" class="px-4 py-6 text-sm font-medium">
+                    Tiempo Plan
+                  </th>
+                  <th scope="col" class="px-4 py-6 text-sm font-medium">
+                    ACCIONES
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="pagination" class="w-full flex justify-center"></div>
       </div>
-   
+    </div>
+
+    <script defer>
+      const divPagination = document.getElementById("pagination");
+      let datos = [];
+      const itemsPorPagina = 5;
+
+      async function getData() {
+        try {
+          const response = await fetch("/verMensualidades", {
+            method: "POST",
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              "La solicitud no fue exitosa: " + response.statusText
+            );
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("Error al obtener datos:", error);
+          return [];
+        }
+      }
+
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from(
+          { length: totalPages },
+          (_, i) =>
+            `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${
+              i + 1
+            }">${i + 1}</button>`
+        ).join("");
+
+        divPagination.addEventListener("click", (e) => {
+          if (e.target.tagName === "BUTTON") {
+            mostrarPagina(parseInt(e.target.dataset.page));
+          }
+        });
+      }
+
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = datosParaMostrar
+          .map(
+            (dato, index) => `
+          <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+            index % 2 == 0 && "bg-gray-100"
+          }">
+            <td class="p-2">${dato.id_mensualidad}</td>
+            <td class="p-2">${dato.total_pagar}</td>
+            <td class="p-2">${dato.tipo_de_mensualidad}</td>
+            <td class="p-2">${dato.tiempo_plan}</td>
+            <td class="flex justify-center gap-2 px-6 py-4 whitespace-nowrap">
+              <a
+                href="#"
+                class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700 updateMensualidadBtn"
+                data-id="${dato.id_mensualidad}"
+              >
+                Editar
+              </a>
+              <a
+                class="cursor-pointer px-2 py-1 bg-red-500 text-white rounded-md flex items-center justify-center hover:bg-red-700"
+                onclick="verificar('${dato.id_mensualidad}')"
+              >Borrar</a>
+            </td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+
+      inicializar();
+    </script>
+
+    <script>
+      document
+        .getElementById("crearMensualidadBtn")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+
+          fetch("/get_mensu_convenio")
+            .then((response) => response.json())
+            .then((data) => {
+              let selectOptions =
+                '<option value="" disabled selected>Seleccione un convenio</option>';
+
+              data.forEach(function (con) {
+                selectOptions += `<option value="${con.id}">${con.tipo_de_mensualidad}</option>`;
+              });
+
+              Swal.fire({
+                title: "Crear Mensualidad",
+                html: `
+                <form id="MensualidadForm" action="/crear_mensualidad" method="post" class="space-y-4">
+                  <div>
+                    <label for="id" class="block text-sm font-medium text-gray-700">IdentificaciĆĀÄĀ³n</label>
+                    <input type="number" id="id" name="id" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                  </div>
+                  <div>
+                    <label for="con" class="block text-sm font-medium text-gray-700">Convenios</label>
+                    <select id="con" name="con" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                      ${selectOptions}
+                    </select>
+                  </div>
+                  <div>
+                    <label for="pagar" class="block text-sm font-medium text-gray-700">Total a pagar</label>
+                    <input type="number" id="pagar" name="pagar" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                  </div>
+                  <div>
+                    <label for="tiempo" class="block text-sm font-medium text-gray-700">Tiempo del plan</label>
+                    <select id="tiempo" name="tiempo" required onchange="actualizarValores()" class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                      <option value="">Seleccione un tiempo del plan</option>
+                      <option value="15 dias">15 dĆĀÄĀ­as</option>
+                      <option value="1 Mes">1 Mes</option>
+                      <option value="3 Meses">3 Meses</option>
+                      <option value="6 Meses">6 Meses</option>
+                      <option value="1 AĆĀÄĀ±o">1 AĆĀÄĀ±o</option>
+                    </select>
+                  </div>
+                  <input type="hidden" name="meses" id="meses" value="0">
+                  <input type="hidden" name="dias" id="dias" value="0">
+                </form>
+              `,
+                confirmButtonText: "Confirmar",
+                confirmButtonClass: "btn-confirmar",
+                cancelButtonText: "Cancelar",
+                cancelButtonClass: "btn-cancelar",
+                showCancelButton: true,
+                focusConfirm: false,
+                preConfirm: () => {
+                  const form =
+                    Swal.getPopup().querySelector("#MensualidadForm");
+                  form.submit();
+                },
+              });
+            })
+            .catch((error) =>
+              console.error("Error al obtener los convenios:", error)
+            );
+        });
+
+      function actualizarValores() {
+        const tiempo = document.getElementById("tiempo").value;
+        let meses = 0;
+        let dias = 0;
+
+        switch (tiempo) {
+          case "15 dias":
+            dias = 15;
+            break;
+          case "1 Mes":
+            meses = 1;
+            break;
+          case "3 Meses":
+            meses = 3;
+            break;
+          case "6 Meses":
+            meses = 6;
+            break;
+          case "1 AĆĀÄĀ±o":
+            meses = 12;
+            break;
+        }
+
+        document.getElementById("meses").value = meses;
+        document.getElementById("dias").value = dias;
+      }
+
+      function verificar(id) {
+        Swal.fire({
+          title: "ĆĀÄĀ¦EstĆĀÄĀĀs seguro?",
+          text: "ĆĀÄĀĀNo podrĆĀÄĀĀs revertir esto!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "SĆĀÄĀ­, bĆĀÄĀ³rralo",
+          confirmButtonClass: "btn-confirmar",
+          cancelButtonText: "No, cancelar",
+          cancelButtonClass: "btn-cancelar",
+          reverseButtons: true,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "/eliminar_mensualidad/" + id;
+          }
+        });
+      }
+
+      document.querySelector("tbody").addEventListener("click", function (e) {
+        if (e.target.classList.contains("updateMensualidadBtn")) {
+          e.preventDefault();
+          const mensualidadId = e.target.dataset.id;
+
+          fetch(`/actualizar_mensualidad/${mensualidadId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              console.log("mondades", data);
+              const mensualidades = data.mensualidades[0];
+              const convenios = data.mensualidadConvencional;
+
+              let selectOptions = convenios
+                .map(
+                  (convenio) =>
+                    `<option value="${convenio.id}" ${
+                      convenio.id === mensualidades.id_mensu_convencional
+                        ? "selected"
+                        : ""
+                    }>${convenio.tipo_de_mensualidad}</option>`
+                )
+                .join("");
+
+              Swal.fire({
+                title: "Actualizar Mensualidad",
+                html: `
+            <form id="UpdateMensualidadForm" action="/actualizar_mensualidad/${mensualidadId}" method="post" class="space-y-4">
+              <div>
+                <label for="id" class="block text-sm font-medium text-gray-700">Identificación</label>
+                <input type="number" id="id" name="id" value="${mensualidades.id_mensualidad}" disabled required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+              </div>
+              <div>
+                <label for="con" class="block text-sm font-medium text-gray-700">Convenios</label>
+                <select id="con" name="con" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                  ${selectOptions}
+                </select>
+              </div>
+              <div>
+                <label for="pagar" class="block text-sm font-medium text-gray-700">Total a pagar</label>
+                <input type="number" id="pagar" name="pagar" value="${mensualidades.total_pagar}" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+              </div>
+              <div>
+                <label for="tiempo" class="block text-sm font-medium text-gray-700">Tiempo del plan</label>
+                <select id="tiempo" name="tiempo" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                  <option value="${mensualidades.tiempo_plan}" selected>${mensualidades.tiempo_plan}</option>
+                  <option value="15 dias">15 días</option>
+                  <option value="1 Mes">1 Mes</option>
+                  <option value="3 Meses">3 Meses</option>
+                  <option value="6 Meses">6 Meses</option>
+                  <option value="1 Año">1 Año</option>
+                </select>
+              </div>
+            </form>
+          `,
+                confirmButtonText: "Actualizar",
+                confirmButtonClass: "btn-confirmar",
+                cancelButtonText: "Cancelar",
+                cancelButtonClass: "btn-cancelar",
+                showCancelButton: true,
+                focusConfirm: false,
+                preConfirm: () => {
+                  const form = Swal.getPopup().querySelector(
+                    "#UpdateMensualidadForm"
+                  );
+                  form.submit();
+                },
+              });
+            })
+            .catch((error) =>
+              console.error(
+                "Error al obtener los datos de la mensualidad:",
+                error
+              )
+            );
+        }
+      });
+    </script>
   </body>
 </html>

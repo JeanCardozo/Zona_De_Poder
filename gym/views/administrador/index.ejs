@@ -8,257 +8,138 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
 
-    <style>
-      .bg-fondo {
-        background-image: url("../../../imgs/fondo.jpeg");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        min-height: 100vh;
-      }
-    </style>
     <title>DashBoard Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body class="bg-fondo">
-    <nav class="bg-white border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 p-1">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <a class="navbar-brand text-lg font-semibold" href="#">Navbar</a>
-            <!-- <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <a
-                href="#"
-                class="border-b-2 border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
-                >Home</a
-              >
-              <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >Link</a
-              >
-              <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-not-allowed"
-                >Disabled</a
-              >
-            </div> -->
-          </div>
-          <div class="flex items-center justify-center w-full p-4">
-            <form class="flex w-full max-w-4xl">
-              <input
-                class="max-w-5xl flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2"
-                type="search"
-                placeholder="¿Que deseas buscar?..."
-                aria-label="Search"
-              />
-              <div class="flex justify-end">
-                <button
-                  class="ml-2 btn bg-green-500 text-white rounded-2xl px-4 py-2"
-                  type="submit"
-                >
-                  Buscar
-                </button>
+    <%- include('./plantillas/navbar.ejs') %>
 
-                <a
-                  class="ml-2 py-2 px-4 border border-transparent rounded-2xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
-                  href="/logout"
-                  >Logout</a
-                >
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </nav>
+    <canvas id="barChart" width="400" height="40"></canvas>
 
-    <div class="relative">
-      <!-- Botón para desplegar la barra lateral -->
+    <div class="flex justify-center items-start pt-10 h-screen">
       <a
-        href="#"
-        id="sidebarToggle"
-        class="fixed top-4 left-4 z-50 text-2xl text-gray-800 transition-transform duration-300"
-        >☰</a
+        href="https://biz.payulatam.com/B0f734f74854B55"
+        target="_blank"
+        class="flex justify-center"
       >
+        <img
+          src="https://ecommerce.payulatam.com/img-secure-2015/boton_pagar_mediano.png"
+        />
+      </a>
+    </div>
 
-      <!-- Barra lateral -->
-      <div
-        id="sidebar"
-        class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out"
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden"></div>
+
+    <div
+      id="loginContainer"
+      class="fixed inset-0 flex items-center justify-center hidden z-50"
+    >
+      <form
+        id="formularioValidacion"
+        class="relative bg-white p-8 rounded-lg shadow-lg max-w-sm w-full"
+        action="/registrarIngreso"
+        method="POST"
       >
-        <div class="">
-          <div class="sidebar-container flex flex-col items-center">
-            <h2 class="font-bold mb-5 p-5">Menú</h2>
-          </div>
-          <h3 class="text-2xl font-bold mb-5 p-5 text-center">
-            Componentes de usuarios
-          </h3>
+        <!-- Botón de escape -->
+        <button
+          id="closeButton"
+          type="button"
+          class="absolute top-2 left-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+        >
+          &#x2715;
+        </button>
 
-          <div class="space-y-2 w-full h-full w-64 bg-gray-900">
-            <ul class="p-3">
-              <li>
-                <a
-                  href="/ver_roles"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Roles"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Roles</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_clientes"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="/ruta/a/imagen-clientes.png"
-                    alt="Icono Clientes"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Clientes</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_usuarios"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Usuarios"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Usuarios</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_talla"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Tallas"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Tallas</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_convenio"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Convenios"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Convenios</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_mensualidad"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Mensualidad"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Mensualidad</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_ventas"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Convenios"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Ventas</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_grupo_muscular"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Convenios"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Grupo Muscular</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_acti_fisica"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Convenios"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Actividad Fisica</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/ver_plan_ent"
-                  class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
-                >
-                  <img
-                    src="../../imgs/"
-                    alt="Icono Convenios"
-                    class="w-6 h-6 mr-3"
-                  />
-                  <span>Plan De Entrenamiento</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-          <h3 class="text-2xl font-bold mb-5 p-5 text-center">
-            Acceso y Autenticacion
-          </h3>
-        </div>
-
-        <ul></ul>
-      </div>
+        <label
+          for="campoTexto"
+          class="block text-lg font-semibold text-gray-700 mb-4"
+          style="font-family: 'Montserrat', sans-serif; color: #2c3e50"
+        >
+          INGRESE CONTRASEÑA DESPUÉS DEL *
+        </label>
+        <input
+          type="text"
+          id="campoTexto"
+          name="identificacion"
+          required
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input type="submit" style="display: none" />
+      </form>
     </div>
 
     <script>
-      document
-        .getElementById("sidebarToggle")
-        .addEventListener("click", function (e) {
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "*") {
           e.preventDefault();
-          const sidebar = document.getElementById("sidebar");
-          const toggleButton = document.getElementById("sidebarToggle");
+          const campoTexto = document.getElementById("campoTexto");
+          campoTexto.value = "*"; // Añadir el '*' automáticamente en el campo de texto
 
-          sidebar.classList.toggle("translate-x-0");
-          sidebar.classList.toggle("-translate-x-full");
+          // Mostrar y enfocar el formulario
+          document.getElementById("overlay").classList.remove("hidden");
+          document.getElementById("loginContainer").classList.remove("hidden");
+          campoTexto.focus(); // Enfocar el campo de texto
+        }
+      });
 
-          if (sidebar.classList.contains("translate-x-0")) {
-            toggleButton.style.transform = "translateX(16rem)";
-          } else {
-            toggleButton.style.transform = "translateX(0)";
+      document
+        .getElementById("campoTexto")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault(); // Prevenir el comportamiento por defecto de Enter
+            const identificacionConAsterisco =
+              document.getElementById("campoTexto").value;
+
+            // Validar que el campo no esté vacío después de *
+            if (identificacionConAsterisco === "*") {
+              alert("Debe ingresar su identificación después del *");
+            } else {
+              // Enviar la identificación completa como contraseña al backend
+              document.getElementById("formularioValidacion").submit();
+            }
           }
         });
+
+      // Cerrar el formulario al hacer clic en el botón de escape
+      document
+        .getElementById("closeButton")
+        .addEventListener("click", function () {
+          document.getElementById("overlay").classList.add("hidden");
+          document.getElementById("loginContainer").classList.add("hidden");
+        });
     </script>
+
+    <% if (typeof alert !== "undefined") { %>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        Swal.fire({
+          title: "<%= alertTitle %>",
+          text: "<%= alertMessage %>",
+          icon: "<%= alertIcon %>",
+          showConfirmButton: true, // Hacer que el usuario tenga que presionar OK
+        }).then(() => {
+          // Reproducir el sonido al cerrar la alerta
+          const sonido = "<%= typeof sonido !== 'undefined' ? sonido : '' %>";
+          if (sonido) {
+            const audio = new Audio(sonido);
+            audio.play().catch((error) => {
+              console.log("Error al reproducir el audio:", error);
+            });
+          }
+
+          // Redirigir después de que el usuario presione OK
+          const ruta = "<%= typeof ruta !== 'undefined' ? ruta : '' %>";
+          if (ruta) {
+            window.location.href = ruta;
+          }
+        });
+      });
+    </script>
+    <% } %>
   </body>
 </html>

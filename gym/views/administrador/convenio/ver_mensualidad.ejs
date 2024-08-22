@@ -3,126 +3,197 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="../../src/output.css" />
+    <!-- Tailwind CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Ver Convenios</title>
+
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
+    <title>Ver Convenio</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
+    <%- include('../plantillas/navbar.ejs') %>
+    <div class="flex justify-right mt-4 p-5">
+      <a
+        href="#"
+        class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        id="crearConvenioBtn"
+      >
+        <i class="bx bx-plus-circle"></i> Crear Convenio
+      </a>
+      <a
+        href="/index_admin"
+        class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Volver
+      </a>
+    </div>
+    <div class="max-w-7xl mx-auto p-4">
+      <div class="overflow-x-auto">
+        <table
+          class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
         >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
-        </div>
+          <thead>
+            <tr class="bg-gray-500 text-white text-center">
+              <th scope="col" class="px-4 py-6">IDENTIFICACION</th>
+              <th scope="col" class="px-4 py-6">TIPO DE CONVENIO</th>
+              <th scope="col" class="px-4 py-6">ESTADO</th>
+              <th scope="col" class="px-4 py-6">ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <% let rowCounter = 0; %> <% results.forEach((mensu) => { %>
+            <tr
+              class="hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
+            >
+              <td class="px-4 py-2"><%= mensu.id %></td>
+              <td class="px-4 py-2"><%= mensu.tipo_de_mensualidad %></td>
+              <td class="px-4 py-2"><%= mensu.estado %></td>
+              <td class="px-4 py-2 flex justify-center gap-2">
+                <a
+                  href="#"
+                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateconvenioBtn"
+                  data-id="<%= mensu.id %>"
+                >
+                  Editar
+                </a>
+                <% if (mensu.estado === 'Inactivo') { %>
+                <form action="/activarconvenio" method="post" class="inline">
+                  <input type="hidden" name="id" value="<%= mensu.id %>" />
+                  <button
+                    type="submit"
+                    class="bg-green-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                  >
+                    Activar
+                  </button>
+                </form>
+                <% } else if (mensu.estado === 'Activo') { %>
+                <form action="/desactivarconvenio" method="post" class="inline">
+                  <input type="hidden" name="id" value="<%= mensu.id %>" />
+                  <button
+                    type="submit"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                  >
+                    Desactivar
+                  </button>
+                </form>
+                <% rowCounter++; %> <% } %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
       </div>
-    </nav>
-    <div class="w-full bg-blue-500">
-      <h1 class="text-6xl text-center">CONVENIOS</h1>
     </div>
-    <div class="container">
-      <a href="/create_convenio" class="btn btn-outline-primary mt-4"
-        ><i class="bx bx-plus-circle br-md"></i> Crear Mensualidad</a
-      >
-      <a href="/index_admin" class="btn btn-outline-danger mt-4 bg-red-500">
-        Volver</a
-      >
-      <table class="table table-striped table table-bordered border-primary">
-        <thead class="bg-primary text-white">
-          <tr class="bg-blue-500">
-            <th scope="col" class="text-red-800">IDENTIFICACION</th>
-            <th scope="col">TIPO DE MENSUALIDAD</th>
-            <th scope="col">ESTADO</th>
-            <th scope="col">ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% results.forEach((mensu) => { %>
-          <tr>
-            <td><%= mensu.id %></td>
-            <td><%= mensu.tipo_de_mensualidad %></td>
-            <td><%= mensu.estado%></td>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            <td class="px-4 py-2 text-center">
-              <a
-                href="/actualizar_convenio/<%= mensu.id %>"
-                class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
-                >Editar</a
-              >
-              <% if (mensu.estado === 'Inactivo') { %>
-              <form action="/activarconvenio" method="post" class="inline">
-                <input type="hidden" name="id" value="<%= mensu.id %>" />
-                <button
-                  type="submit"
-                  class="btn border border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
-                >
-                  Activar
-                </button>
+    <!-- un modal para crear el convenio ahi melo caramelo -->
+    <script>
+      document
+        .getElementById("crearConvenioBtn")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          Swal.fire({
+            title: "Crear Convenio",
+            html: `
+                  <form id="convenioForm" action="/crearConvenio" method="post" class="space-y-4">
+          <div>
+            <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo de Convenio</label>
+            <input type="text" id="tipo" name="tipo" required class="bg-gray-50 border border-gray-300
+             text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full
+              p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+          </div>
+        </form>
+
+          `,
+            confirmButtonClass: "btn-confirmar",
+            cancelButtonClass: "btn-cancelar",
+            customClass: {
+              confirmButton: "btn-confirmar",
+              cancelButton: "btn-cancelar",
+            },
+            showCancelButton: true,
+            confirmButtonText: "Guardar",
+            cancelButtonText: "Cancelar",
+            preConfirm: () => {
+              document.getElementById("convenioForm").submit();
+            },
+          });
+        });
+    </script>
+
+    <script>
+      document.querySelectorAll(".updateconvenioBtn").forEach((button) => {
+        button.addEventListener("click", function (e) {
+          e.preventDefault();
+          const mensuId = this.dataset.id; // Obtén el ID del rol a actualizar
+
+          // Realiza la solicitud GET para obtener los datos del rol
+          fetch(`/actualizar_convenio/${mensuId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.error) {
+                Swal.fire("Error", data.error, "error");
+              } else {
+                Swal.fire({
+                  title: "Actualizar convenio",
+                  html: `
+              <form id="updateConvenioForm" action="/update_convenio" method="post">
+                <input type="hidden" name="id" value="${mensuId}">
+                <div class="mb-3">
+                  <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo de Rol</label>
+                  <input type="text" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300
+                 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="tipo" name="tipo" value="${data.tipo_de_mensualidad}" required>
+                </div>
               </form>
-              <% } else if (mensu.estado === 'Activo') { %>
-              <form action="/desactivarconvenio" method="post" class="inline">
-                <input type="hidden" name="id" value="<%= mensu.id %>" />
-                <button
-                  type="submit"
-                  class="btn border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                >
-                  Desactivar
-                </button>
-              </form>
-              <% } %>
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+            `,
+                  confirmButtonClass: "btn-confirmar",
+                  cancelButtonClass: "btn-cancelar",
+                  customClass: {
+                    confirmButton: "btn-confirmar",
+                    cancelButton: "btn-cancelar",
+                  },
+                  showCancelButton: true,
+                  confirmButtonText: "Guardar",
+                  cancelButtonText: "Cancelar",
+                  preConfirm: () => {
+                    document.getElementById("updateConvenioForm").submit();
+                  },
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              Swal.fire(
+                "Error",
+                "Ocurrió un error al obtener los datos del rol",
+                "error"
+              );
+            });
+        });
+      });
+    </script>
   </body>
 </html>

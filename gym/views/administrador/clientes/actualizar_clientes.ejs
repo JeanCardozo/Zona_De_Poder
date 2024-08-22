@@ -73,17 +73,13 @@
         <div class="card-header">Editar Registro</div>
         <div class="card-body">
           <form action="/update_cliente" method="post">
-            <div class="mb-3">
-              <label for="id" class="form-label">IDENTIFICACION</label>
-              <input
-                type="number"
-                class="form-control"
-                id="id"
-                name="id"
-                tabindex="1"
-                value="<%= user.id_cliente %>"
-              />
-            </div>
+            <!-- Campo oculto para enviar el ID del cliente -->
+            <input
+              type="hidden"
+              id="id"
+              name="id"
+              value="<%= user.id_cliente %>"
+            />
             <div class="mb-3">
               <label for="nombre" class="form-label">NOMBRE</label>
               <input
@@ -93,6 +89,7 @@
                 name="nombre"
                 value="<%= user.nombre %>"
                 tabindex="1"
+                required
               />
             </div>
 
@@ -105,18 +102,22 @@
                 name="apellido"
                 value="<%= user.apellido %>"
                 tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
               <label for="edad" class="form-label">EDAD</label>
               <input
-                type="text"
+                type="number"
                 class="form-control"
                 id="edad"
                 name="edad"
+                max="100"
+                min="1"
                 value="<%= user.edad %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -127,7 +128,6 @@
                 class="form-select"
                 required
               >
-           
                 <option value="" disabled <%= !user.sexo ? 'selected' : '' %>>Seleccione el Sexo</option>
                 <option value="Masculino" <%= user.sexo === "Masculino" ? 'selected' : '' %>>Masculino</option>
                 <option value="Femenino" <%= user.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
@@ -143,6 +143,7 @@
                 name="correo_electronico"
                 value="<%= user.correo_electronico %>"
                 tabindex="1"
+                required
               />
             </div>
 
@@ -155,6 +156,7 @@
                 name="numero_telefono"
                 value="<%= user.numero_telefono %>"
                 tabindex="1"
+                required
               />
             </div>
 
@@ -166,7 +168,7 @@
                 id="id_mensualidad"
                 required
               >
-                <option value="" disabled>Seleccione una mensualidad</option>
+                <option value="" disabled required>Seleccione una mensualidad</option>
                 <% mensualidades.forEach(function(mensual) { %>
                   <option value="<%= mensual.id_mensu %>" <%= mensual.id_mensu === user.id_mensualidad ? 'selected' : '' %>>
                     <%= mensual.tiempo_plan %> - <%= mensual.total_pagar %>

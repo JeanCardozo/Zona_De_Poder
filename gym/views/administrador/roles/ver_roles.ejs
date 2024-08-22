@@ -1,111 +1,206 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+    <!-- Tailwind CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="../../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Crud Clientes</title>
+
+    <style>
+    .btn-confirmar {
+      background-color: green;
+      color: white;
+    }
+    .btn-confirmar:hover {
+      background-color: #22C55E; 
+    }
+
+    .btn-cancelar {
+      background-color: red; 
+      color: white;
+    }
+    .btn-cancelar:hover {
+      background-color: #c53222c4; 
+    }
+    </style>
+
+    <title>Ver roles</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
+    <%- include('../plantillas/navbar.ejs') %>
 
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
+    <div class="px-10 mx-auto mt-4 p-5">
+      <div class="flex justify-start gap-2 mb-4">
+          <a
+            href="#"
+            class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+            id="crearRolesBtn">
+            
+            <i class="bx bx-plus-circle mr-2 br-md"></i>Crear Rol
+            </a
+          >
+          <a
+            href="/index_admin"
+            class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+            >Volver</a
+          >
+        </div>
+
+        <div class="max-w-7xl mx-auto p-4">
+          <div class="overflow-x-auto">
+            <table
+              class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
+            >
+              <thead class="bg-gray-400 text-white text-center">
+                <tr>
+                  <th
+                    class="text-left py-3 px-6 uppercase font-semibold text-sm"
+                  >
+                    ID
+                  </th>
+                  <th class="py-4 px-6 uppercase font-semibold text-sm">
+                    ROLES
+                  </th>
+                  <th class="py-4 px-6 uppercase font-semibold text-sm">
+                    ACCIONES
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-700">
+                <% let rowCounter = 0; %> <% results.forEach((roles) => { %>
+                <tr
+                  class="text-center hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
+                >
+                  <td class="text-left py-3 px-4"><%= roles.id %></td>
+                  <td class=" py-3 px-4"><%= roles.tipo_de_rol %></td>
+                  <td class=" flex gap-2  rounded-md justify-center p-4">
+                    <a
+                      href="#"
+                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateRolesBtn"
+                      data-id="<%= roles.id %>"
+                    >
+                      Editar
+                  </a>
+                    <a
+                      onclick="verificar('<%= roles.id %>')"
+                      class="cursor-pointer px-2 py-1 bg-red-500 text-white rounded-md
+                               
+                      hover:bg-red-700"                      >Borrar</a
+                    >
+                  </td>
+                </tr>
+                <% rowCounter++; %> <% }) %>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </nav>
-
-    <div class="container">
-      <a href="/create_rol" class="btn btn-outline-primary mt-4"
-        ><i class="bx bx-plus-circle br-md"></i> Crear Usuario</a
-      >
-      <a href="/index_admin" class="btn btn-outline-danger mt-4"> Volver</a>
-      <table class="table table-borderd table-strped text-center mt-4">
-        <thead class="bg-primary text-white">
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">ROLES</th>
-            <th scope="col">ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% results.forEach((roles) => { %>
-          <tr>
-            <td id="iden"><%= roles.id %></td>
-            <td><%= roles.tipo_de_rol %></td>
-            <td>
-              <a href="/actualizar/<%= roles.id %>" class="btn btn-outline-info"
-                >Editar</a
-              >
-
-              <a
-                class="btn btn-outline-danger"
-                onclick="verificar('<%= roles.id %>')"
-                >Borrar</a
-              >
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- un modal para crear el roles ahi melo caramelo -->
+    <script>
+      document
+        .getElementById("crearRolesBtn")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          Swal.fire({
+            title: "Crear roles",
+            html: `
+                <form id="convenioForm" action="/crearRoles" method="post">
+                  <div class="mb-6">
+                    <label for="rol" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Tipo de rol</label>
+                    <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                     focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
+                      dark:placeholder-gray-400 dark:text-white" id="rol" name="rol" required>
+                  </div>
+                </form>
+                `,
+            confirmButtonClass : 'btn-confirmar',
+            cancelButtonClass : 'btn-cancelar',
+            customClass: {
+              confirmButton: 'btn-confirmar',
+              cancelButton: 'btn-cancelar'
+            },
+            showCancelButton: true,
+            confirmButtonText: "Guardar",
+            cancelButtonText: "Cancelar",
+            preConfirm: () => {
+              document.getElementById("convenioForm").submit();
+            },
+          });
+        });
+    </script>
+
+    <!-- modal para actualizar roles nitidos nitidos -->
+    <script>
+      // Selecciona todos los botones de actualizar por clase o un atributo común
+document.querySelectorAll(".updateRolesBtn").forEach(button => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    const rolId = this.dataset.id; // Obtén el ID del rol a actualizar
+
+    // Realiza la solicitud GET para obtener los datos del rol
+    fetch(`/actualizar/${rolId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          Swal.fire("Error", data.error, "error");
+        } else {
+          Swal.fire({
+            title: "Actualizar Rol",
+            html: `
+            <form id="updateRolesForm" action="/updateRoles" method="post" class="space-y-4">
+              <input type="hidden" name="id" value="${rolId}">
+              <div>
+                <label for="tipo_de_rol" class="block text-sm font-medium text-gray-700">Tipo de Rol</label>
+                <input type="text" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300
+                 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="tipo_de_rol" name="tipo_de_rol" value="${data.tipo_de_rol}" required>
+              </div>
+            </form>
+            `,
+            confirmButtonClass : 'btn-confirmar',
+            cancelButtonClass : 'btn-cancelar',
+            customClass: {
+              confirmButton: 'btn-confirmar',
+              cancelButton: 'btn-cancelar'
+            },
+            showCancelButton: true,
+            confirmButtonText: "Guardar",
+            cancelButtonText: "Cancelar",
+            preConfirm: () => {
+              document.getElementById("updateRolesForm").submit();
+            },
+          });
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        Swal.fire("Error", "Ocurrió un error al obtener los datos del rol", "error");
+      });
+  });
+});
+
+
+    </script>
+    <!-- melos no melos -->
+
     <script>
       function verificar(id) {
         const swalWithBootstrapButtons = Swal.mixin({
           customClass: {
-            confirmButton: "btn btn-success",
-            cancelButton: "btn btn-danger",
+            confirmButton:
+              "bg-green-500 hover:bg-green-700 px-5 text-white font-bold py-2 px-4 rounded- ml-4",
+            cancelButton:
+              "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded",
           },
           buttonsStyling: false,
         });
@@ -124,11 +219,11 @@
             if (result.isConfirmed) {
               window.location.href = `/eliminarRol/${id}`;
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-              swalWithBootstrapButtons.fire({
-                title: "Cancelado",
-                text: "Tus datos están a salvo :)",
-                icon: "error",
-              });
+              swalWithBootstrapButtons.fire(
+                "Cancelado",
+                "Tus datos están a salvo :)",
+                "error"
+              );
             }
           });
       }

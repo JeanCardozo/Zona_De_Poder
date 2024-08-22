@@ -1,0 +1,256 @@
+<head>
+  <style>
+    .bg-fondo {
+      background-image: url("https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo.jpeg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+
+<nav class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 p-1">
+    <div class="flex justify-between h-16">
+      <div class="flex"></div>
+      <div class="flex items-center justify-center w-full p-4">
+        <form class="flex w-full max-w-4xl" onsubmit="return false;">
+          <input
+            id="inputSearch"
+            class="max-w-5xl flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2"
+            type="search"
+            placeholder="¿Qué deseas buscar?..."
+            aria-label="Search"
+          />
+          <div class="flex justify-end pl-80">
+            <button
+              id="searchButton"
+              class="ml-2 btn bg-green-500 text-white rounded-2xl px-4 py-2"
+              type="submit"
+            >
+              Buscar
+            </button>
+            <a
+              class="ml-2 py-2 px-4 border border-transparent rounded-2xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+              href="/logout"
+            >
+              Logout
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="relative">
+  <!-- Botón para desplegar la barra lateral -->
+  <a
+    href="#"
+    id="sidebarToggle"
+    class="fixed top-4 left-4 z-50 text-2xl text-gray-800 transition-transform duration-300"
+    >☰</a
+  >
+
+  <!-- Barra lateral -->
+  <div
+    id="sidebar"
+    class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out"
+  >
+    <div>
+      <div class="sidebar-container flex flex-col items-center">
+        <h2 class="font-bold mb-5 p-5">Menú</h2>
+      </div>
+      <h3 class="text-2xl font-bold mb-5 p-5 text-center">
+        Componentes de usuarios
+      </h3>
+
+      <div class="space-y-2 w-full h-full w-64 bg-gray-900">
+        <ul class="p-3">
+          <li>
+            <a
+              href="/ver_roles"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/usuario.png"
+                alt="Icono Roles"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Roles</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_clientes"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/2_manes.png"
+                alt="Icono Usuarios"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Clientes</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_usuarios"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/2_manes.png"
+                alt="Icono Usuarios"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Usuarios</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_talla"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/medicion.png"
+                alt="Icono Tallas"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Tallas</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_convenio"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/3_manes.png"
+                class="w-6 h-6 mr-3"
+                alt="3-manes"
+              />
+
+              <span>Convenios</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_mensualidad"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/billete-de-banco.png"
+                alt="Icono Mensualidad"
+                class="w-7 h-8 mr-3"
+              />
+              <span>Mensualidad</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_ventas"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/grafica%20de%20subida.png"
+                alt="Icono Convenios"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Ventas</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_grupo_muscular"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/musculo%20(1).png"
+                alt="Icono Convenios"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Grupo Muscular</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_acti_fisica"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/ejercicio.png"
+                alt="Icono Convenios"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Actividad Fisica</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/ver_plan_ent"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+            >
+              <img
+                src="https://raw.githubusercontent.com/JeanCardozo/audios/main/mancuernas.png"
+                alt="Icono Convenios"
+                class="w-6 h-6 mr-3"
+              />
+              <span>Plan De Entrenamiento</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <h3 class="text-2xl font-bold mb-5 p-5 text-center">
+        Acceso y Autenticacion
+      </h3>
+    </div>
+  </div>
+</div>
+
+<script>
+  document
+    .getElementById("sidebarToggle")
+    .addEventListener("click", function (e) {
+      e.preventDefault();
+      const sidebar = document.getElementById("sidebar");
+      const toggleButton = document.getElementById("sidebarToggle");
+
+      sidebar.classList.toggle("translate-x-0");
+      sidebar.classList.toggle("-translate-x-full");
+
+      if (sidebar.classList.contains("translate-x-0")) {
+        toggleButton.style.transform = "translateX(16rem)";
+      } else {
+        toggleButton.style.transform = "translateX(0)";
+      }
+    });
+
+  // Barra de Búsqueda
+  const inputSearch = document.getElementById("inputSearch");
+  const tableBody = document.getElementById("tableBody");
+
+  function filterTable() {
+    const filter = inputSearch.value.toUpperCase();
+    const rows = tableBody.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+      const cells = rows[i].getElementsByTagName("td");
+      let found = false;
+
+      for (let j = 0; j < cells.length; j++) {
+        if (cells[j].innerText.toUpperCase().indexOf(filter) > -1) {
+          found = true;
+          break;
+        }
+      }
+
+      rows[i].style.display = found ? "" : "none";
+    }
+  }
+
+  document
+    .getElementById("searchButton")
+    .addEventListener("click", filterTable);
+  inputSearch.addEventListener("keyup", filterTable);
+</script>

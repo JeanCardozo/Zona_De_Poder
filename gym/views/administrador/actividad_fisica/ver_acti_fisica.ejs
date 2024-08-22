@@ -3,122 +3,107 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+    <!-- Tailwind CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Crud Clientes</title>
-    <style>
-      .hide {
-        display: none;
-      }
-    </style>
+
+    <title>Ver Actividad Fisica</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex" id="searchForm">
-            <input
-              id="inputSearch"
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button
-              class="btn btn-outline-success"
-              type="button"
-              id="searchButton"
-            >
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
+    <%- include('../plantillas/navbar.ejs') %>
 
-    <div class="container">
-      <a href="/create_acti_fisica" class="btn btn-outline-primary mt-4"
-        ><i class="bx bx-plus-circle br-md"></i> Crear Actividad Fisica</a
-      >
-      <a href="/index_admin" class="btn btn-outline-danger mt-4"> Volver</a>
-      <table class="table table-bordered table-striped text-center mt-4">
-        <thead class="bg-primary text-white">
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">NOMBRE DEL EJERCICIO</th>
-            <th scope="col">SERIES</th>
-            <th scope="col">REPETICIONES</th>
-            <th scope="col">VIDEO DE EJEMPLO</th>
-            <th scope="col">GRUPO MUSCULAR</th>
-            <th scope="col">ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <% results.forEach((af) => { %>
-          <tr>
-            <td><%= af.af_id %></td>
-            <!-- Usar el alias correcto para el id de actividad física -->
-            <td><%= af.af_nombre %></td>
-            <!-- Usar el alias correcto para el nombre del ejercicio -->
-            <td><%= af.af_series %></td>
-            <!-- Usar el alias correcto para las series -->
-            <td><%= af.af_reps %></td>
-            <!-- Usar el alias correcto para las repeticiones -->
-            <td><%= af.af_video %></td>
-            <!-- Usar el alias correcto para el video de ejemplo -->
-            <td><%= af.gm_nombre %></td>
-            <!-- Usar el alias correcto para el nombre del grupo muscular -->
-            <td>
-              <a
-                href="/actualizar_f/<%= af.af_id %>"
-                class="btn btn-outline-info"
-                >Editar</a
+    <div class="px-10 mx-auto mt-4 p-5">
+      <a
+            href="#"
+            class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+            id="crearActividadBtn">
+            
+            <i class="bx bx-plus-circle mr-2 br-md"></i>Crear Actividad fisica
+            </a
+          >
+        <a
+          href="/index_admin"
+          class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+        >
+          Volver
+        </a>
+
+
+        <div class="max-w-7xl mx-auto p-4">
+          <div class="overflow-x-auto">
+              <table class="min-w-full table-auto text-xs
+               sm:text-sm lg:text-base text-left text-gray-500
+                dark:text-gray-400">
+          <thead class="bg-gray-500 text-white text-center">
+            <tr>
+              <th
+                scope="col"
+                class="px-4 py-6  text-xs font-medium uppercase tracking-wider"
               >
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
+                ID
+              </th>
+              <th
+                scope="col"
+                class="px-4py-6 text-xs font-medium uppercase tracking-wider"
+              >
+                NOMBRE DEL EJERCICIO
+              </th>
+              <th
+                scope="col"
+                class="px-4 py-6  text-xs font-medium uppercase tracking-wider"
+              >
+                GRUPO MUSCULAR
+              </th>
+              <th
+                scope="col"
+                class="px-4 py-6  text-xs font-medium uppercase tracking-wider"
+              >
+                ACCIONES
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 text-center">
+            <% let rowCounter = 0; %>
+
+            <% results.forEach((af) => { %>
+              <tr class="  hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>">
+                <td class=" text-left px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= af.af_id %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= af.af_nombre %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= af.gm_nombre %>
+              </td>
+              <td
+                class="flex justify-center py-4 whitespace-nowrap text-right text-sm font-medium"
+              >
+              <a
+              href="#"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateActividadBtn"
+              data-id="<%= af.af_id %>"
+            >
+              Editar
+          </a>
+              </td>
+            </tr>
+            <% rowCounter++; %>
+
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
     </div>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
       // Obtener elementos del DOM
@@ -153,5 +138,117 @@
       // Opcional: filtrar en tiempo real mientras se escribe
       inputSearch.addEventListener("keyup", filterTable);
     </script>
+
+
+<script>
+document
+  .getElementById("crearActividadBtn")
+  .addEventListener("click", function (e) {
+    e.preventDefault();
+
+    // Realizar una solicitud AJAX para obtener los grupos musculares
+    fetch('/get_grupos_musculares')
+      .then(response => response.json())
+      .then(data => {
+        let selectOptions = '<option value="" disabled selected>Seleccione un grupo muscular</option>';
+        
+        data.forEach(function (gm) {
+          selectOptions += `<option value="${gm.id}">${gm.nombre}</option>`;
+        });
+
+        Swal.fire({
+          title: "Crear Actividad física",
+          html: `
+          <form id="ActividadForm" action="/crear_af" method="post">
+            <div class="mb-3">
+              <div class="mb-3">
+                <label for="id" class="form-label">ID</label>
+                <input type="text" class="form-control" id="id" name="id" required>
+              </div>
+
+                <label for="gm" class="form-label">Grupos musculares</label>
+                <select id="gm" name="gm" class="form-select" aria-label="Default select example" required>
+                  ${selectOptions}
+                </select>
+            </div>
+            <div class="mb-3">
+              <label for="nombre_ejercicio" class="form-label">Nombre del ejercicio</label>
+              <input type="text" class="form-control" id="nombre_ejercicio" name="nombre_ejercicio" required>
+            </div>
+          </form>
+          `,
+          showCancelButton: true,
+          confirmButtonText: "Guardar",
+          cancelButtonText: "Cancelar",
+          preConfirm: () => {
+            document.getElementById("ActividadForm").submit();
+          },
+        });
+      })
+      .catch(error => console.error('Error al cargar los grupos musculares:', error));
+  });
+  </script>
+  <script>
+    document.querySelectorAll(".updateActividadBtn").forEach(button => {
+  button.addEventListener("click", function (e) {
+    e.preventDefault();
+    const ActividadId = this.dataset.id;
+
+    fetch(`/actualizar_f/${ActividadId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Datos recibidos:", data);
+        if (data.error) {
+          Swal.fire("Error", data.error, "error");
+        } else {
+          Swal.fire({
+            title: "Actualizar Actividad física",
+            html: `
+              <form id="updateActividadForm" action="/update_af" method="post">
+                <input type="hidden" name="id" value="${ActividadId}">
+                <div class="mb-3">
+                  <label for="gm" class="form-label">Grupos musculares</label>
+                  <select id="gm" name="gm" class="form-select" required>
+                    <option value="" disabled selected>Seleccione un grupo muscular</option>
+                    ${data.grupos_musculares.map(gm => `
+                      <option value="${gm.id}" ${gm.id === data.actividad_fisica.id_grupo_muscular ? 'selected' : ''}>
+                        ${gm.nombre}
+                      </option>
+                    `).join('')}
+                  </select>
+                  <br><br>
+                  <label for="actividad" class="form-label">Actividad física</label>
+                  <input type="text" class="form-control" id="actividad" name="actividad" value="${data.actividad_fisica.nombre}" required>
+                </div>
+              </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Guardar",
+            cancelButtonText: "Cancelar",
+            preConfirm: () => {
+              document.getElementById("updateActividadForm").submit();
+            },
+          });
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        Swal.fire("Error", "Ocurrió un error al obtener los datos del grupo muscular", "error");
+      });
+  });
+});
+
+  </script>
+  
+  
+  
+  
+  </script>
+
   </body>
 </html>

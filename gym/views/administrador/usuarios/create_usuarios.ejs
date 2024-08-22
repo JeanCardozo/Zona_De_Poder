@@ -78,88 +78,77 @@
                 id="id"
                 name="id"
                 tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
-              <label for="rol" class="form-label">Nombre</label>
+              <label for="rol" class="form-label">NOMBRE</label>
               <input
                 type="text"
                 class="form-control"
                 id="nombre"
                 name="nombre"
                 tabindex="1"
+                required
               />
             </div>
-
             <div class="mb-3">
-              <label for="rol" class="form-label">apellido</label>
+              <label for="rol" class="form-label">APELLIDO</label>
               <input
                 type="text"
                 class="form-control"
                 id="ape"
                 name="ape"
                 tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
-              <label for="rol" class="form-label">telefono</label>
+              <label for="rol" class="form-label">TELEFONO</label>
               <input
                 type="text"
                 class="form-control"
                 id="telefono"
                 name="telefono"
                 tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
-              <label for="rol" class="form-label">correo electronico</label>
+              <label for="rol" class="form-label">CORREO ELECTRONICO</label>
               <input
                 type="text"
                 class="form-control"
                 id="correo"
                 name="correo"
                 tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
-              <label for="rol" class="form-label">contraseña</label>
+              <label for="rol" class="form-label">CONTRASEÑA</label>
               <input
                 type="password"
                 class="form-control"
                 id="contra"
                 name="contra"
                 tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
               <label for="roles" class="form-label">Roles</label>
-              <select
-                class="bx bx-plus-circle br-md"
-                name="roles"
-                id="roles"
-                required
-              >
+              <select class="form-select" name="roles" id="roles" required>
                 <option value="">Seleccione un rol</option>
                 <% results.forEach(function(rol) { %>
                 <option value="<%= rol.id %>"><%= rol.tipo_de_rol %></option>
                 <% }) %>
               </select>
-            </div>
-
-            <div class="mb-3">
-              <input
-                type="hidden"
-                class="form-control"
-                id="estado"
-                name="estado"
-                tabindex="1"
-                value="Activo"
-              />
             </div>
 
             <button type="submit" class="btn btn-primary" tabindex="5">

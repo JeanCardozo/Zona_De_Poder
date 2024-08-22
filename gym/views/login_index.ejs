@@ -3,77 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login con Node Js</title>
+    <title>Iniciar Sesion</title>
+    <!-- Asegúrate de incluir Tailwind CSS aquí -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #f0f0f0;
-        font-family: Arial, sans-serif;
-      }
-
-      .login-form {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        width: 300px;
-      }
-
-      .login-form h1 {
-        margin-bottom: 20px;
-        font-size: 24px;
-        color: #333;
-      }
-
-      .login-form input[type="number"],
-      .login-form input[type="password"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 16px;
-      }
-
-      .login-form .btn-login {
-        width: 100%;
-        padding: 10px;
-        border: none;
-        border-radius: 4px;
-        background-color: #007bff;
-        color: #fff;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .login-form .btn-login:hover {
-        background-color: #0056b3;
-      }
-
-      .login-form .btn-register {
-        display: block;
-        margin-top: 10px;
-        color: #007bff;
-        text-decoration: none;
-        font-size: 14px;
-      }
-
-      .login-form .btn-register:hover {
-        text-decoration: underline;
-      }
-    </style>
-    <div class="login-form">
-      <h1>Login con Node Js</h1>
-      <form action="/login" method="post">
+  <body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div
+      class="login-form bg-white p-5 rounded-lg shadow-lg text-center w-80 backdrop-filter backdrop-blur-lg bg-opacity-40"
+    >
+      <h1 class="mb-6 text-2xl text-gray-800">Bienvenidos a Zona de Poder</h1>
+      <form action="/login" method="post" class="space-y-4">
         <input
           type="number"
           id="user"
@@ -81,6 +23,7 @@
           placeholder="IDENTIFICACION"
           autofocus
           required
+          class="w-full p-2 mb-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:border-gray-400"
         />
         <input
           type="password"
@@ -88,12 +31,20 @@
           name="pass"
           placeholder="CONTRASEÑA"
           required
+          class="w-full p-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:border-gray-400"
         />
-        <input type="submit" class="btn-login" value="Iniciar" />
+        <input
+          type="submit"
+          class="btn-login w-full p-2 border-none rounded-lg bg-gray-800 text-white cursor-pointer hover:bg-gray-500"
+          value="Iniciar"
+        />
       </form>
-      <a href="registrar" class="btn-register">Registrar</a>
+      <a
+        href="registrar"
+        class="btn-register block mt-3 text-gray-600 hover:underline"
+        >Registrar</a
+      >
     </div>
-
     <!-- SweetAlert2 Script -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 

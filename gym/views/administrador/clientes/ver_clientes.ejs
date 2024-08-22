@@ -3,141 +3,262 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="../../src/output.css" />
+    <!-- Tailwind CSS -->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="../../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <title>Ver clientes</title>
   </head>
   <body>
-    <div class="w-full bg-blue-500">
-      <h1 class="text-6xl text-center">CLIENTES</h1>
-    </div>
-    <div class="container mx-auto mt-4">
-      <input
-        type="text"
-        id="inputSearch"
-        class="form-input mr-2 mb-4 w-full p-2 border border-gray-300"
-        placeholder="Buscar cliente..."
-      />
-      <a
-        href="/create_clientes"
-        class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white mt-4 inline-flex items-center"
-        ><i class="bx bx-plus-circle br-md mr-2"></i> Crear Cliente</a
-      >
-      <a
-        href="/index_admin"
-        class="btn border border-red-500 text-white bg-red-500 hover:bg-red-700 mt-4 ml-2 inline-flex items-center"
-      >
-        Volver</a
-      >
-      <div class="overflow-x-auto mt-4">
-        <table class="min-w-full bg-white border border-gray-300">
-          <thead class="bg-blue-500">
-            <tr>
-              <th scope="col" class="text-red-800 px-4 py-2">IDENTIFICACION</th>
-              <th scope="col" class="px-4 py-2">NOMBRE</th>
-              <th scope="col" class="px-4 py-2">APELLIDO</th>
-              <th scope="col" class="px-4 py-2">EDAD</th>
-              <th scope="col" class="px-4 py-2">SEXO</th>
-              <th scope="col" class="px-4 py-2">FECHA DE INSCRIPCION</th>
-              <th scope="col" class="px-4 py-2">CORREO</th>
-              <th scope="col" class="px-4 py-2">TELEFONO</th>
-              <th scope="col" class="px-4 py-2">MENSUALIDAD</th>
-              <th scope="col" class="px-4 py-2">TOTAL A PAGAR</th>
-              <th scope="col" class="px-4 py-2">ESTADO</th>
-              <th scope="col" class="px-4 py-2">USUARIO</th>
-              <th scope="col" class="px-4 py-2">TALLAS</th>
-              <th scope="col" class="px-4 py-2">ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% results.forEach((user) => { %>
-            <tr class="border-t">
-              <td class="px-4 py-2 text-center"><%= user.id %></td>
-              <td class="px-4 py-2 text-center"><%= user.nombre %></td>
-              <td class="px-4 py-2 text-center"><%= user.apellido %></td>
-              <td class="px-4 py-2 text-center"><%= user.edad %></td>
-              <td class="px-4 py-2 text-center"><%= user.sexo %></td>
-              <td class="px-4 py-2 text-center">
-                <%= user.fecha_de_inscripcion %>
-              </td>
-              <td class="px-4 py-2 text-center">
-                <%= user.correo_electronico %>
-              </td>
-              <td class="px-4 py-2 text-center"><%= user.numero_telefono %></td>
-              <td class="px-4 py-2 text-center"><%= user.tiempo_plan %></td>
-              <td class="px-4 py-2 text-center"><%= user.total_pagar %></td>
-              <td
-                class="px-4 py-2 text-center <%= user.estado === 'Inactivo' ? 'border border-red-500 text-red-500' : 'border border-green-500 text-green-500' %>"
-              >
-                <%= user.estado %>
-              </td>
-              <td class="px-4 py-2 text-center"><%= user.nom_usu %></td>
-              <td class="px-4 py-2 text-center">
-                <a
-                  href="/actualizar_tallas/<%= user.id %>"
-                  class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
-                  >Ver</a
-                >
-              </td>
-              <td class="px-4 py-2 text-center">
-                <a
-                  href="/actualizar_clientes/<%= user.id %>"
-                  class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
-                  >Editar</a
-                >
-                <% if (user.estado === 'Inactivo') { %>
-                <form action="/activarcliente" method="post" class="inline">
-                  <input type="hidden" name="id" value="<%= user.id %>" />
-                  <button
-                    type="submit"
-                    class="btn border border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
-                  >
-                    Activar
-                  </button>
-                </form>
-                <% } else if (user.estado === 'Activo') { %>
-                <form action="/desactivarcliente" method="post" class="inline">
-                  <input type="hidden" name="id" value="<%= user.id %>" />
-                  <button
-                    type="submit"
-                    class="btn border border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                  >
-                    Desactivar
-                  </button>
-                </form>
-                <% } %>
-              </td>
-            </tr>
-            <% }); %>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <%- include('../plantillas/navbar.ejs') %>
 
-    <script>
-      document
-        .getElementById("inputSearch")
-        .addEventListener("keyup", buscador_interno);
-      function buscador_interno() {
-        const filter = inputSearch.value.toUpperCase();
-        const rows = document.querySelectorAll("table tbody tr");
-        rows.forEach((row) => {
-          const textValue = row.innerText.toUpperCase();
-          if (textValue.indexOf(filter) > -1) {
-            row.style.display = "";
-          } else {
-            row.style.display = "none";
+    <div class="px-10 mx-auto mt-4 p-5">
+      <div class="flex justify-start gap-2 mb-4">
+        <a
+          href="/create_clientes"
+          class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+        >
+          <i class="bx bx-plus-circle mr-2 br-md"></i> Crear Cliente
+        </a>
+        <a
+          href="/index_admin"
+          class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+        >
+          Volver
+        </a>
+      </div>
+      <div class="max-w-7xl mx-auto p-4">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto table-fixed
+             sm:text-sm text-left text-gray-500
+              dark:text-gray-400">
+                <thead class="text-xs bg-gray-500 text-white">
+                    <tr>
+                        <% const headers = ["ID", "NOMBRE", "APELLIDO", "EDAD", "SEXO", "INSCRIPCIÓN",
+                         "CORREO", "TELÉFONO", "PLAN", "TOTAL", "ESTADO", "USUARIO", "TALLAS", "ACCIONES"]; %>
+                        <% headers.forEach(header => { %>
+                        <th scope="col" class="px-4 py-6 text-center">
+                            <%= header %>
+                        </th>
+                        <% }); %>
+                    </tr>
+                </thead>
+                <tbody >
+                </tbody>
+            </table>
+            
+
+          </div>
+          <div id="pagination" class="w-full flex justify-center"></div>
+    </div>
+    
+    <script defer>
+      const divPagination = document.getElementById('pagination');
+      let datos = [];
+      const itemsPorPagina = 5;
+    
+      async function getData() {
+        try {
+          const response = await fetch('/verClientess', {
+            method: 'POST',
+          });
+    
+          if (!response.ok) {
+            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+          }
+    
+          return await response.json();
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          return [];
+        }
+      }
+    
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+    
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+    
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
+          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
+`
+        ).join('');
+    
+        divPagination.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            mostrarPagina(parseInt(e.target.dataset.page));
           }
         });
       }
+    
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+    
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+          <tr class="py-0    text-xm max-w-sm text-center  hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
+            <td class="p-2">${dato.id}</td>
+            <td class="p-2">${dato.nombre}</td>
+            <td class="p-2">${dato.apellido}</td>
+            <td class="p-2">${dato.edad}</td>
+            <td class="p-2">${dato.sexo}</td>
+            <td class="p-2">${dato.fecha_de_inscripcion}</td>
+            <td class="p-2">${dato.correo_electronico}</td>
+            <td class="p-2">${dato.numero_telefono}</td>
+            <td class="p-2">${dato.tiempo_plan}</td>
+            <td class="p-2">${dato.total_pagar}</td>
+            <td class="p-2">${dato.estado}</td>
+            <td class="p-2">${dato.nom_usu}</td>
+            <td class="p-2">
+              <button 
+                data-client-id="${dato.id}" 
+                class="px-2 py-1 bg-blue-500 text-white rounded-md inline-flex items-center justify-center hover:bg-blue-700 ver-tallas"
+              >Ver</button>
+            </td>
+            <td class="py-4 text-center flex items-center justify-around gap-2">
+              <a href="/actualizar_clientes/${dato.id}" 
+                class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
+              ${dato.estado === "Inactivo" ? `
+                <form action="/activarcliente" method="post" class="inline-flex items-center justify-center">
+                  <input type="hidden" name="id" value="${dato.id}" />
+                  <button type="submit" class="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700">Activar</button>
+                </form>
+              ` : `
+                <form action="/desactivarcliente" method="post" class="inline-flex items-center justify-center">
+                  <input type="hidden" name="id" value="${dato.id}" />
+                  <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-700">Desactivar</button>
+                </form>
+              `}
+            </td>
+          </tr>
+        `).join('');
+      }
+    
+      inicializar();
+    </script>
+    
+    
+
+    
+    
+    <script>
+     
+  document.body.addEventListener('click', function (event) {
+    if (event.target.classList.contains('ver-tallas')) {
+      const clientId = event.target.dataset.clientId;
+      fetch(`/tallas/${clientId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (!data.sizes.length) {
+            Swal.fire({
+              title: 'Error',
+              text: 'No se encontraron tallas para este cliente.',
+              icon: 'error',
+              confirmButtonText: 'Cerrar',
+            });
+            return;
+          }
+
+          const clientName = data.clientName;
+          let tallasContent = '';
+
+          data.sizes.forEach((talla, index) => {
+            tallasContent += `
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-2">Conjunto de tallas ${
+                  index + 1
+                }</h3>
+                <table class="min-w-full bg-white mb-4">
+                  <thead class="bg-gray-800 text-white">
+                    <tr>
+                      <th class="py-2 px-4">Medida</th>
+                      <th class="py-2 px-4">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-700">
+                    <tr>
+                      <td class="py-2 px-4 border">Pecho</td>
+                      <td class="py-2 px-4 border">${talla.medida_pecho} cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Brazo</td>
+                      <td class="py-2 px-4 border">${talla.medida_brazo} cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Cintura</td>
+                      <td class="py-2 px-4 border">${talla.medida_cintura} cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Abdomen</td>
+                      <td class="py-2 px-4 border">${talla.medida_abdomen} cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Cadera</td>
+                      <td class="py-2 px-4 border">${talla.medida_cadera} cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Pierna</td>
+                      <td class="py-2 px-4 border">${talla.medida_pierna} cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Pantorrilla</td>
+                      <td class="py-2 px-4 border">${
+                        talla.medida_pantorrilla
+                      } cm</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Peso</td>
+                      <td class="py-2 px-4 border">${talla.peso} kg</td>
+                    </tr>
+                    <tr>
+                      <td class="py-2 px-4 border">Altura</td>
+                      <td class="py-2 px-4 border">${talla.altura} cm</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            `;
+          });
+
+          Swal.fire({
+            title: `Tallas del Cliente: ${clientName}`,
+            html:
+                  tallasContent ||
+                  "<p>No se encontraron tallas para este cliente.</p>",
+                icon: "info",
+                confirmButtonText: "Cerrar",
+                customClass: {
+                  popup: "w-full max-w-3xl",
+                },
+              });
+            })
+            .catch((error) => {
+              Swal.fire({
+                title: "Error",
+                text: "Hubo un error al cargar las tallas.",
+                icon: "error",
+                confirmButtonText: "Cerrar",
+              });
+            });
+          };
+        });
+  
+      
     </script>
   </body>
 </html>

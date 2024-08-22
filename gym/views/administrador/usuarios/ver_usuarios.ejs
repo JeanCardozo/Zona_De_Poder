@@ -3,136 +3,148 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+    <!-- Tailwind CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Crud Clientes</title>
+    <title>Ver Usuarios</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
+    <%- include('../plantillas/navbar.ejs') %>
 
-    <div class="container">
-      <a href="/create_usuarios" class="btn btn-outline-primary mt-4"
-        ><i class="bx bx-plus-circle br-md"></i> Crear Usuario</a
+    <div class="container mx-auto p-5">
+      <a
+        href="/create_usuarios"
+        class="btn mt-4 inline-flex items-center border border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
       >
-      <a href="/index_admin" class="btn btn-outline-danger mt-4"> Volver</a>
-      <table class="table table-bordered table-striped text-center mt-4">
-        <thead class="bg-primary text-white">
+        <i class="bx bx-plus-circle mr-2"></i> Crear Usuario
+      </a>
+      <a
+        href="/index_admin"
+        class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+      >
+        Volver
+      </a>
+
+      <div class="max-w-7xl mx-auto p-4">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto text-xs
+             sm:text-sm lg:text-base text-left text-gray-500
+              dark:text-gray-400">
+        <thead class="bg-gray-500 text-white text-center">
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">NOMBRE</th>
-            <th scope="col">APELLIDO</th>
-            <th scope="col">TELEFONO</th>
-            <th scope="col">CORREO</th>
-            <th scope="col">CONTRASEÑA</th>
-            <th scope="col">ID_ROL</th>
-            <th scope="col">ESTADO</th>
-            <th scope="col">ACCIONES</th>
+            <th class="px-4 py-6">ID</th>
+            <th class="px-4 py-6">NOMBRE</th>
+            <th class="px-4 py-6">APELLIDO</th>
+            <th class="px-4 py-6">TELEFONO</th>
+            <th class="px-4 py-6">CORREO</th>
+            <th class="px-4 py-6">CONTRASEÑA</th>
+            <th class="px-4 py-6">ROL</th>
+            <th class="px-4 py-6">ESTADO</th>
+            <th class="px-4 py-6">ACCIONES</th>
           </tr>
         </thead>
         <tbody>
-          <% results.forEach((user) => { %>
-          <tr>
-            <td><%= user.id_usuario %></td>
-            <td><%= user.nombre %></td>
-            <td><%= user.apellido %></td>
-            <td><%= user.telefono %></td>
-            <td><%= user.correo_electronico %></td>
-            <td><%= user.contraseña %></td>
-            <td><%= user.rol %></td>
-            <td
-              class="px-4 py-2 text-center <%= user.estado === 'Inactivo' ? 'border border-red-500 text-red-500' : 'border border-green-500 text-green-500' %>"
-            >
-              <%= user.estado %>
-            </td>
-            <td>
-              <a
-                href="/actualizar_usuarios/<%= user.id_usuario %>"
-                class="btn border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
-                >Editar</a
-              >
-              <% if (user.estado === 'Inactivo') { %>
-              <form
-                action="/activarusuario"
-                method="post"
-                style="display: inline"
-              >
-                <input type="hidden" name="id" value="<%= user.id_usuario %>" />
-                <button type="submit" class="btn btn-outline-success">
-                  Activar
-                </button>
-              </form>
-              <% } else if(user.estado === 'Activo') { %>
-              <form
-                action="/desactivarusuario"
-                method="post"
-                style="display: inline"
-              >
-                <input type="hidden" name="id" value="<%= user.id_usuario %>" />
-                <button type="submit" class="btn btn-outline-danger">
-                  Desactivar
-                </button>
-              </form>
-              <% } %>
-            </td>
-          </tr>
-          <% }); %>
+        
         </tbody>
       </table>
+
+      <div id="pagination" class="w-full flex justify-center"></div>
+
+      
     </div>
+
+
+    <script defer>
+      const divPagination = document.getElementById('pagination');
+      let datos = [];
+      const itemsPorPagina = 5;
+    
+      async function getData() {
+        try {
+          const response = await fetch('/verUsuarioss', {
+            method: 'POST',
+          });
+    
+          if (!response.ok) {
+            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+          }
+    
+          return await response.json();
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          return [];
+        }
+      }
+    
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+    
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+    
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
+          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
+`
+        ).join('');
+    
+        divPagination.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            mostrarPagina(parseInt(e.target.dataset.page));
+          }
+        });
+      }
+    
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+    
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+          <tr class="py-0    text-xm max-w-sm text-center  hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
+            <td class="p-2">${dato.id_usuario}</td>
+            <td class="p-2">${dato.nombre}</td>
+            <td class="p-2">${dato.apellido}</td>
+            <td class="p-2">${dato.telefono}</td>
+            <td class="p-2">${dato.corre_electronico}</td>
+            <td class="p-2">xxxx</td>
+            <td class="p-2">${dato.rol}</td>
+            <td
+              class="px-4 py-2 text-center ${dato.estado === 'Inactivo' ? 'text-red-500' : 'text-green-500'}"
+            >
+              ${dato.estado}
+            </td>            
+            <td class="py-4 text-center flex items-center justify-around gap-2">
+              <a href="/actualizar_usuarios/${dato.id}" 
+                class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
+              ${dato.estado === "Inactivo" ? `
+                <form action="/activarusuario" method="post" class="inline-flex items-center justify-center">
+                  <input type="hidden" name="id" value="${dato.id_usuario}" />
+                  <button type="submit" class="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700">Activar</button>
+                </form>
+              ` : `
+                <form action="/desactivarusuario" method="post" class="inline-flex items-center justify-center">
+                  <input type="hidden" name="id" value="${dato.id_usuario}" />
+                  <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-700">Desactivar</button>
+                </form>
+              `}
+            </td>
+          </tr>
+        `).join('');
+      }
+    
+      inicializar();
+    </script>
   </body>
 </html>

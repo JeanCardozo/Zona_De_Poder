@@ -87,7 +87,7 @@
               />
             </div>
             <div class="mb-3">
-              <label for="id" class="form-label">ID Cliente</label>
+              <label for="id" class="form-label">IDENTIFICACION CLIENTE</label>
               <input
                 type="number"
                 class="form-control"
@@ -99,7 +99,7 @@
               />
             </div>
             <div class="mb-3">
-              <label for="id" class="form-label">Nombre</label>
+              <label for="id" class="form-label">NOMBRE</label>
               <input
                 type="text"
                 class="form-control"
@@ -108,6 +108,32 @@
                 value="<%= user.nombre %>"
                 tabindex="1"
                 readonly
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="id" class="form-label">PESO</label>
+              <input
+                type="number"
+                class="form-control"
+                id="peso"
+                name="peso"
+                value="<%= user.peso %>"
+                tabindex="1"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="id" class="form-label">ALTURA</label>
+              <input
+                type="number"
+                class="form-control"
+                id="altura"
+                name="altura"
+                value="<%= user.altura %>"
+                tabindex="1"
+                required
               />
             </div>
 
@@ -122,6 +148,7 @@
                 name="medida_pecho"
                 value="<%= user.medida_pecho %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -135,6 +162,7 @@
                 name="medida_brazo"
                 value="<%= user.medida_brazo %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -148,6 +176,7 @@
                 name="medida_cintura"
                 value="<%= user.medida_cintura %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -161,6 +190,7 @@
                 name="medida_abdomen"
                 value="<%= user.medida_abdomen %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -172,6 +202,7 @@
                 name="medida_cadera"
                 value="<%= user.medida_cadera %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -185,6 +216,7 @@
                 name="medida_pierna"
                 value="<%= user.medida_pierna %>"
                 tabindex="1"
+                required
               />
             </div>
             <div class="mb-3">
@@ -198,6 +230,7 @@
                 name="medida_pantorrilla"
                 value="<%= user.medida_pantorrilla %>"
                 tabindex="1"
+                required
               />
             </div>
             <button type="submit" class="btn btn-primary" tabindex="5">
@@ -205,9 +238,41 @@
             </button>
             <a href="/ver_talla" class="btn btn-secondary">Cancelar</a>
           </form>
+          <!-- <form action="/crear_plan" method="post">
+            <input
+              type="hidden"
+              name="id"
+              value="<%= user.id_cliente %>"
+              id="id"
+            />
+            <button type="submit" class="btn btn-primary" tabindex="5">
+              Crear Plan
+            </button>
+          </form> -->
         </div>
       </div>
     </div>
+    <% } %> <% if (typeof mensaje !== 'undefined') { %>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      Swal.fire({
+        title: "¿Desea crear un plan de entrenamiento para este cliente?",
+        text: "<%= mensaje %>",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonText: "Crear Plan",
+        cancelButtonText: "No, ver tallas",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirigir a la creación de plan con el id_cliente
+          window.location.href =
+            "/create_plan_ent?id_cliente=<%= id_cliente %>";
+        } else {
+          // Redirigir a la página de ver tallas
+          window.location.href = "/ver_talla";
+        }
+      });
+    </script>
     <% } %>
 
     <script

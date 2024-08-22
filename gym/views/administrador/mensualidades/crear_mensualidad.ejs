@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -39,7 +38,6 @@
             <li class="nav-item">
               <a class="nav-link" href="#">Link</a>
             </li>
-
             <li class="nav-item">
               <a
                 class="nav-link disabled"
@@ -69,7 +67,7 @@
       <div class="card border-secondary">
         <div class="card-header">Nuevo Registro</div>
         <div class="card-body">
-          <form action="/crear_mensu" method="post">
+          <form action="/crear_mensualidad" method="post">
             <div class="mb-3">
               <label for="id" class="form-label">ID</label>
               <input
@@ -78,24 +76,16 @@
                 id="id"
                 name="id"
                 tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="rol" class="form-label">TOTAL PAGAR</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre"
-                name="nombre"
-                tabindex="1"
+                required
               />
             </div>
 
             <div class="mb-3">
               <label for="roles" class="form-label">MENSUALIDADES</label>
               <select class="form-select" name="tipo" id="tipo" required>
-                <option value="">Seleccione una mensualidad</option>
+                <option value="" disabled selected>
+                  Seleccione una mensualidad
+                </option>
                 <% results.forEach(function(mensu) { %>
                 <option value="<%= mensu.id %>">
                   <%= mensu.tipo_de_mensualidad %>
@@ -105,24 +95,83 @@
             </div>
 
             <div class="mb-3">
+              <label for="total_pagar" class="form-label">TOTAL PAGAR</label>
               <input
-                type="hidden"
+                type="number"
                 class="form-control"
-                id="estado"
-                name="estado"
-                tabindex="1"
-                value="Activo"
+                id="total_pagar"
+                name="total_pagar"
+                required
               />
             </div>
+
+            <div class="mb-3">
+              <label for="tiempo" class="form-label">TIEMPO DEL PLAN</label>
+              <select
+                class="form-select"
+                name="tiempo"
+                id="tiempo"
+                required
+                onchange="actualizarValores()"
+              >
+                <option value="">Seleccione un tiempo del plan</option>
+                <option value="15 dias">15 días</option>
+                <option value="1 Mes">1 Mes</option>
+                <option value="3 Mes">3 Mes</option>
+                <option value="6 Mes">6 Mes</option>
+                <option value="1 Año">1 Año</option>
+              </select>
+            </div>
+
+            <input type="hidden" name="meses" id="meses" value="0" />
+            <input type="hidden" name="dias" id="dias" value="0" />
 
             <button type="submit" class="btn btn-primary" tabindex="5">
               Guardar
             </button>
-            <a href="/ver_usuarios" class="btn btn-secondary">cancelar</a>
+            <a href="/ver_mensualidad" class="btn btn-secondary">Cancelar</a>
           </form>
         </div>
       </div>
     </div>
+
+    <script>
+      function actualizarValores() {
+        const select = document.getElementById("tiempo");
+        const mesesInput = document.getElementById("meses");
+        const diasInput = document.getElementById("dias");
+
+        // Establecer valores predeterminados
+        mesesInput.value = "0";
+        diasInput.value = "0";
+
+        // Obtener el valor seleccionado
+        const seleccion = select.value;
+
+        // Actualizar meses y días basados en la opción seleccionada
+        switch (seleccion) {
+          case "15 dias":
+            diasInput.value = "15";
+            break;
+          case "1 Mes":
+            mesesInput.value = "1";
+            break;
+          case "3 Mes":
+            mesesInput.value = "3";
+            break;
+          case "6 Mes":
+            mesesInput.value = "6";
+            break;
+          case "1 Año":
+            mesesInput.value = "12";
+            break;
+          default:
+            mesesInput.value = "0";
+            diasInput.value = "0";
+            break;
+        }
+      }
+    </script>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

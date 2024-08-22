@@ -3,72 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <!-- Tailwind CSS -->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
-
-    <link rel="stylesheet" href="../../src/output.css" />
-
+    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <title>Apartado de Tallas</title>
+    <title>Ver tallas</title>
   </head>
   <body>
-    <nav class="bg-white border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <a class="navbar-brand text-lg font-semibold" href="#">Navbar</a>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <a
-                href="#"
-                class="border-b-2 border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
-                >Home</a
-              >
-              <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >Link</a
-              >
-              <a
-                href="#"
-                class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-not-allowed"
-                >Disabled</a
-              >
-            </div>
-          </div>
-          <div class="flex items-center justify-center w-full p-4">
-            <form class="flex w-full max-w-4xl">
-              <input
-                class="flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2"
-                type="search"
-                placeholder="¿Que deseas buscar?..."
-                aria-label="Search"
-              />
-              <button
-                class="ml-2 btn bg-green-500 text-white rounded-2xl px-4 py-2"
-                type="submit"
-              >
-                Buscar
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </nav>
+    <%- include('../plantillas/navbar.ejs') %>
 
-    <div class="container mx-auto p-4">
-      <a
-        href="/create_talla"
-        class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
-        ><i class="bx bx-plus-circle mr-2"></i> Añadir tallas</a
-      >
+    <div class="container mx-auto p-5">
       <a
         href="/index_admin"
         class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
@@ -76,12 +26,18 @@
         Volver</a
       >
 
-      <table class="table-auto w-full mt-4">
-        <thead class="bg-gray-500 text-white">
+      <div class="max-w-7xl mx-auto p-4">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto text-xs
+             sm:text-sm lg:text-base text-left text-gray-500
+              dark:text-gray-400">
+        <thead class="bg-gray-500 text-white text-center">
           <tr>
             <th class="px-4 py-2">ID</th>
             <th class="px-4 py-2">IDENTIFICACION CLIENTE</th>
             <th class="px-4 py-2">NOMBRE</th>
+            <th class="px-4 py-2">PESO</th>
+            <th class="px-4 py-2">ALTURA</th>
             <th class="px-4 py-2">MEDIDA DEL PECHO</th>
             <th class="px-4 py-2">MEDIDA DEL BRAZO</th>
             <th class="px-4 py-2">MEDIDA CINTURA</th>
@@ -93,73 +49,87 @@
           </tr>
         </thead>
         <tbody>
-          <% results.forEach((tallas) => { %>
-          <tr class="text-center odd:bg-gray-200 even:bg-gray-50">
-            <td class="px-4 py-2 border-none"><%= tallas.id %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.id_cliente %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.nombre %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.medida_pecho %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.medida_brazo %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.medida_cintura %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.medida_abdomen %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.medida_cadera %></td>
-            <td class="px-4 py-2 border-none"><%= tallas.medida_pierna %></td>
-            <td class="px-4 py-2 border-none">
-              <%= tallas.medida_pantorrilla %>
-            </td>
-            <td class="px-4 py-2 w-48 border-none">
-              <div class="grid grid-cols-2 gap-2">
-                <a
-                  href="/actualizar_tallas/<%= tallas.id_cliente %>"
-                  class="bg-blue-500 text-white w-full py-2 rounded-full text-center"
-                >
-                  Editar
-                </a>
-                <a
-                  class="bg-red-500 text-white w-full py-2 rounded-full text-center"
-                  onclick="verificar('<%= tallas.id_cliente %>')"
-                >
-                  Borrar
-                </a>
-              </div>
-            </td>
-          </tr>
-          <% }) %>
+        
         </tbody>
       </table>
-    </div>
-    <script>
-      function verificar(id) {
-        const swalWithBootstrapButtons = Swal.mixin({
-          customClass: {
-            confirmButton: "btn bg-green-500 text-white rounded-md px-4 py-2",
-            cancelButton: "btn bg-red-500 text-white rounded-md px-4 py-2",
-          },
-          buttonsStyling: false,
-        });
 
-        swalWithBootstrapButtons
-          .fire({
-            title: "¿Estás seguro?",
-            text: "¡No podrás revertir esto!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "¡Sí, elimínalo!",
-            cancelButtonText: "¡No, cancela!",
-            reverseButtons: true,
-          })
-          .then((result) => {
-            if (result.isConfirmed) {
-              window.location.href = `/eliminar/${id}`;
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-              swalWithBootstrapButtons.fire({
-                title: "Cancelado",
-                text: "Tus datos están a salvo :)",
-                icon: "error",
-              });
-            }
+      
+    </div>
+    <div id="pagination" class="w-full flex justify-center"></div>
+
+    <script defer>
+      const divPagination = document.getElementById('pagination');
+      let datos = [];
+      const itemsPorPagina = 5;
+    
+      async function getData() {
+        try {
+          const response = await fetch('/verTallass', {
+            method: 'POST',
           });
+    
+          if (!response.ok) {
+            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+          }
+    
+          return await response.json();
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          return [];
+        }
       }
+    
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+    
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+    
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
+          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
+`
+        ).join('');
+    
+        divPagination.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            mostrarPagina(parseInt(e.target.dataset.page));
+          }
+        });
+      }
+    
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+    
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+          <tr class="py-0    text-xm max-w-sm text-center  hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
+            <td class="p-2">${dato.id}</td>
+            <td class="p-2">${dato.id_cliente}</td>
+            <td class="p-2">${dato.nombre}</td>
+            <td class="p-2">${dato.peso}</td>
+            <td class="p-2">${dato.altura}</td>
+            <td class="p-2">${dato.medida_pecho}</td>
+            <td class="p-2">${dato.medida_brazo}</td>
+            <td class="p-2">${dato.medida_cintura}</td>
+            <td class="p-2">${dato.medida_abdomen}</td>
+            <td class="p-2">${dato.medida_cadera}</td>
+            <td class="p-2">${dato.medida_pierna}</td>
+            <td class="p-2">${dato.medida_pantorilla}</td>
+            <td class="py-4 text-center flex items-center justify-around gap-2">
+              <a href="/actualizar_tallas/${dato.id}" 
+                class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
+            </td>
+          </tr>
+        `).join('');
+      }
+    
+      inicializar();
     </script>
   </body>
 </html>

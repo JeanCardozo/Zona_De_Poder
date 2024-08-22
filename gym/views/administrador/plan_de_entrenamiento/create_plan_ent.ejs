@@ -65,91 +65,181 @@
       </div>
     </nav>
 
+    <% if (id_cliente !== null) { %>
     <div class="container mt-4">
       <div class="card border-secondary">
-        <div class="card-header">Nuevo Registro</div>
+        <div class="card-header">Nuevo Plan de Entrenamiento</div>
         <div class="card-body">
-          <form action="/crear_pe" method="post">
+          <form action="/crearPlanEntrenamiento" method="post">
+            <!-- Selección de Cliente -->
             <div class="mb-3">
-              <label for="id" class="form-label">ID</label>
+              <label for="id_cliente" class="form-label"
+                >IDENTIFICACIÓN CLIENTE</label
+              >
               <input
                 type="number"
+                id="id_cliente"
+                name="id_cliente"
                 class="form-control"
-                id="id"
-                name="id"
+                value="<%= id_cliente %>"
                 tabindex="1"
+                readonly
               />
             </div>
 
+            <!-- Detalles del Cliente -->
             <div class="mb-3">
-              <label for="rol" class="form-label">NOMBRE DEL EJERCICIO</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre_ejercicio"
-                name="nombre_ejercicio"
-                tabindex="1"
-              />
+              <label for="diaSemana" class="form-label">DIA DE LA SEMANA</label>
+              <select class="form-control" id="dia" name="dia" required>
+                <option value="" disabled selected>Selecciona un día</option>
+                <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves',
+                'Viernes', 'Sábado', 'Domingo']; %> <%
+                diasSemana.forEach(function(dia) { %>
+                <option value="<%= dia %>"><%= dia %></option>
+                <% }); %>
+              </select>
             </div>
 
+            <!-- Selección de Actividad Física -->
             <div class="mb-3">
-              <label for="rol" class="form-label">SERIES</label>
-              <input
-                type="text"
-                class="form-control"
-                id="series"
-                name="series"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="rol" class="form-label">REPETICIONES</label>
-              <input
-                type="text"
-                class="form-control"
-                id="reps"
-                name="reps"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="rol" class="form-label">VIDEO DE EJEMPLO</label>
-              <input
-                type="text"
-                class="form-control"
-                id="video_ejemplo"
-                name="video_ejemplo"
-                tabindex="1"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="gm" class="form-label">GRUPOS MUSCULARES</label>
+              <label for="actividad" class="form-label">ACTIVIDAD FISICA</label>
               <select
-                id="gm"
-                name="gm"
+                id="actividad"
+                name="id_actividad_fisica"
                 class="form-select"
-                aria-label="Default select example"
                 required
               >
                 <option value="" disabled selected>
-                  Seleccione un grupo muscular
+                  Seleccione una actividad física
                 </option>
-                <% grupos_musculares.forEach(function(gm) { %>
-                <option value="<%= gm.id %>"><%= gm.nombre%></option>
+                <% actividades.forEach(function(actividad) { %>
+                <option value="<%= actividad.id %>">
+                  <%= actividad.nombre_ejercicio %>
+                </option>
                 <% }) %>
               </select>
             </div>
+
+            <!-- Detalles de la Actividad Física -->
+            <div class="mb-3">
+              <label for="series" class="form-label">NUMERO DE SERIES</label>
+              <input
+                type="number"
+                class="form-control"
+                id="series"
+                name="series"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="repeticiones" class="form-label"
+                >NUMERO DE REPETICIONES</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="repeticiones"
+                name="repeticiones"
+                required
+              />
+            </div>
+
             <button type="submit" class="btn btn-primary" tabindex="5">
               Guardar
             </button>
-            <a href="/ver_acti_fisica" class="btn btn-secondary">cancelar</a>
+            <a href="/ver_plan_ent" class="btn btn-secondary">Cancelar</a>
           </form>
         </div>
       </div>
     </div>
+    <% } else { %>
+
+    <div class="container mt-4">
+      <div class="card border-secondary">
+        <div class="card-header">Nuevo Plan de Entrenamiento</div>
+        <div class="card-body">
+          <form action="/crearPlanEntrenamiento" method="post">
+            <!-- Selección de Cliente -->
+            <div class="mb-3">
+              <label for="id_cliente" class="form-label"
+                >IDENTIFICACIÓN CLIENTE</label
+              >
+              <input
+                type="number"
+                id="id_cliente"
+                name="id_cliente"
+                class="form-control"
+                tabindex="1"
+                required
+              />
+            </div>
+
+            <!-- Detalles del Cliente -->
+            <div class="mb-3">
+              <label for="diaSemana" class="form-label">DIA DE LA SEMANA</label>
+              <select class="form-control" id="dia" name="dia" required>
+                <option value="" disabled selected>Selecciona un día</option>
+                <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves',
+                'Viernes', 'Sábado', 'Domingo']; %> <%
+                diasSemana.forEach(function(dia) { %>
+                <option value="<%= dia %>"><%= dia %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <!-- Selección de Actividad Física -->
+            <div class="mb-3">
+              <label for="actividad" class="form-label">ACTIVIDAD FISICA</label>
+              <select
+                id="actividad"
+                name="id_actividad_fisica"
+                class="form-select"
+                required
+              >
+                <option value="" disabled selected>
+                  Seleccione una actividad física
+                </option>
+                <% actividades.forEach(function(actividad) { %>
+                <option value="<%= actividad.id %>">
+                  <%= actividad.nombre_ejercicio %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Detalles de la Actividad Física -->
+            <div class="mb-3">
+              <label for="series" class="form-label">NUMERO DE SERIES</label>
+              <input
+                type="number"
+                class="form-control"
+                id="series"
+                name="series"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="repeticiones" class="form-label"
+                >NUMERO DE REPETICIONES</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="repeticiones"
+                name="repeticiones"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary" tabindex="5">
+              Guardar
+            </button>
+            <a href="/ver_plan_ent" class="btn btn-secondary">Cancelar</a>
+          </form>
+        </div>
+      </div>
+    </div>
+    <% } %>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
