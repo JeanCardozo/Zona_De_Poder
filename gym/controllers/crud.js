@@ -1,5 +1,5 @@
 const conexion = require("../database/zona_de_poder_db");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "negrosdemierda"; // Asegúrate de mantener esto en secreto
