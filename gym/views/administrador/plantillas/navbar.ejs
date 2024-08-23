@@ -59,16 +59,23 @@
             id="profileDropdown"
             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden"
           >
-            <a
-              href="/login"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >Iniciar sesión</a
-            >
+            <% if (typeof usuario !== 'undefined' && usuario) { %>
+            <div class="px-4 py-2 text-sm text-gray-700">
+              <p><strong>Nombre:</strong> <%= usuario.nombre %></p>
+              <p><strong>Rol:</strong> <%= usuario.rol %></p>
+            </div>
             <a
               href="/logout"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >Cerrar sesión</a
             >
+            <% } else { %>
+            <a
+              href="/login"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >Iniciar sesión</a
+            >
+            <% } %>
           </div>
         </div>
       </div>
