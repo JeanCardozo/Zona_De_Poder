@@ -15,34 +15,89 @@
     <div class="flex justify-between h-16">
       <div class="flex"></div>
       <div class="flex items-center justify-center w-full p-4">
-        <form class="flex w-full max-w-4xl" onsubmit="return false;">
+        <form class="flex w-full relative" onsubmit="return false;">
           <input
             id="inputSearch"
-            class="max-w-5xl flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2"
+            class="flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2 pr-10"
             type="search"
             placeholder="¿Qué deseas buscar?..."
             aria-label="Search"
           />
-          <div class="flex justify-end pl-80">
-            <button
-              id="searchButton"
-              class="ml-2 btn bg-green-500 text-white rounded-2xl px-4 py-2"
-              type="submit"
+          <button
+            id="searchButton"
+            class="absolute right-0 top-0 mt-2 mr-2 text-gray-400 hover:text-gray-600"
+            type="submit"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              Buscar
-            </button>
-            <a
-              class="ml-2 py-2 px-4 border border-transparent rounded-2xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none"
-              href="/logout"
-            >
-              Logout
-            </a>
-          </div>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
         </form>
+        <div class="relative ml-4">
+          <button
+            id="profileButton"
+            class="flex items-center focus:outline-none"
+          >
+            <img
+              src="https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png"
+              alt="Perfil"
+              class="h-10 w-10 rounded-full"
+            />
+          </button>
+          <div
+            id="profileDropdown"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden"
+          >
+            <a
+              href="/login"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >Iniciar sesión</a
+            >
+            <a
+              href="/logout"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >Cerrar sesión</a
+            >
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </nav>
+<script>
+  document
+    .getElementById("profileButton")
+    .addEventListener("click", function () {
+      document.getElementById("profileDropdown").classList.toggle("hidden");
+    });
+</script>
+
+<script>
+  document
+    .getElementById("profileButton")
+    .addEventListener("click", function () {
+      document.getElementById("profileDropdown").classList.toggle("hidden");
+    });
+</script>
+
+<script>
+  document
+    .getElementById("profileButton")
+    .addEventListener("click", function () {
+      document.getElementById("profileDropdown").classList.toggle("hidden");
+    });
+</script>
 
 <div class="relative">
   <!-- Botón para desplegar la barra lateral -->

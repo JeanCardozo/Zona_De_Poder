@@ -47,29 +47,86 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <% let rowCounter = 0; %>
-          <% results.forEach((pe) => { %>
+        </tbody>
+      </table>
+      <div id="pagination" class="w-full flex justify-center"></div>
 
-      <tr class="hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>">
-        <td class="text-center py-4 px-6"><%= pe.id_plan_entrenamiento %></td>
-            <td class="text-left py-4 px-6"><%= pe.dia %></td>
-            <td class="py-4 px-6"><%= pe.nombre %></td>
-            <td class="py-4 px-6"><%= pe.nombre_musculo %></td>
-            <td class="py-4 px-6"><%= pe.nombre_ejercicio %></td>
-            <td class="py-4 px-6"><%= pe.series %></td>
-            <td class="py-4 px-6"><%= pe.repeticiones %></td>
+    </div>
+
+    <script defer>
+      const divPagination = document.getElementById('pagination');
+      let datos = [];
+      const itemsPorPagina = 5;
+    
+      async function getData() {
+        try {
+          const response = await fetch('/verPlanEntrenamiento', {
+            method: 'POST',
+          });
+    
+          if (!response.ok) {
+            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+          }
+    
+          return await response.json();
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          return [];
+        }
+      }
+    
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+    
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+    
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
+          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
+`
+        ).join('');
+    
+        divPagination.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            mostrarPagina(parseInt(e.target.dataset.page));
+          }
+        });
+      }
+    
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+    
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+          <tr class="py-0    text-xm max-w-sm text-center  hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
+            <td class="p-2">${dato.id_plan_entrenamiento}</td>
+            <td class="p-2">${dato.dia}</td>
+            <td class="p-2">${dato.nombre}</td>
+            <td class="p-2">${dato.nombre_musculo}</td>
+            <td class="p-2">${dato.nombre_ejercicio}</td>
+            <td class="p-2">${dato.series}</td>
+            <td class="p-2">${dato.repeticiones}</td>
             <td class="py-4 px-6">
-              <a href="/actualizar_pe/<%= pe.id_cliente %>"  class="px-2 py-1 bg-blue-500 text-white rounded-md
+              <a href="/actualizar_pe/${dato.id_plan_entrenamiento}"  class="px-2 py-1 bg-blue-500 text-white rounded-md
                                
                 hover:bg-blue-700">Editar</a>
             </td>
           </tr>
-          <% rowCounter++; %>
+        `).join('');
+      }
+    
+      inicializar();
+    </script>
 
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+
+
+
 
     <script>
       // Obtener elementos del DOM

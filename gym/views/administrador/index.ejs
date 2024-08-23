@@ -117,21 +117,22 @@
     <% if (typeof alert !== "undefined") { %>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        // Reproducir el sonido antes de mostrar la alerta
+        const sonido = "<%= typeof sonido !== 'undefined' ? sonido : '' %>";
+        if (sonido) {
+          const audio = new Audio(sonido);
+          audio.play().catch((error) => {
+            console.error("Error al reproducir el sonido:", error);
+          });
+        }
+
+        // Mostrar la alerta de SweetAlert2
         Swal.fire({
           title: "<%= alertTitle %>",
           text: "<%= alertMessage %>",
           icon: "<%= alertIcon %>",
-          showConfirmButton: true, // Hacer que el usuario tenga que presionar OK
+          showConfirmButton: true, // El usuario debe presionar OK
         }).then(() => {
-          // Reproducir el sonido al cerrar la alerta
-          const sonido = "<%= typeof sonido !== 'undefined' ? sonido : '' %>";
-          if (sonido) {
-            const audio = new Audio(sonido);
-            audio.play().catch((error) => {
-              console.log("Error al reproducir el audio:", error);
-            });
-          }
-
           // Redirigir después de que el usuario presione OK
           const ruta = "<%= typeof ruta !== 'undefined' ? ruta : '' %>";
           if (ruta) {

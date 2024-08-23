@@ -18,7 +18,7 @@ exports.crearRoles = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_roles");
+      res.redirect("/ver_roles?create=success");
     }
   });
 };
@@ -42,7 +42,7 @@ exports.updateRoles = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_roles");
+      res.redirect("/ver_roles?update=success");
     }
   });
 };
@@ -191,7 +191,7 @@ exports.crearclienteS = (req, res) => {
                         "Usuario registrado con éxito, Redirigiendo...",
                       alertIcon: "success",
                       showConfirmButton: false,
-                      timer: 2000,
+                      timer: 2500,
                       ruta: `/actualizar_tallas/${ide}`,
                       mensualidades: resultsMensualidades.rows, // Pasar la lista de mensualidades
                     });
@@ -310,7 +310,18 @@ exports.update_cliente = (req, res) => {
                     console.log(commitErr);
                     return res.status(500).json({ error: commitErr.message });
                   }
-                  res.redirect("/ver_clientes");
+                  res.status(200);
+                  res.render("administrador/clientes/create_clientes", {
+                    alert: true,
+                    alertTitle: "Registro Exitoso",
+                    alertMessage:
+                      "Usuario Actualizado con éxito, Redirigiendo...",
+                    alertIcon: "success",
+                    showConfirmButton: false,
+                    timer: 2500,
+                    ruta: `/ver_clientes`,
+                    mensualidades: resultsMensualidad.rows, // Pasar la lista de mensualidades
+                  });
                 });
               }
             );
@@ -379,18 +390,45 @@ exports.crearusu = async (req, res) => {
       "INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
     const values = [ide, nom, ape, tele, correo, hashedPassword, rol, "Activo"];
 
+    // Obtener la lista de roles para mostrar en el formulario
+    const rolesQuery = "SELECT * FROM roles";
+    const rolesResults = await conexion.query(rolesQuery);
+
     // Ejecutar la consulta
     conexion.query(query, values, (error, results) => {
       if (error) {
         console.log(error);
-        return res.status(500).json({ error: error.message });
+
+        return res.render("administrador/usuarios/create_usuarios", {
+          alert: true,
+          alertTitle: "Error",
+          alertMessage: "Error al Crear el usuario.",
+          alertIcon: "error",
+          showConfirmButton: true,
+          roles: rolesResults.rows, // Enviar roles a la vista
+        });
       } else {
-        res.redirect("/ver_usuarios");
+        return res.render("administrador/usuarios/create_usuarios", {
+          alert: true,
+          alertTitle: "Éxito",
+          alertMessage: "Usuario Creado correctamente.",
+          alertIcon: "success",
+          showConfirmButton: true,
+          ruta: "/ver_usuarios",
+          roles: rolesResults.rows, // Enviar roles a la vista
+        });
       }
     });
   } catch (error) {
     console.error("Error al encriptar la contraseña:", error);
-    res.status(500).json({ error: "Error al procesar la solicitud" });
+    return res.render("administrador/usuarios/create_usuarios", {
+      alert: true,
+      alertTitle: "Error",
+      alertMessage: "Error en la encriptación de la contraseña.",
+      alertIcon: "error",
+      showConfirmButton: true,
+      roles: rolesResults.rows, // Enviar roles a la vista
+    });
   }
 };
 
@@ -404,7 +442,14 @@ exports.update_usuarios = async (req, res) => {
 
   if (isNaN(id)) {
     console.log("Invalid ID:", req.body.id);
-    return res.status(400).json({ error: "Invalid ID" });
+    return res.render("administrador/usuarios/actualizar_usuarios", {
+      user: { id, nombre, ape, telefono, correo },
+      alert: true,
+      alertTitle: "Error",
+      alertMessage: "ID inválido.",
+      alertIcon: "error",
+      showConfirmButton: true,
+    });
   }
 
   let query;
@@ -433,14 +478,36 @@ exports.update_usuarios = async (req, res) => {
     conexion.query(query, values, (error, results) => {
       if (error) {
         console.log(error);
-        return res.status(500).json({ error: error.message });
+        return res.render("administrador/usuarios/actualizar_usuarios", {
+          user: { id, nombre, ape, telefono, correo },
+          alert: true,
+          alertTitle: "Error",
+          alertMessage: "Error al actualizar el usuario.",
+          alertIcon: "error",
+          showConfirmButton: true,
+        });
       } else {
-        res.redirect("/ver_usuarios");
+        return res.render("administrador/usuarios/actualizar_usuarios", {
+          user: { id, nombre, ape, telefono, correo },
+          alert: true,
+          alertTitle: "Éxito",
+          alertMessage: "Usuario actualizado correctamente.",
+          alertIcon: "success",
+          showConfirmButton: true,
+          ruta: "/ver_usuarios",
+        });
       }
     });
   } catch (error) {
     console.log("Error encriptando la contraseña:", error);
-    return res.status(500).json({ error: error.message });
+    return res.render("administrador/usuarios/actualizar_usuarios", {
+      user: { id, nombre, ape, telefono, correo },
+      alert: true,
+      alertTitle: "Error",
+      alertMessage: "Error en la encriptación de la contraseña.",
+      alertIcon: "error",
+      showConfirmButton: true,
+    });
   }
 };
 
@@ -556,7 +623,7 @@ exports.crearConvenio = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_convenio");
+      res.redirect("/ver_convenio?create=success");
     }
   });
 };
@@ -581,7 +648,7 @@ exports.update_convenio = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_convenio");
+      res.redirect("/ver_convenio?update=success");
     }
   });
 };
@@ -645,21 +712,16 @@ exports.crearMensu = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_mensualidad");
+      res.redirect("/ver_mensualidad?create=success");
     }
   });
 };
 
 exports.update_mensualidad = (req, res) => {
-  const id = parseInt(req.body.id, 10) || null;
+  const id = parseInt(req.body.ide, 10) || null;
   const total_pagar = parseFloat(req.body.pagar) || 0;
   const tipo = parseInt(req.body.tipo, 10) || null;
   const tiempo = req.body.tiempo || "";
-
-  // Verifica que 'id' y 'tipo' no sean null
-  if (id === null || tipo === null) {
-    return res.status(400).json({ error: "ID o Tipo no puede estar vacío" });
-  }
 
   const query =
     "UPDATE mensualidades SET total_pagar = $2, id_mensualidad_convencional = $3, tiempo_plan = $4 WHERE id = $1";
@@ -670,7 +732,7 @@ exports.update_mensualidad = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_mensualidad");
+      res.redirect("/ver_mensualidad?update=success");
     }
   });
 };
@@ -829,7 +891,7 @@ exports.crear_gm = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_grupo_muscular");
+      res.redirect("/ver_grupo_muscular?create=success");
     }
   });
 };
@@ -853,7 +915,7 @@ exports.update_gm = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_grupo_muscular");
+      res.redirect("/ver_grupo_muscular?update=success");
     }
   });
 };
@@ -862,20 +924,19 @@ exports.update_gm = (req, res) => {
 
 //CREAR
 exports.crear_af = (req, res) => {
-  const id = req.body.id;
   const nombre_ejercicio = req.body.nombre_ejercicio;
-  const gm = req.body.gm;
+  const gm = req.body.seccion;
 
   const query =
-    "INSERT INTO actividad_fisica ( nombre_ejercicio, id_grupo_muscular) VALUES ($1,$2,$3)";
-  const values = [id, nombre_ejercicio, gm];
+    "INSERT INTO actividad_fisica (nombre_ejercicio, id_grupo_muscular) VALUES ($1, $2)";
+  const values = [nombre_ejercicio, gm];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_acti_fisica");
+      res.redirect("/ver_acti_fisica?create=success");
     }
   });
 };
@@ -898,7 +959,7 @@ exports.update_af = (req, res) => {
       console.log(error);
       return res.status(500).json({ error: error.message });
     } else {
-      res.redirect("/ver_acti_fisica");
+      res.redirect("/ver_acti_fisica?update=success");
     }
   });
 };
@@ -1115,19 +1176,23 @@ exports.verClientes = (req, res) => {
 
 // ver usuarios
 
-exports.verUsuarios = (req, res) => {
-  const query = `
-        SELECT u.id AS id_usuario ,u.nombre ,u.apellido,u.telefono,u.correo_electronico,u.contraseña,
-        u.id_rol, u.estado,r.id AS id_roles, r.tipo_de_rol AS rol FROM usuarios AS u INNER JOIN roles AS
-        r ON u.id_rol=r.id ORDER BY u.id
-`;
+exports.verUsuarios = () => {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT u.id AS id_usuario, u.nombre, u.apellido, u.telefono, u.correo_electronico,
+      u.id_rol, u.estado, r.tipo_de_rol AS rol 
+      FROM usuarios AS u 
+      INNER JOIN roles AS r ON u.id_rol = r.id 
+      ORDER BY u.id
+    `;
 
-  conexion.query(query, (error, results) => {
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-
-    return res.status(200).json(results.rows);
+    conexion.query(query, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results.rows);
+      }
+    });
   });
 };
 
@@ -1138,7 +1203,6 @@ exports.verMensualidades = (req, res) => {
         SELECT  m.id AS id_mensualidad,m.total_pagar,mc.tipo_de_mensualidad,m.tiempo_plan FROM
          mensualidades AS m INNER JOIN mensualidad_convencional AS mc ON m.id_mensualidad_convencional =mc.id ORDER BY m.id
 `;
-
   conexion.query(query, (error, results) => {
     if (error) {
       return res.status(500).json({ error: error.message });
@@ -1174,6 +1238,71 @@ SELECT mc.id AS id_mensu_cliente, mc.id_cliente, mc.nombre, mc.fecha_inicio, mc.
        FROM mensualidad_clientes AS mc
        INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
        INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id`;
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(results.rows);
+  });
+};
+
+// ver grupos musculares
+
+exports.verGm = (req, res) => {
+  const query = `
+SELECT * FROM grupos_musculares ORDER BY id`;
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(results.rows);
+  });
+};
+
+// ver plan de entrenamiento
+
+exports.verPlanEntrenamiento = (req, res) => {
+  const query = `
+      SELECT pe.id AS id_plan_entrenamiento, pe.dia, pe.id_cliente, pe.id_actividad_fisica, pe.series, pe.repeticiones,
+      c.id AS id_del_cliente, c.nombre,
+      ac.id AS id_actividad, ac.nombre_ejercicio, ac.id_grupo_muscular,
+      gm.id AS id_grupo, gm.nombre AS nombre_musculo, gm.seccion
+      FROM plan_entrenamiento AS pe
+      INNER JOIN clientes AS c ON pe.id_cliente = c.id
+      LEFT JOIN actividad_fisica AS ac ON pe.id_actividad_fisica = ac.id
+      LEFT JOIN grupos_musculares AS gm ON ac.id_grupo_muscular = gm.id
+      ORDER BY pe.id`;
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(results.rows);
+  });
+};
+
+// Ver actividad fisica
+
+exports.verActividadFisica = (req, res) => {
+  const query = `
+   SELECT 
+      af.id AS af_id, 
+      af.nombre_ejercicio AS af_nombre, 
+     
+      gm.nombre AS gm_nombre 
+    FROM 
+      actividad_fisica af 
+    INNER JOIN 
+      grupos_musculares gm 
+    ON 
+      af.id_grupo_muscular = gm.id 
+    ORDER BY 
+      af.id`;
 
   conexion.query(query, (error, results) => {
     if (error) {

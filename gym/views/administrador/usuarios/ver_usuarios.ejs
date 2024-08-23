@@ -117,7 +117,7 @@
             <td class="p-2">${dato.nombre}</td>
             <td class="p-2">${dato.apellido}</td>
             <td class="p-2">${dato.telefono}</td>
-            <td class="p-2">${dato.corre_electronico}</td>
+            <td class="p-2">${dato.correo_electronico}</td>
             <td class="p-2">xxxx</td>
             <td class="p-2">${dato.rol}</td>
             <td
@@ -126,7 +126,7 @@
               ${dato.estado}
             </td>            
             <td class="py-4 text-center flex items-center justify-around gap-2">
-              <a href="/actualizar_usuarios/${dato.id}" 
+              <a href="/actualizar_usuarios/${dato.id_usuario}" 
                 class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
               ${dato.estado === "Inactivo" ? `
                 <form action="/activarusuario" method="post" class="inline-flex items-center justify-center">

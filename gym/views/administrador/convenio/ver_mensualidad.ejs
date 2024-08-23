@@ -38,7 +38,7 @@
     <div class="flex justify-right mt-4 p-5">
       <a
         href="#"
-        class="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
         id="crearConvenioBtn"
       >
         <i class="bx bx-plus-circle"></i> Crear Convenio
@@ -84,7 +84,7 @@
                   <input type="hidden" name="id" value="<%= mensu.id %>" />
                   <button
                     type="submit"
-                    class="bg-green-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
                   >
                     Activar
                   </button>
@@ -194,6 +194,37 @@
             });
         });
       });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "bottom-end", // Mostrar en la esquina inferior derecha
+        showConfirmButton: false,
+        timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
+          toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
+        },
+      });
+
+      // Verificar si el parámetro create=success está en la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("create") === "success") {
+        Toast.fire({
+          icon: "success",
+          title: "¡Éxito! Convenio creado exitosamente.",
+        });
+      }
+
+      // Verificar si el parámetro update=success está en la URL
+      if (urlParams.get("update") === "success") {
+        Toast.fire({
+          icon: "success",
+          title: "¡Éxito! Convenio actualizado exitosamente.",
+        });
+      }
     </script>
   </body>
 </html>

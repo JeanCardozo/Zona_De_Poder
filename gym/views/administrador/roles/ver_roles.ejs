@@ -228,5 +228,37 @@ document.querySelectorAll(".updateRolesBtn").forEach(button => {
           });
       }
     </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'bottom-end', // Mostrar en la esquina inferior derecha
+    showConfirmButton: false,
+    timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
+      toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
+    },
+  });
+
+  // Verificar si el parámetro create=success está en la URL
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("create") === "success") {
+    Toast.fire({
+      icon: 'success',
+      title: '¡Éxito! Rol creada exitosamente.',
+    });
+  }
+
+  // Verificar si el parámetro update=success está en la URL
+  if (urlParams.get("update") === "success") {
+    Toast.fire({
+      icon: 'success',
+      title: '¡Éxito! Rol actualizada exitosamente.',
+    });
+  }
+</script>
   </body>
 </html>

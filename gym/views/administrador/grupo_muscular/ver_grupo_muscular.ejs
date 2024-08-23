@@ -88,28 +88,86 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200 text-center">
-          <% let rowCounter = 0; %> <% results.forEach((g_m) => { %>
-          <tr
-            class="hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
-          >
-            <td class="px-6 py-4 whitespace-nowrap"><%= g_m.id %></td>
-            <td class="px-6 py-4 whitespace-nowrap"><%= g_m.nombre%></td>
-            <td class="px-6 py-4 whitespace-nowrap"><%= g_m.seccion%></td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <a
-                      href="#"
-                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateGrupoBtn"
-                      
-                      data-id="<%= g_m.id %>"
-                    >
-                      Editar
-                  </a>
-            </td>
-          </tr>
-          <% rowCounter++; %> <% }) %>
         </tbody>
       </table>
+      <div id="pagination" class="w-full flex justify-center"></div>
+
     </div>
+
+    <script defer>
+      const divPagination = document.getElementById('pagination');
+      let datos = [];
+      const itemsPorPagina = 5;
+    
+      async function getData() {
+        try {
+          const response = await fetch('/verGrupoMuscularess', {
+            method: 'POST',
+          });
+    
+          if (!response.ok) {
+            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+          }
+    
+          return await response.json();
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          return [];
+        }
+      }
+    
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+    
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+    
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
+          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
+`
+        ).join('');
+    
+        divPagination.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            mostrarPagina(parseInt(e.target.dataset.page));
+          }
+        });
+      }
+    
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+    
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+          <tr class="py-0    text-xm max-w-sm text-center  hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
+            <td class="p-2">${dato.id}</td>
+            <td class="p-2">${dato.nombre}</td>
+            <td class="p-2">${dato.seccion}</td>
+            <td class="p-2">
+                  <a
+                 href="#"
+                  class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold text-sm py-1 px-2 rounded whitespace-nowrap updateGrupoBtn"
+                  data-id="${dato.id}"
+                >
+                  Editar
+                </a>
+
+            </td>
+          </tr>
+        `).join('');
+      }
+    
+      inicializar();
+    </script>
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       const inputSearch = document.getElementById("inputSearch");
@@ -140,6 +198,10 @@
       inputSearch.addEventListener("keyup", filterTable);
     </script>
 
+
+
+
+
 <script>
   document
     .getElementById("crearGrupoBtn")
@@ -148,35 +210,32 @@
       Swal.fire({
         title: "Crear grupo muscular",
         html: `
-        <form id="grupoForm" action="/crear_gm" method="post">
-          <div class="mb-3">
-              <div class="mb-3">
-                <label for="id" class="form-label">ID</label>
-                <input type="text" class="form-control" id="id" name="id" required>
-              </div>
-            <label for="sexo" class="form-label">Seccion del cuerpo</label>
-              <select
-                id="seccion"
-                name="seccion"
-                class="form-select"
-                aria-label="Default select example"
-                required
-              >
-                <option disabled selected>Seleccione una seccion</option>
+            <form id="grupoForm" action="/crear_gm" method="post" class="space-y-4">
+          <div>
+            <label for="id" class="block text-sm font-medium text-gray-700">ID</label>
+            <input type="text" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" id="id" name="id" required>
+            </div>
+            <div>
+              <label for="seccion" class="block text-sm font-medium text-gray-700">Sección del cuerpo</label>
+                <select id="seccion" name="seccion" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                <option disabled selected>Seleccione una sección</option>
                 <option value="Tren Superior">Tren Superior</option>
                 <option value="Tren Inferior">Tren Inferior</option>
               </select>
-              
-              <br><br>
-
-            <label for="musculo" class="form-label">Grupo muscular</label>
-            <input type="text" class="form-control" id="musculo" name="musculo" required>
-            
-              
+            </div>
+            <div>
+              <label for="musculo" class="block text-sm font-medium text-gray-700">Grupo muscular</label>
+              <input type="text" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" id="musculo" name="musculo" required>
           </div>
-
         </form>
+
       `,
+          confirmButtonClass : 'btn-confirmar',
+            cancelButtonClass : 'btn-cancelar',
+            customClass: {
+              confirmButton: 'btn-confirmar',
+              cancelButton: 'btn-cancelar'
+            },
         showCancelButton: true,
         confirmButtonText: "Guardar",
         cancelButtonText: "Cancelar",
@@ -187,45 +246,49 @@
     });
 </script>
 <script>
-  // Selecciona todos los botones de actualizar por clase o un atributo común
-document.querySelectorAll(".updateGrupoBtn").forEach(button => {
-  button.addEventListener("click", function (e) {
-    e.preventDefault();
-    const grupoId = this.dataset.id; // Obtén el ID del grupo muscular a actualizar
+  // Selecciona todos los botones de actualizar por clase o un atributo común}
+    
+    document.querySelector("tbody").addEventListener("click", function (e) {
+        if (e.target.classList.contains("updateGrupoBtn")) {
+          e.preventDefault();
+          const grupoId =e.target.dataset.id;  
+          // Obtén el ID del grupo muscular a actualizar
 
     // Realiza la solicitud GET para obtener los datos del grupo muscular
     fetch(`/actualizar_g/${grupoId}`)
       .then(response => response.json())  // Asegúrate de que la respuesta es JSON
       .then(data => {
+        console.log("la monda esta:", data);
         if (data.error) {
           Swal.fire("Error", data.error, "error");
         } else {
           Swal.fire({
             title: "Actualizar Grupo muscular",
             html: `
-              <form id="updateRolesForm" action="/update_gm" method="post">
-                <input type="hidden" name="id" value="${grupoId}">
-                <div class="mb-3">
+                          <form id="updateRolesForm" action="/update_gm" method="post">
+              <input type="hidden" name="id" value="${grupoId}">
+              <div class="mb-3">
+                <label for="seccion" class="form-label">Sección</label>
+                <select name="seccion" id="seccion" class="form-select" required>
+                  <option value="" disabled ${!data.seccion ? 'selected' : ''}>Sección del cuerpo</option>
+                  <option value="Tren Superior" ${data.seccion === "Tren Superior" ? 'selected' : ''}>Tren Superior</option>
+                  <option value="Tren Inferior" ${data.seccion === "Tren Inferior" ? 'selected' : ''}>Tren Inferior</option>
                   
                   
-                  <label for="seccion" class="form-label">Seccion</label>
-                  <select
-                    name="seccion"
-                    id="seccion"
-                    class="form-select"
-                    required
-                  >
-                    <option value="" disabled ${!data.seccion ? 'selected' : ''}>Seccion del cuerpo</option>
-                    <option value="Tren superior" ${data.seccion === "Tren superior" ? 'selected' : ''}>Tren superior</option>
-                    <option value="Tren inferior" ${data.seccion === "Tren inferior" ? 'selected' : ''}>Tren inferior</option>
-                  </select>
-                  <br>
-                  <br>
-                  <label for="musculo" class="form-label">grupo muscular</label>
-                  <input type="text" class="form-control" id="musculo" name="musculo" value="${data.nombre}" required>
-                </div>
-              </form>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="musculo" class="form-label">Grupo muscular</label>
+                <input type="text" class="form-control" id="musculo" name="musculo" value="${data.nombre}" required>
+              </div>
+            </form>
             `,
+            confirmButtonClass : 'btn-confirmar',
+            cancelButtonClass : 'btn-cancelar',
+            customClass: {
+              confirmButton: 'btn-confirmar',
+              cancelButton: 'btn-cancelar'
+            },
             showCancelButton: true,
             confirmButtonText: "Guardar",
             cancelButtonText: "Cancelar",
@@ -239,11 +302,38 @@ document.querySelectorAll(".updateGrupoBtn").forEach(button => {
         console.error("Error:", error);
         Swal.fire("Error", "Ocurrió un error al obtener los datos del grupo muscular", "error");
       });
+  }});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'bottom-end', // Mostrar en la esquina inferior derecha
+    showConfirmButton: false,
+    timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
+      toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
+    },
   });
-});
 
+  // Verificar si el parámetro create=success está en la URL
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("create") === "success") {
+    Toast.fire({
+      icon: 'success',
+      title: '¡Éxito! Grupo Muscular creado exitosamente.',
+    });
+  }
 
-
+  // Verificar si el parámetro update=success está en la URL
+  if (urlParams.get("update") === "success") {
+    Toast.fire({
+      icon: 'success',
+      title: '¡Éxito! Grupo Muscular actualizado exitosamente.',
+    });
+  }
 </script>
   </body>
 </html>

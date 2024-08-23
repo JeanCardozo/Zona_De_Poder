@@ -276,20 +276,13 @@ router.get("/actualizar_clientes/:id", (req, res) => {
 //usuarios
 
 // /ver_usuarios
-router.get("/ver_usuarios", (req, res) => {
-  conexion.query(
-    "SELECT u.id AS id_usuario ,u.nombre ,u.apellido,u.telefono,u.correo_electronico,u.contraseña, u.id_rol, u.estado,r.id AS id_roles, r.tipo_de_rol AS rol FROM usuarios AS u INNER JOIN roles AS r ON u.id_rol=r.id ORDER BY u.id ",
-
-    (error, results) => {
-      if (error) {
-        return res.status(500).json({ error: error.message }); // Manejo de error
-      }
-
-      res.render("administrador/usuarios/ver_usuarios", {
-        results: results.rows,
-      });
-    }
-  );
+router.get("/ver_usuarios", async (req, res) => {
+  try {
+    const results = await crud.verUsuarios();
+    res.render("administrador/usuarios/ver_usuarios", { usuarios: results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // CREAR USUARIOS
@@ -303,7 +296,7 @@ router.get("/create_usuarios", (req, res) => {
         return res.status(500).json({ error: error.message });
       }
       res.render("administrador/usuarios/create_usuarios", {
-        results: results.rows,
+        roles: results.rows,
       });
     }
   );
@@ -589,14 +582,14 @@ router.get("/ver_ventas", async (req, res) => {
         fechaActual.setHours(0, 0, 0, 0);
 
         // Iterar sobre los resultados y actualizar el estado si es necesario
-        const resultadosActualizados = results.rows.map((talla) => {
+        const resultadosActualizados = results.rows.map(async (talla) => {
           const fechaFin = new Date(talla.fecha_fin);
           fechaFin.setHours(0, 0, 0, 0);
 
           if (fechaFin <= fechaActual && talla.estado !== "Vencida") {
             talla.estado = "Vencida";
             // Opcional: Puedes actualizar el estado en la base de datos aquí
-            // await actualizarEstadoEnLaBaseDeDatos(talla.id_cliente, 'Vencida');
+            await actualizarEstadoEnLaBaseDeDatos(talla.id_cliente, "Vencida");
           }
           return talla;
         });
@@ -623,9 +616,7 @@ router.get("/ver_acti_fisica", autenticateToken, (req, res) => {
     SELECT 
       af.id AS af_id, 
       af.nombre_ejercicio AS af_nombre, 
-     
-      gm.id AS gm_id, 
-      gm.nombre AS gm_nombre 
+           gm.nombre AS gm_nombre 
     FROM 
       actividad_fisica af 
     INNER JOIN 
@@ -870,14 +861,17 @@ router.post("/verTallass", crud.verTallas);
 router.post("/update_tallas", crud.update_tallas);
 
 //GRUPO MUSCULAR
+router.post("/verGrupoMuscularess", crud.verGm);
 router.post("/crear_gm", crud.crear_gm);
 router.post("/update_gm", crud.update_gm);
 
 //ACTIVIDAD FISICA
+router.post("/verActividadFisica", crud.verActividadFisica);
 router.post("/crear_af", crud.crear_af);
 router.post("/update_af", crud.update_af);
 
 //PLAN DE ENTRENAMIENTO
+router.post("/verPlanEntrenamiento", crud.verPlanEntrenamiento);
 router.post("/update_pe", crud.update_pe);
 router.post("/crearPlanEntrenamiento", crud.crearPlanEntrenamiento);
 

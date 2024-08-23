@@ -145,7 +145,7 @@
               <label for="roles" class="form-label">Roles</label>
               <select class="form-select" name="roles" id="roles" required>
                 <option value="">Seleccione un rol</option>
-                <% results.forEach(function(rol) { %>
+                <% roles.forEach(function(rol) { %>
                 <option value="<%= rol.id %>"><%= rol.tipo_de_rol %></option>
                 <% }) %>
               </select>
@@ -159,6 +159,28 @@
         </div>
       </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <% if (typeof alert !== "undefined") { %>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Mostrar la alerta de SweetAlert2
+        Swal.fire({
+          title: "<%= alertTitle %>",
+          text: "<%= alertMessage %>",
+          icon: "<%= alertIcon %>",
+          showConfirmButton: true, // El usuario debe presionar OK
+        }).then(() => {
+          // Redirigir después de que el usuario presione OK
+          const ruta = "<%= typeof ruta !== 'undefined' ? ruta : '' %>";
+          if (ruta) {
+            window.location.href = ruta;
+          }
+        });
+      });
+    </script>
+    <% } %>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

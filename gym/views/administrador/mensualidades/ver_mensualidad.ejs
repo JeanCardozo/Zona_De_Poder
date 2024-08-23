@@ -114,12 +114,16 @@
         datos = await getData();
         console.log(datos);
 
-        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        const totalPages = Math.max(
+          1,
+          Math.ceil(datos.length / itemsPorPagina)
+        );
         generatePagination(totalPages);
         mostrarPagina(1);
       }
 
       function generatePagination(totalPages) {
+        totalPages = Math.max(1, totalPages);
         divPagination.innerHTML = Array.from(
           { length: totalPages },
           (_, i) =>
@@ -137,7 +141,7 @@
 
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
-        const fin = inicio + itemsPorPagina;
+        const fin = Math.min(inicio + itemsPorPagina, datos.length);
         const datosParaMostrar = datos.slice(inicio, fin);
 
         const tbody = document.querySelector("tbody");
@@ -194,34 +198,48 @@
                 html: `
                 <form id="MensualidadForm" action="/crear_mensualidad" method="post" class="space-y-4">
                   <div>
-                    <label for="id" class="block text-sm font-medium text-gray-700">IdentificaciĆĀÄĀ³n</label>
-                    <input type="number" id="id" name="id" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <label for="id" class="block text-sm font-medium text-gray-700">Identificacion</label>
+                    <input type="number" id="id" name="id" required class="mt-1 block w-full rounded-md borde
+            r border-gray-300 shadow-sm focus:border-indigo-300
+             focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                   </div>
                   <div>
                     <label for="con" class="block text-sm font-medium text-gray-700">Convenios</label>
-                    <select id="con" name="con" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <select id="con" name="con" required class="mt-1 block w-full rounded-md borde
+            r border-gray-300 shadow-sm focus:border-indigo-300
+             focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                       ${selectOptions}
                     </select>
                   </div>
                   <div>
                     <label for="pagar" class="block text-sm font-medium text-gray-700">Total a pagar</label>
-                    <input type="number" id="pagar" name="pagar" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <input type="number" id="pagar" name="pagar" required class="mt-1 block w-full rounded-md borde
+            r border-gray-300 shadow-sm focus:border-indigo-300
+             focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                   </div>
                   <div>
                     <label for="tiempo" class="block text-sm font-medium text-gray-700">Tiempo del plan</label>
-                    <select id="tiempo" name="tiempo" required onchange="actualizarValores()" class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <select id="tiempo" name="tiempo" required onchange="actualizarValores()" class="mt-1 block w-full rounded-md borde
+            r border-gray-300 shadow-sm focus:border-indigo-300
+             focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                       <option value="">Seleccione un tiempo del plan</option>
-                      <option value="15 dias">15 dĆĀÄĀ­as</option>
+                      <option value="15 dias">15 dias</option>
                       <option value="1 Mes">1 Mes</option>
                       <option value="3 Meses">3 Meses</option>
                       <option value="6 Meses">6 Meses</option>
-                      <option value="1 AĆĀÄĀ±o">1 AĆĀÄĀ±o</option>
+                      <option value="1 Año">1 Año</option>
                     </select>
                   </div>
                   <input type="hidden" name="meses" id="meses" value="0">
                   <input type="hidden" name="dias" id="dias" value="0">
                 </form>
               `,
+                confirmButtonClass: "btn-confirmar",
+                cancelButtonClass: "btn-cancelar",
+                customClass: {
+                  confirmButton: "btn-confirmar",
+                  cancelButton: "btn-cancelar",
+                },
                 confirmButtonText: "Confirmar",
                 confirmButtonClass: "btn-confirmar",
                 cancelButtonText: "Cancelar",
@@ -258,7 +276,7 @@
           case "6 Meses":
             meses = 6;
             break;
-          case "1 AĆĀÄĀ±o":
+          case "1 Año":
             meses = 12;
             break;
         }
@@ -269,13 +287,13 @@
 
       function verificar(id) {
         Swal.fire({
-          title: "ĆĀÄĀ¦EstĆĀÄĀĀs seguro?",
-          text: "ĆĀÄĀĀNo podrĆĀÄĀĀs revertir esto!",
+          title: "¿Estas seguro?",
+          text: "!No podrás revertir esto¡",
           icon: "warning",
           showCancelButton: true,
-          confirmButtonText: "SĆĀÄĀ­, bĆĀÄĀ³rralo",
+          confirmButtonText: "Sí, Bórralo",
           confirmButtonClass: "btn-confirmar",
-          cancelButtonText: "No, cancelar",
+          cancelButtonText: "No, Cancelar",
           cancelButtonClass: "btn-cancelar",
           reverseButtons: true,
         }).then((result) => {
@@ -293,7 +311,7 @@
           fetch(`/actualizar_mensualidad/${mensualidadId}`)
             .then((response) => response.json())
             .then((data) => {
-              console.log("mondades", data);
+              console.log("mensualidades", data);
               const mensualidades = data.mensualidades[0];
               const convenios = data.mensualidadConvencional;
 
@@ -308,37 +326,47 @@
                 )
                 .join("");
 
+              let tiempoOptions = [
+                "15 días",
+                "1 Mes",
+                "3 Meses",
+                "6 Meses",
+                "1 Año",
+              ]
+                .map(
+                  (tiempo) =>
+                    `<option value="${tiempo}" ${
+                      tiempo === mensualidades.tiempo_plan ? "selected" : ""
+                    }>${tiempo}</option>`
+                )
+                .join("");
+
               Swal.fire({
                 title: "Actualizar Mensualidad",
                 html: `
-            <form id="UpdateMensualidadForm" action="/actualizar_mensualidad/${mensualidadId}" method="post" class="space-y-4">
-              <div>
-                <label for="id" class="block text-sm font-medium text-gray-700">Identificación</label>
-                <input type="number" id="id" name="id" value="${mensualidades.id_mensualidad}" disabled required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-              </div>
-              <div>
-                <label for="con" class="block text-sm font-medium text-gray-700">Convenios</label>
-                <select id="con" name="con" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                  ${selectOptions}
-                </select>
-              </div>
-              <div>
-                <label for="pagar" class="block text-sm font-medium text-gray-700">Total a pagar</label>
-                <input type="number" id="pagar" name="pagar" value="${mensualidades.total_pagar}" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-              </div>
-              <div>
-                <label for="tiempo" class="block text-sm font-medium text-gray-700">Tiempo del plan</label>
-                <select id="tiempo" name="tiempo" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                  <option value="${mensualidades.tiempo_plan}" selected>${mensualidades.tiempo_plan}</option>
-                  <option value="15 dias">15 días</option>
-                  <option value="1 Mes">1 Mes</option>
-                  <option value="3 Meses">3 Meses</option>
-                  <option value="6 Meses">6 Meses</option>
-                  <option value="1 Año">1 Año</option>
-                </select>
-              </div>
-            </form>
-          `,
+                        <form id="UpdateMensualidadForm" action="/update_mensualidad" method="post" class="space-y-4">
+                            <div>
+                                <label for="id" class="block text-sm font-medium text-gray-700">Identificación</label>
+                                <input type="number" id="ide" name="ide" value="${mensualidades.id_mensualidad}" readonly required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label for="tipo" class="block text-sm font-medium text-gray-700">Convenios</label>
+                                <select id="tipo" name="tipo" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    ${selectOptions}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="pagar" class="block text-sm font-medium text-gray-700">Total a pagar</label>
+                                <input type="number" id="pagar" name="pagar" value="${mensualidades.total_pagar}" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label for="tiempo" class="block text-sm font-medium text-gray-700">Tiempo del plan</label>
+                                <select id="tiempo" name="tiempo" required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    ${tiempoOptions}
+                                </select>
+                            </div>
+                        </form>
+                    `,
                 confirmButtonText: "Actualizar",
                 confirmButtonClass: "btn-confirmar",
                 cancelButtonText: "Cancelar",
@@ -361,6 +389,38 @@
             );
         }
       });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "bottom-end", // Mostrar en la esquina inferior derecha
+        showConfirmButton: false,
+        timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
+          toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
+        },
+      });
+
+      // Verificar si el parámetro create=success está en la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("create") === "success") {
+        Toast.fire({
+          icon: "success",
+          title: "¡Éxito! Mensualidad creada exitosamente.",
+        });
+      }
+
+      // Verificar si el parámetro update=success está en la URL
+      if (urlParams.get("update") === "success") {
+        Toast.fire({
+          icon: "success",
+          title: "¡Éxito! Mensualidad actualizada exitosamente.",
+        });
+      }
     </script>
   </body>
 </html>

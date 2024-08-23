@@ -15,6 +15,24 @@
     />
 
     <title>Ver Actividad Fisica</title>
+
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22C55E; 
+      }
+  
+      .btn-cancelar {
+        background-color: red; 
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4; 
+      }
+      </style>
   </head>
   <body>
     <%- include('../plantillas/navbar.ejs') %>
@@ -70,38 +88,85 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200 text-center">
-            <% let rowCounter = 0; %>
-
-            <% results.forEach((af) => { %>
-              <tr class="  hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>">
-                <td class=" text-left px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <%= af.af_id %>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <%= af.af_nombre %>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <%= af.gm_nombre %>
-              </td>
-              <td
-                class="flex justify-center py-4 whitespace-nowrap text-right text-sm font-medium"
-              >
-              <a
-              href="#"
-              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateActividadBtn"
-              data-id="<%= af.af_id %>"
-            >
-              Editar
-          </a>
-              </td>
-            </tr>
-            <% rowCounter++; %>
-
-            <% }) %>
+        
           </tbody>
         </table>
       </div>
+      <div id="pagination" class="w-full flex justify-center"></div>
+
     </div>
+
+    <script defer>
+      const divPagination = document.getElementById('pagination');
+      let datos = [];
+      const itemsPorPagina = 5;
+    
+      async function getData() {
+        try {
+          const response = await fetch('/verActividadFisica', {
+            method: 'POST',
+          });
+    
+          if (!response.ok) {
+            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+          }
+    
+          return await response.json();
+        } catch (error) {
+          console.error('Error al obtener datos:', error);
+          return [];
+        }
+      }
+    
+      async function inicializar() {
+        datos = await getData();
+        console.log(datos);
+    
+        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      }
+    
+      function generatePagination(totalPages) {
+        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
+          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>`
+        ).join('');
+    
+        divPagination.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            mostrarPagina(parseInt(e.target.dataset.page));
+          }
+        });
+      }
+    
+      function mostrarPagina(numeroPagina) {
+        const inicio = (numeroPagina - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = datos.slice(inicio, fin);
+    
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+          <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${index % 2 === 0 ? 'bg-gray-100' : ''}">
+            <td class="p-2">${dato.af_id || ''}</td>
+            <td class="p-2">${dato.af_nombre}</td>
+            <td class="p-2">${dato.gm_nombre}</td>
+            <td class="flex justify-center py-4 whitespace-nowrap text-right text-sm font-medium">
+              <a href="#" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateActividadBtn" data-id="${dato.af_id || ''}">
+                Editar
+              </a>
+            </td>
+          </tr>
+        `).join('');
+    
+        document.querySelectorAll(".updateActividadBtn").forEach(button => {
+          button.addEventListener("click", function(e) {
+          });
+        }); // vea gei, con esto llama bien al boton de actualizar / editar
+      }
+    
+      inicializar();
+    </script>
+    
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -159,24 +224,29 @@ document
         Swal.fire({
           title: "Crear Actividad física",
           html: `
-          <form id="ActividadForm" action="/crear_af" method="post">
-            <div class="mb-3">
-              <div class="mb-3">
-                <label for="id" class="form-label">ID</label>
-                <input type="text" class="form-control" id="id" name="id" required>
-              </div>
-
-                <label for="gm" class="form-label">Grupos musculares</label>
-                <select id="gm" name="gm" class="form-select" aria-label="Default select example" required>
-                  ${selectOptions}
-                </select>
+          <form id="ActividadForm" action="/crear_af" method="post" class="space-y-3">
+            <div>
+              <label for="gm" class="block text-sm font-medium text-gray-700">Grupos musculares</label>
+            <select id="seccion" name="seccion" class="mt-1 block w-full rounded-md
+               border border-gray-300 shadow-sm focus:border-indigo-300
+                focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                ${selectOptions}
+              </select>
             </div>
-            <div class="mb-3">
-              <label for="nombre_ejercicio" class="form-label">Nombre del ejercicio</label>
-              <input type="text" class="form-control" id="nombre_ejercicio" name="nombre_ejercicio" required>
+            <div>
+              <label for="nombre_ejercicio" class="block text-sm font-medium text-gray-700">Nombre del ejercicio</label>
+              <input type="text" class="mt-1 block w-full rounded-md
+               border border-gray-300 shadow-sm focus:border-indigo-300
+                focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="nombre_ejercicio" required>
             </div>
-          </form>
+        </form>
           `,
+            confirmButtonClass : 'btn-confirmar',
+            cancelButtonClass : 'btn-cancelar',
+            customClass: {
+              confirmButton: 'btn-confirmar',
+              cancelButton: 'btn-cancelar'
+            },         
           showCancelButton: true,
           confirmButtonText: "Guardar",
           cancelButtonText: "Cancelar",
@@ -189,10 +259,10 @@ document
   });
   </script>
   <script>
-    document.querySelectorAll(".updateActividadBtn").forEach(button => {
-  button.addEventListener("click", function (e) {
-    e.preventDefault();
-    const ActividadId = this.dataset.id;
+    document.querySelector("tbody").addEventListener("click", function (e) {
+        if (e.target.classList.contains("updateActividadBtn")) {
+          e.preventDefault();
+          const ActividadId = e.target.dataset.id;
 
     fetch(`/actualizar_f/${ActividadId}`)
       .then(response => {
@@ -209,11 +279,11 @@ document
           Swal.fire({
             title: "Actualizar Actividad física",
             html: `
-              <form id="updateActividadForm" action="/update_af" method="post">
+              <form id="updateActividadForm" action="/update_af" method="post" class="space-y-4 w-full max-w-md mx-auto">
                 <input type="hidden" name="id" value="${ActividadId}">
-                <div class="mb-3">
-                  <label for="gm" class="form-label">Grupos musculares</label>
-                  <select id="gm" name="gm" class="form-select" required>
+                <div class="mb-2">
+                  <label for="gm" class="block text-sm font-medium text-gray-700 mb-1">Grupos musculares</label>
+                  <select id="gm" name="gm" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" required>
                     <option value="" disabled selected>Seleccione un grupo muscular</option>
                     ${data.grupos_musculares.map(gm => `
                       <option value="${gm.id}" ${gm.id === data.actividad_fisica.id_grupo_muscular ? 'selected' : ''}>
@@ -221,12 +291,19 @@ document
                       </option>
                     `).join('')}
                   </select>
-                  <br><br>
-                  <label for="actividad" class="form-label">Actividad física</label>
-                  <input type="text" class="form-control" id="actividad" name="actividad" value="${data.actividad_fisica.nombre}" required>
+                </div>
+                <div class="mb-2">
+                  <label for="actividad" class="block text-sm font-medium text-gray-700 mb-1">Actividad física</label>
+                  <input type="text" id="actividad" name="actividad" value="${data.actividad_fisica.nombre}" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" required>
                 </div>
               </form>
             `,
+            confirmButtonClass : 'btn-confirmar',
+            cancelButtonClass : 'btn-cancelar',
+            customClass: {
+              confirmButton: 'btn-confirmar',
+              cancelButton: 'btn-cancelar'
+            },            
             showCancelButton: true,
             confirmButtonText: "Guardar",
             cancelButtonText: "Cancelar",
@@ -240,15 +317,43 @@ document
         console.error("Error:", error);
         Swal.fire("Error", "Ocurrió un error al obtener los datos del grupo muscular", "error");
       });
+  }});
+
+
+
+  </script>
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'bottom-end', // Mostrar en la esquina inferior derecha
+    showConfirmButton: false,
+    timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
+      toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
+    },
   });
-});
 
-  </script>
-  
-  
-  
-  
-  </script>
+  // Verificar si el parámetro create=success está en la URL
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("create") === "success") {
+    Toast.fire({
+      icon: 'success',
+      title: '¡Éxito! Actividad física creada exitosamente.',
+    });
+  }
 
+  // Verificar si el parámetro update=success está en la URL
+  if (urlParams.get("update") === "success") {
+    Toast.fire({
+      icon: 'success',
+      title: '¡Éxito! Actividad física actualizada exitosamente.',
+    });
+  }
+</script>
   </body>
 </html>
