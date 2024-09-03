@@ -739,140 +739,160 @@ exports.update_mensualidad = (req, res) => {
 
 // REGISTRAR --------------------------------------------------------------------------
 exports.register = async (req, res) => {
-  const id = req.body.id;
-  const nombre = req.body.nombre;
-  const apellido = req.body.apellido;
-  const correo = req.body.correo;
-  const telefono = req.body.telefono;
-  const contraseña = req.body.pass;
-  const estado = "Activo";
-  const id_rol = 3;
+  const { id, nombre, apellido, correo, telefono, pass } = req.body;
 
-  console.log("Nombre:", nombre); // Verifica el valor
-  console.log("Contraseña:", contraseña); // Verifica el valor
-
-  if (!id || !nombre || !apellido || !correo || !telefono || !contraseña) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Todos los campos son obligatorios" });
+  if (!id || !nombre || !apellido || !correo || !telefono || !pass) {
+    return res.status(400).json({
+      success: false,
+      message: "Todos los campos son obligatorios",
+    });
   }
 
   try {
-    let hashedPassword = await bcrypt.hash(contraseña, 10);
+    const hashedPassword = await bcrypt.hash(pass, 10);
 
-    // Inserta en la base de datos
-    conexion.query(
-      "INSERT INTO usuarios (id, nombre, apellido, correo_electronico, telefono, contraseña,id_rol, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-      [id, nombre, apellido, correo, telefono, hashedPassword, id_rol, estado],
-      (error, results) => {
-        if (error) {
-          console.log(error);
-          return res
-            .status(500)
-            .json({ success: false, message: "Error en la base de datos" });
-        } else {
-          res.render("registrar", {
-            alert: true,
-            alertTitle: "Registro",
-            alertMessage: "Usuario registrado con éxito",
-            alertIcon: "success",
-            showConfirmButton: false,
-            timer: 1500,
-            ruta: "/login_index",
-          });
-        }
+    // Almacenar temporalmente en la tabla `temp_registro`
+    const query = `
+      INSERT INTO temp_registro (id_usuario, nombre, apellido, correo, telefono, contraseña)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id;
+    `;
+    const values = [id, nombre, apellido, correo, telefono, hashedPassword];
+
+    conexion.query(query, values, (error, result) => {
+      if (error) {
+        console.error("Error en la base de datos:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Error en la base de datos",
+        });
       }
-    );
+
+      const tempRegistroId = result.rows[0].id;
+
+      // Redirigir a la página de selección de mensualidades
+      res.redirect(`/mensualidades?tempRegistroId=${tempRegistroId}`);
+    });
   } catch (error) {
     console.error("Error al registrar:", error);
     res.status(500).json({ success: false, message: "Error al registrar" });
   }
 };
 
+// ruta para la redirección a PayU -----------------------------------------------
+
 // INICIO DE SESION --------------------------------------------------------------------------------------------------
 exports.login = async (req, res) => {
-  const user = req.body.user; // Captura el ID del usuario ingresado en el formulario
-  const pass = req.body.pass; // Captura la contraseña ingresada
+  const user = req.body.user;
+  const pass = req.body.pass;
 
-  if (user && pass) {
-    try {
-      const results = await conexion.query(
-        "SELECT * FROM usuarios WHERE id = $1",
-        [user]
-      );
+  console.log("hpta: ", user);
 
-      // Verifica si el usuario existe, si la contraseña coincide y si el estado es 'activo'
-      if (
-        results.rows.length === 0 || // Si no encuentra el usuario en la base de datos
-        !(await bcrypt.compare(pass, results.rows[0].contraseña)) || // Si la contraseña no coincide
-        results.rows[0].estado === "Inactivo" // Si el estado del usuario es 'inactivo'
-      ) {
-        let alertMessage = "";
+  if (!user || !pass) {
+    return renderLoginPage(res, {
+      alertTitle: "Advertencia",
+      alertMessage: "¡Por favor ingrese un usuario y contraseña!",
+      alertIcon: "warning",
+    });
+  }
 
-        if (results.rows.length === 0) {
-          alertMessage = "Identificación o contraseña incorrecta";
-        } else if (!(await bcrypt.compare(pass, results.rows[0].contraseña))) {
-          alertMessage = "Identificación o contraseña incorrecta";
-        } else if (results.rows[0].estado === "Inactivo") {
-          alertMessage = "El usuario está inactivo y no puede iniciar sesión";
-        }
+  try {
+    const results = await conexion.query(
+      `SELECT u.id, u.contraseña, u.estado, u.id_rol, r.tipo_de_rol, u.nombre FROM usuarios as u
+        INNER JOIN roles as r ON u.id_rol = r.id 
+       WHERE u.id = $1`,
+      [user]
+    );
 
-        return res.render("login_index", {
-          alert: true,
-          alertTitle: "Error",
-          alertMessage: alertMessage,
-          alertIcon: "error",
-          showConfirmButton: true,
-          timer: 1500,
-          ruta: "login_index",
-        });
-      }
-
-      // Genera el JWT con el ID del usuario
-      const userPayload = { id: results.rows[0].id };
-      const token = jwt.sign(userPayload, SECRET_KEY, { expiresIn: "1h" });
-
-      // Envía el token como una cookie para la sesión del usuario
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-      });
-
-      // Redirige al administrador después del login exitoso
-      return res.render("login_index", {
-        alert: true,
-        alertTitle: "Conexión exitosa",
-        alertMessage: "¡LOGIN CORRECTO!",
-        alertIcon: "success",
-        showConfirmButton: false,
-        timer: 1000,
-        ruta: "index_admin",
-      });
-    } catch (error) {
-      console.error("Error en la base de datos:", error);
-      return res.status(500).render("login_index", {
-        alert: true,
+    if (results.rows.length === 0) {
+      return renderLoginPage(res, {
         alertTitle: "Error",
-        alertMessage: "Error en la base de datos",
+        alertMessage: "Identificación o contraseña incorrecta",
         alertIcon: "error",
-        showConfirmButton: true,
-        timer: 1500,
-        ruta: "login_index",
       });
     }
-  } else {
-    // Si no se ingresó usuario o contraseña
+
+    const userData = results.rows[0];
+
+    if (!(await bcrypt.compare(pass, userData.contraseña))) {
+      return renderLoginPage(res, {
+        alertTitle: "Error",
+        alertMessage: "Identificación o contraseña incorrecta",
+        alertIcon: "error",
+      });
+    }
+
+    if (userData.estado === "Inactivo") {
+      return renderLoginPage(res, {
+        alertTitle: "Error",
+        alertMessage: "El usuario está inactivo y no puede iniciar sesión",
+        alertIcon: "error",
+      });
+    }
+
+    // Genera el token
+    const token = generateToken(userData);
+    setTokenCookie(res, token);
+
+    // Guarda los datos del usuario en la sesión
+    req.session.userData = {
+      id: userData.id,
+      nombre_usuario: userData.nombre,
+      rol: userData.tipo_de_rol,
+    };
+
+    const routeByRole = {
+      1: "index_admin",
+      3: "clientes/index_c",
+      // Agregar más roles según sea necesario
+    };
+
+    const ruta = routeByRole[userData.id_rol] || "login_index";
+
     return res.render("login_index", {
       alert: true,
-      alertTitle: "Advertencia",
-      alertMessage: "¡Por favor ingrese un usuario y/o password!",
-      alertIcon: "warning",
-      showConfirmButton: true,
+      alertTitle: "Conexión exitosa",
+      alertMessage: "¡LOGIN CORRECTO!",
+      alertIcon: "success",
+      showConfirmButton: false,
       timer: 1000,
-      ruta: "login_index",
+      ruta: ruta,
+    });
+  } catch (error) {
+    console.error("Error en la base de datos:", error);
+    return renderLoginPage(res, {
+      alertTitle: "Error",
+      alertMessage: "Error en la base de datos",
+      alertIcon: "error",
     });
   }
 };
+
+function renderLoginPage(res, alertOptions) {
+  return res.render("login_index", {
+    alert: true,
+    ...alertOptions,
+    showConfirmButton: true,
+    timer: 1500,
+    ruta: "login_index",
+  });
+}
+
+function generateToken(userData) {
+  const userPayload = {
+    id: userData.id,
+    role: userData.id_rol,
+  };
+  return jwt.sign(userPayload, SECRET_KEY, { expiresIn: "1h" });
+}
+
+function setTokenCookie(res, token) {
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+}
 
 // GRUPOS MUSCULARES ---------------------------------------------------
 
@@ -980,12 +1000,34 @@ exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
       if (results.rowCount > 0) {
         // Obtener las actividades físicas
         conexion.query(
-          "SELECT * FROM actividad_fisica",
+          `SELECT 
+              af.id AS af_id, 
+              af.nombre_ejercicio AS af_nombre, 
+            
+              gm.id AS gm_id, 
+              gm.nombre AS gm_nombre 
+            FROM 
+              actividad_fisica af 
+            INNER JOIN 
+              grupos_musculares gm 
+            ON 
+              af.id_grupo_muscular = gm.id 
+            ORDER BY 
+              af.id`,
           (error, actividadesResults) => {
             if (error) {
               return res.status(500).json({ error: error.message });
             }
 
+            conexion.query(
+              "SELECT * FROM grupos_musculares ORDER BY id",
+
+              (error, results) => {
+                if (error) {
+                  return res.status(500).json({ error: error.message }); // Manejo de error
+                }
+              }
+            );
             res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
               user: results.rows[0],
               id_cliente: id_cliente,
@@ -1005,45 +1047,43 @@ exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
 exports.mostrarFormularioVacio = (req, res) => {
   // Obtener las actividades físicas
   conexion.query(
-    "SELECT * FROM actividad_fisica",
+    `SELECT 
+      af.id AS af_id, 
+      af.nombre_ejercicio AS af_nombre, 
+     
+      gm.id AS gm_id, 
+      gm.nombre AS gm_nombre 
+    FROM 
+      actividad_fisica af 
+    INNER JOIN 
+      grupos_musculares gm 
+    ON 
+      af.id_grupo_muscular = gm.id 
+    ORDER BY 
+      af.id`,
     (error, actividadesResults) => {
       if (error) {
         return res.status(500).json({ error: error.message });
       }
 
-      res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
-        id_cliente: null,
-        actividades: actividadesResults.rows,
-      });
+      conexion.query(
+        "SELECT * FROM grupos_musculares ORDER BY id",
+
+        (error, gruposMuscularesResult) => {
+          if (error) {
+            return res.status(500).json({ error: error.message }); // Manejo de error
+          }
+
+          res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
+            id_cliente: null,
+            actividades: actividadesResults.rows,
+            gruposMusculares: gruposMuscularesResult.rows,
+          });
+        }
+      );
     }
   );
 };
-
-// AQUI SE CREA DESPUES DE HACER LAS CONDICIONES
-exports.crearPlanEntrenamiento = (req, res) => {
-  const { id_cliente, dia, id_actividad_fisica, series, repeticiones } =
-    req.body;
-
-  // Validar que se haya proporcionado el id_cliente
-  if (!id_cliente) {
-    return res.status(400).json({ error: "El id_cliente es requerido" });
-  }
-
-  // Insertar el nuevo plan de entrenamiento en la base de datos
-  conexion.query(
-    "INSERT INTO plan_entrenamiento (id_cliente, dia, id_actividad_fisica, series, repeticiones) VALUES ($1, $2, $3, $4, $5)",
-    [id_cliente, dia, id_actividad_fisica, series, repeticiones],
-    (error, results) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).json({ error: error.message });
-      } else {
-        res.redirect(`/ver_plan_ent`);
-      }
-    }
-  );
-};
-
 // ACTUALIZAR PLAN DE ENTRENAMIENTO
 exports.update_pe = (req, res) => {
   const { id, dia, id_actividad_fisica, series, repeticiones } = req.body;
@@ -1092,6 +1132,7 @@ exports.registrarIngreso = async (req, res) => {
         showConfirmButton: true,
         sonido:
           "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+        ruta: "index_admin",
       });
     }
 
@@ -1128,8 +1169,33 @@ RETURNING id_cliente;
         showConfirmButton: true,
         sonido:
           "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+        ruta: "index_admin",
       });
     }
+
+    // Obtener los últimos clientes para pasarlos a la vista
+    const ultimosClientesQuery = `
+    SELECT 
+      c.nombre, 
+      c.id_mensualidad AS id_mensu_cliente, 
+      m.id AS id_mensu, 
+      m.tiempo_plan
+    FROM  
+      clientes c
+    INNER JOIN 
+      mensualidades m ON c.id_mensualidad = m.id
+    ORDER BY 
+      c.fecha_de_inscripcion DESC
+    LIMIT 5;
+  `;
+    const ultimosClientesResult = await conexion.query(ultimosClientesQuery);
+    const ultimosClientes = ultimosClientesResult.rows;
+
+    const queryVentasVencidas = `
+    SELECT * FROM mensualidad_clientes WHERE estado = 'Vencida' ORDER BY fecha_inicio DESC;`;
+
+    const resultVentasVencidas = await conexion.query(queryVentasVencidas);
+    const datosVentasVencidas = resultVentasVencidas.rows;
 
     // Renderizar la vista index_admin con un mensaje de éxito
     res.render("administrador/index", {
@@ -1140,6 +1206,9 @@ RETURNING id_cliente;
       showConfirmButton: true,
       sonido:
         "https://raw.githubusercontent.com/JeanCardozo/audios/main/inicio.mp3",
+      ruta: "index_admin",
+      ultimosClientes: ultimosClientes,
+      datosVentasVencidas: datosVentasVencidas,
     });
   } catch (error) {
     console.error("Error en registrarIngreso:", error);
@@ -1151,6 +1220,8 @@ RETURNING id_cliente;
       showConfirmButton: true,
       sonido:
         "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+      ruta: "index_admin",
+      ultimosClientes: [], // Pasar una lista vacía en caso de error
     });
   }
 };
@@ -1174,26 +1245,23 @@ exports.verClientes = (req, res) => {
   });
 };
 
-// ver usuarios
-
-exports.verUsuarios = () => {
-  return new Promise((resolve, reject) => {
-    const query = `
-      SELECT u.id AS id_usuario, u.nombre, u.apellido, u.telefono, u.correo_electronico,
-      u.id_rol, u.estado, r.tipo_de_rol AS rol 
-      FROM usuarios AS u 
-      INNER JOIN roles AS r ON u.id_rol = r.id 
-      ORDER BY u.id
-    `;
-
-    conexion.query(query, (error, results) => {
+// ver usuarios API POST
+exports.verUsuarios = (req, res) => {
+  conexion.query(
+    `SELECT u.id AS id_usuarios, u.nombre, u.apellido, u.telefono, u.correo_electronico, u.contraseña, u.id_rol, u.estado,
+            r.id AS id_roles, r.tipo_de_rol AS rol 
+     FROM usuarios AS u 
+     INNER JOIN roles AS r ON u.id_rol = r.id 
+     WHERE u.id_rol IN ($1, $2)`,
+    [1, 2],
+    (error, results) => {
       if (error) {
-        reject(error);
-      } else {
-        resolve(results.rows);
+        return res.status(500).json({ error: error.message }); // Manejo de error
       }
-    });
-  });
+
+      res.status(200).json(results.rows);
+    }
+  );
 };
 
 // ver mensualidades
@@ -1286,6 +1354,48 @@ exports.verPlanEntrenamiento = (req, res) => {
   });
 };
 
+exports.guardarPlanentrenamiento = async (req, res) => {
+  try {
+    const { id_cliente, dias, actividades, seriesRepeticiones } = req.body;
+
+    // Verificar que 'dias' es un array y 'actividades' es un array
+    if (!Array.isArray(dias) || !Array.isArray(actividades)) {
+      throw new Error("Los días o las actividades no son válidos.");
+    }
+
+    // Validar que seriesRepeticiones es un objeto
+    if (typeof seriesRepeticiones !== "object") {
+      throw new Error("La estructura de series y repeticiones no es válida.");
+    }
+
+    // Por cada día seleccionado, guarda las actividades con series y repeticiones
+    for (const dia of dias) {
+      for (const actividad of actividades) {
+        // Obtener series y repeticiones para cada actividad
+        const series = seriesRepeticiones[`series_${actividad}`];
+        const repeticiones = seriesRepeticiones[`repeticiones_${actividad}`];
+
+        // Verificar que series y repeticiones no sean undefined
+        if (series === undefined || repeticiones === undefined) {
+          throw new Error(`Faltan datos para la actividad ${actividad}.`);
+        }
+
+        // Inserta en la base de datos
+        await pool.query(
+          `INSERT INTO plan_entrenamiento (dia, id_cliente, id_actividad_fisica, series, repeticiones)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [dia, id_cliente, actividad, series, repeticiones]
+        );
+      }
+    }
+
+    res.redirect("/ver_plan_ent");
+  } catch (error) {
+    console.error("Error al guardar el plan de entrenamiento:", error.message);
+    res.status(500).send("Error al guardar el plan de entrenamiento.");
+  }
+};
+
 // Ver actividad fisica
 
 exports.verActividadFisica = (req, res) => {
@@ -1310,5 +1420,31 @@ exports.verActividadFisica = (req, res) => {
     }
 
     return res.status(200).json(results.rows);
+  });
+};
+
+// ACTUALIZAR EL ESTADO DE MENSUALIDAD_CLIENTES CADA DIA--------------------
+exports.actualizarEstadosMensualidades = () => {
+  console.log("Iniciando actualización de estados...");
+  console.log("Fecha actual:", new Date());
+
+  const query = `
+    UPDATE mensualidad_clientes
+    SET estado = 'Vencida'
+    WHERE fecha_fin <= CURRENT_DATE
+      AND estado != 'Vencida'
+    RETURNING *;
+  `;
+
+  console.log("Query a ejecutar:", query);
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      console.error("Error al actualizar los estados:", error);
+    } else {
+      console.log(`${results.rowCount} registros actualizados a 'Vencida'.`);
+      console.log("Registros actualizados:", results.rows);
+    }
+    console.log("Finalización de la actualización de estados.");
   });
 };

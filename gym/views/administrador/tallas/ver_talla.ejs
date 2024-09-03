@@ -15,7 +15,7 @@
     />
     <title>Ver tallas</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
 
     <div class="container mx-auto p-5">
@@ -27,14 +27,14 @@
       >
 
       <div class="max-w-7xl mx-auto p-4">
-        <div class="overflow-x-auto">
+        <div class="">
             <table class="min-w-full table-auto text-xs
              sm:text-sm lg:text-base text-left text-gray-500
               dark:text-gray-400">
-        <thead class="bg-gray-500 text-white text-center">
+        <thead class="bg-gray-500 text-white text-center text-sm">
           <tr>
             <th class="px-4 py-2">ID</th>
-            <th class="px-4 py-2">IDENTIFICACION CLIENTE</th>
+            <th class="px-4 py-2">ID CLIENTE</th>
             <th class="px-4 py-2">NOMBRE</th>
             <th class="px-4 py-2">PESO</th>
             <th class="px-4 py-2">ALTURA</th>
@@ -48,7 +48,7 @@
             <th class="px-4 py-2">ACCIONES</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="bg-white divide-y divide-gray-200 text-center">
         
         </tbody>
       </table>
@@ -120,9 +120,9 @@
             <td class="p-2">${dato.medida_abdomen}</td>
             <td class="p-2">${dato.medida_cadera}</td>
             <td class="p-2">${dato.medida_pierna}</td>
-            <td class="p-2">${dato.medida_pantorilla}</td>
+            <td class="p-2">${dato.medida_pantorrilla}</td>
             <td class="py-4 text-center flex items-center justify-around gap-2">
-              <a href="/actualizar_tallas/${dato.id}" 
+              <a href="/actualizar_tallas/${dato.id_cliente}" 
                 class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
             </td>
           </tr>

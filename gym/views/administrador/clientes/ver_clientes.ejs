@@ -17,7 +17,7 @@
 
     <title>Ver clientes</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
 
     <div class="px-10 mx-auto mt-4 p-5">
@@ -43,7 +43,7 @@
                 <thead class="text-xs bg-gray-500 text-white">
                     <tr>
                         <% const headers = ["ID", "NOMBRE", "APELLIDO", "EDAD", "SEXO", "INSCRIPCIÓN",
-                         "CORREO", "TELÉFONO", "PLAN", "TOTAL", "ESTADO", "USUARIO", "TALLAS", "ACCIONES"]; %>
+                         "CORREO", "TELÉFONO", "PLAN", "TOTAL", "ESTADO", "TALLAS", "ACCIONES"]; %>
                         <% headers.forEach(header => { %>
                         <th scope="col" class="px-4 py-6 text-center">
                             <%= header %>
@@ -51,7 +51,7 @@
                         <% }); %>
                     </tr>
                 </thead>
-                <tbody >
+                <tbody class="bg-white divide-y divide-gray-200 text-center">
                 </tbody>
             </table>
             
@@ -84,7 +84,7 @@
     
       async function inicializar() {
         datos = await getData();
-        console.log(datos);
+     
     
         const totalPages = Math.ceil(datos.length / itemsPorPagina);
         generatePagination(totalPages);
@@ -123,7 +123,6 @@
             <td class="p-2">${dato.tiempo_plan}</td>
             <td class="p-2">${dato.total_pagar}</td>
             <td class="p-2">${dato.estado}</td>
-            <td class="p-2">${dato.nom_usu}</td>
             <td class="p-2">
               <button 
                 data-client-id="${dato.id}" 

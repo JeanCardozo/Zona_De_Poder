@@ -34,7 +34,7 @@
 
     <title>Ver roles</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
 
     <div class="px-10 mx-auto mt-4 p-5">
@@ -57,7 +57,7 @@
         <div class="max-w-7xl mx-auto p-4">
           <div class="overflow-x-auto">
             <table
-              class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
+              class=" min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
             >
               <thead class="bg-gray-400 text-white text-center">
                 <tr>
@@ -74,8 +74,9 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="text-gray-700">
-                <% let rowCounter = 0; %> <% results.forEach((roles) => { %>
+              <tbody class="bg-white divide-y divide-gray-200 text-center">
+                <% let rowCounter = 0; %> 
+                <% results.forEach((roles) => { %>
                 <tr
                   class="text-center hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
                 >
@@ -105,6 +106,8 @@
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    
 
     <!-- un modal para crear el roles ahi melo caramelo -->
     <script>
@@ -188,6 +191,7 @@ document.querySelectorAll(".updateRolesBtn").forEach(button => {
       });
   });
 });
+
 
 
     </script>

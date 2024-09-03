@@ -1,47 +1,162 @@
 const express = require("express");
 const router = express.Router();
 const conexion = require("./database/zona_de_poder_db");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const authMiddleware = require("./middleware/auth");
 const SECRET_KEY = "negrosdemierda";
 const path = require("path");
 const crud = require("./controllers/crud");
+const cron = require("node-cron");
+const { log } = require("console");
+const axios = require("axios");
+// que tas hachendo???, se me jodio el index de clientes jajaja
+// Middleware global para asegurar que userData esté disponible en todas las vistas
+router.use((req, res, next) => {
+  if (req.session.userData) {
+    res.locals.userData = req.session.userData;
+    console.log(
+      "Middleware global: userData en res.locals",
+      res.locals.userData
+    );
+  } else {
+    res.locals.userData = null;
+  }
+  next();
+});
 
-// andrey haga el diseño mejor
+// Ruta que obtiene los datos del usuario y los guarda en la sesión
+router.get("/navbar", authenticateToken, verifyAdmin, (req, res) => {
+  const loggedUserId = req.user.id;
+  console.log("xd: ", loggedUserId);
+
+  conexion.query(
+    `SELECT u.id as id_usuario, u.nombre AS nombre_usuario, r.tipo_de_rol AS rol 
+     FROM usuarios AS u   
+     INNER JOIN roles AS r ON u.id_rol = r.id 
+     WHERE u.id = $1`,
+    [loggedUserId],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      if (results.rows && results.rows.length > 0) {
+        const userData = results.rows[0];
+
+        // Guarda los datos del usuario en la sesión
+        req.session.userData = userData;
+
+        console.log(
+          "Datos del usuario almacenados en la sesión:",
+          req.session.userData
+        );
+
+        // No es necesario pasar results a la vista, res.locals.userData ya lo contiene
+        res.render("administrador/plantillas/navbar");
+      } else {
+        req.session.userData = undefined;
+        res.render("administrador/plantillas/navbar");
+      }
+    }
+  );
+});
 
 // Middleware para verificar el token JWT
-function autenticateToken(req, res, next) {
+function authenticateToken(req, res, next) {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.status(401).render("login_index", {
-      alert: true,
-      alertTitle: "Unauthorized",
+    return renderLoginPage(res, {
+      status: 401,
+      alertTitle: "Acceso Denegado",
       alertMessage: "Debes iniciar sesión para acceder a esta página",
       alertIcon: "error",
-      showConfirmButton: true,
-      timer: false,
-      ruta: "login_index",
     });
   }
 
-  jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) {
-      return res.status(403).render("login_index", {
-        alert: true,
-        alertTitle: "Error",
-        alertMessage: "Token inválido o expirado",
-        alertIcon: "error",
-        showConfirmButton: true,
-        timer: false,
-        ruta: "login_index",
-      });
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    req.user = decoded;
+
+    // Verificar si el token está a punto de expirar y renovarlo si es necesario
+    if (isTokenAboutToExpire(decoded)) {
+      const newToken = generateToken(decoded);
+      setTokenCookie(res, newToken);
     }
-    req.user = user; // Guarda la información del usuario en req.user
+
     next();
+  } catch (error) {
+    res.clearCookie("token");
+    return renderLoginPage(res, {
+      status: 403,
+      alertTitle: "Error",
+      alertMessage: "Token inválido o expirado",
+      alertIcon: "error",
+    });
+  }
+}
+
+function renderLoginPage(res, options) {
+  return res.status(options.status).render("login_index", {
+    alert: true,
+    alertTitle: options.alertTitle,
+    alertMessage: options.alertMessage,
+    alertIcon: options.alertIcon,
+    showConfirmButton: true,
+    timer: 3500,
+    ruta: "login_index",
   });
+}
+
+function isTokenAboutToExpire(decoded) {
+  // Renovar si el token expira en menos de 5 minutos
+  const fiveMinutes = 5 * 60;
+  return decoded.exp - Date.now() / 1000 < fiveMinutes;
+}
+
+function generateToken(userData) {
+  const userPayload = {
+    id: userData.id, // Asegúrate de incluir el ID del usuario
+    role: userData.id_rol,
+    // Otros campos si es necesario
+  };
+  return jwt.sign(userPayload, SECRET_KEY, { expiresIn: "1h" });
+}
+
+function setTokenCookie(res, token) {
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 3600000, // 1 hora en milisegundos
+  });
+}
+
+// Middleware para verificar el rol de administrador
+function verifyAdmin(req, res, next) {
+  if (req.user.role !== 1) {
+    return renderLoginPage(res, {
+      status: 403,
+      alertTitle: "Acceso Denegado",
+      alertMessage: "No tienes permisos de administrador",
+      alertIcon: "error",
+    });
+  }
+  next();
+}
+
+// Middleware para verificar el rol de cliente
+function verifyClient(req, res, next) {
+  if (req.user.role !== 3) {
+    return renderLoginPage(res, {
+      status: 403,
+      alertTitle: "Acceso Denegado",
+      alertMessage: "Acceso no autorizado",
+      alertIcon: "error",
+    });
+  }
+  next();
 }
 
 // Raíz de todo
@@ -81,13 +196,121 @@ router.get("/logout", (req, res) => {
 });
 
 // Administrador
-router.get("/index_admin", autenticateToken, (req, res) => {
-  res.render("administrador/index");
+router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    // Obtener la fecha actual en formato 'YYYY-MM-DD'
+    const fechaHoy = new Date().toISOString();
+
+    // Configuración de opciones para la zona horaria de Bogotá
+    const opciones = {
+      timeZone: "America/Bogota",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour12: false,
+    };
+
+    // Convertir la fecha actual a la zona horaria de Bogotá y formatear solo la fecha
+    const fechaHoyBogota = new Date().toLocaleDateString("en-CA", opciones); // Formato 'YYYY-MM-DD' para la consulta SQL
+
+    // Consulta SQL para obtener el total de ventas por mes y otros datos
+    const queryVentas = `
+      SELECT 
+        mc.id AS id_ventas, 
+        mc.fecha_inicio, 
+        m.id AS id_mensualidad, 
+        m.total_pagar,
+        TO_CHAR(mc.fecha_inicio, 'Mon YYYY') AS mes_anio -- Formato de mes y año
+      FROM 
+        mensualidad_clientes AS mc 
+      INNER JOIN 
+        mensualidades AS m ON mc.id_mensualidad = m.id
+      ORDER BY 
+        mc.fecha_inicio DESC;
+    `;
+
+    const resultVentas = await conexion.query(queryVentas);
+    const datosVentas = resultVentas.rows;
+
+    // Calcular la suma total por mes para ventas
+    const datosSumaPorMes = datosVentas.reduce((acc, curr) => {
+      const mes = curr.mes_anio;
+      if (!acc[mes]) {
+        acc[mes] = 0;
+      }
+      acc[mes] += parseFloat(curr.total_pagar);
+      return acc;
+    }, {});
+
+    // Convertir el objeto de suma a un arreglo para que sea más fácil de usar en el frontend
+    const datosSumaArray = Object.keys(datosSumaPorMes).map((mes) => ({
+      mes: mes,
+      total: datosSumaPorMes[mes],
+    }));
+
+    // Consulta SQL para obtener datos de ingresos de clientes ingresados hoy
+    const queryIngresosHoy = `
+      SELECT 
+        ic.fecha_ingresos,
+        ic.cantidad_ingresos
+      FROM 
+        ingresos_clientes AS ic
+      WHERE 
+        DATE(ic.fecha_ingresos) = $1
+      ORDER BY 
+        ic.fecha_ingresos DESC;
+    `;
+
+    const resultIngresosHoy = await conexion.query(queryIngresosHoy, [
+      fechaHoyBogota,
+    ]);
+    const datosIngresosHoy = resultIngresosHoy.rows;
+
+    // Nueva consulta SQL para obtener los últimos 5 registros de la tabla 'clientes'
+    const queryUltimosClientes = `
+      SELECT 
+        c.nombre, 
+        c.id_mensualidad AS id_mensu_cliente, 
+        m.id AS id_mensu, 
+        m.tiempo_plan
+      FROM  
+        clientes c
+      INNER JOIN 
+        mensualidades m ON c.id_mensualidad = m.id
+      ORDER BY 
+        c.fecha_de_inscripcion DESC
+      LIMIT 5;
+    `;
+
+    const resultUltimosClientes = await conexion.query(queryUltimosClientes);
+    const ultimosClientes = resultUltimosClientes.rows;
+
+    // Nueva consulta SQL para obtener solo los datos de ventas con estado 'Vencida'
+    const queryVentasVencidas = `
+      SELECT * FROM mensualidad_clientes WHERE estado = 'Vencida' ORDER BY fecha_fin DESC LIMIT 5;`;
+
+    const resultVentasVencidas = await conexion.query(queryVentasVencidas);
+    const datosVentasVencidas = resultVentasVencidas.rows;
+
+    // Renderizar la vista con los datos de todas las consultas
+    res.render("administrador/index", {
+      datosVentas: datosVentas,
+      datosSumaPorMes: datosSumaArray,
+      datosIngresosHoy: datosIngresosHoy,
+      ultimosClientes: ultimosClientes,
+      datosVentasVencidas: datosVentasVencidas,
+    });
+  } catch (error) {
+    console.error("Error al obtener los datos:", error);
+    res.status(500).send("Error en el servidor");
+  }
 });
+
+// Cliente
 
 //ver ROLES
 
-router.get("/ver_roles", autenticateToken, (req, res) => {
+router.get("/ver_roles", authenticateToken, verifyAdmin, (req, res) => {
   conexion.query("SELECT * FROM roles ORDER BY id", (error, results) => {
     if (error) {
       return res.status(500).json({ error: error.message });
@@ -141,7 +364,7 @@ router.get("/eliminarRol/:id", (req, res) => {
 
 //ruta para ver clientes
 
-router.get("/ver_clientes", autenticateToken, (req, res) => {
+router.get("/ver_clientes", (req, res) => {
   const query = `
     SELECT c.id,c.nombre,c.apellido,c.edad,c.sexo,c.fecha_de_inscripcion,c.correo_electronico,c.numero_telefono,
     c.id_mensualidad,c.id_usuario,c.estado,m.id AS id_mensual,m.total_pagar,m.tiempo_plan,u.nombre AS nom_usu
@@ -160,7 +383,7 @@ router.get("/ver_clientes", autenticateToken, (req, res) => {
   });
 });
 
-router.get("/tallas/:id", autenticateToken, (req, res) => {
+router.get("/tallas/:id", (req, res) => {
   const clientId = req.params.id;
 
   // Consulta para obtener el nombre del cliente
@@ -276,13 +499,24 @@ router.get("/actualizar_clientes/:id", (req, res) => {
 //usuarios
 
 // /ver_usuarios
-router.get("/ver_usuarios", async (req, res) => {
-  try {
-    const results = await crud.verUsuarios();
-    res.render("administrador/usuarios/ver_usuarios", { usuarios: results });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+router.get("/ver_usuarios", authenticateToken, verifyAdmin, (req, res) => {
+  conexion.query(
+    `SELECT u.id AS id_usuario, u.nombre, u.apellido, u.telefono, u.correo_electronico, u.contraseña, u.id_rol, u.estado,
+            r.id AS id_roles, r.tipo_de_rol AS rol
+     FROM usuarios AS u
+     INNER JOIN roles AS r ON u.id_rol = r.id
+     WHERE u.id_rol IN ($1, $2)`,
+    [1, 2],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message }); // Manejo de error
+      }
+      res.render("administrador/usuarios/ver_usuarios", {
+        results: results.rows,
+        loggedUserId: req.user.id,
+      });
+    }
+  );
 });
 
 // CREAR USUARIOS
@@ -581,23 +815,68 @@ router.get("/ver_ventas", async (req, res) => {
         const fechaActual = new Date();
         fechaActual.setHours(0, 0, 0, 0);
 
-        // Iterar sobre los resultados y actualizar el estado si es necesario
-        const resultadosActualizados = results.rows.map(async (talla) => {
-          const fechaFin = new Date(talla.fecha_fin);
-          fechaFin.setHours(0, 0, 0, 0);
+        // Filtrar los IDs de clientes que necesitan actualizarse
+        const clientesActualizar = results.rows
+          .filter((talla) => {
+            const fechaFin = new Date(talla.fecha_fin);
+            fechaFin.setHours(0, 0, 0, 0);
+            return fechaFin <= fechaActual && talla.estado !== "Vencida";
+          })
+          .map((talla) => talla.id_cliente);
 
-          if (fechaFin <= fechaActual && talla.estado !== "Vencida") {
-            talla.estado = "Vencida";
-            // Opcional: Puedes actualizar el estado en la base de datos aquí
-            await actualizarEstadoEnLaBaseDeDatos(talla.id_cliente, "Vencida");
-          }
-          return talla;
-        });
+        // Actualizar el estado a 'Vencida' en 'mensualidad_clientes'
+        if (clientesActualizar.length > 0) {
+          // Actualizar estado en mensualidad_clientes
+          conexion.query(
+            `UPDATE mensualidad_clientes
+             SET estado = 'Vencida'
+             WHERE id_cliente = ANY($1)`,
+            [clientesActualizar],
+            (error) => {
+              if (error) {
+                return res.status(500).json({ error: error.message }); // Manejo de error
+              }
 
-        // Renderizar la vista con los datos actualizados
-        res.render("administrador/ventas/ver_ventas", {
-          results: resultadosActualizados,
-        });
+              // Actualizar el estado a 'Inactivo' en 'clientes'
+              conexion.query(
+                `UPDATE clientes
+                 SET estado = 'Inactivo'
+                 WHERE id = ANY($1)`,
+                [clientesActualizar],
+                (error) => {
+                  if (error) {
+                    return res.status(500).json({ error: error.message }); // Manejo de error
+                  }
+
+                  // Consultar nuevamente los datos actualizados para la vista
+                  conexion.query(
+                    `SELECT mc.id AS id_mensu_cliente, mc.id_cliente, mc.nombre, mc.fecha_inicio, mc.fecha_fin, mc.id_mensualidad, mc.estado,
+                     m.id AS id_mensualidad, m.tiempo_plan, m.total_pagar, m.id_mensualidad_convencional, 
+                     mensu.id AS id_mensualidad_convencional, mensu.tipo_de_mensualidad 
+                     FROM mensualidad_clientes AS mc
+                     INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
+                     INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id`,
+                    (error, updatedResults) => {
+                      if (error) {
+                        return res.status(500).json({ error: error.message }); // Manejo de error
+                      }
+
+                      // Renderizar la vista con los datos actualizados
+                      res.render("administrador/ventas/ver_ventas", {
+                        results: updatedResults.rows,
+                      });
+                    }
+                  );
+                }
+              );
+            }
+          );
+        } else {
+          // Renderizar la vista si no hay actualizaciones necesarias
+          res.render("administrador/ventas/ver_ventas", {
+            results: results.rows,
+          });
+        }
       }
     );
   } catch (error) {
@@ -611,12 +890,14 @@ router.get("/ver_ventas", async (req, res) => {
 //ACTIVIDAD FISICA
 
 //VER
-router.get("/ver_acti_fisica", autenticateToken, (req, res) => {
+router.get("/ver_acti_fisica", (req, res) => {
   const query = `
     SELECT 
       af.id AS af_id, 
       af.nombre_ejercicio AS af_nombre, 
-           gm.nombre AS gm_nombre 
+     
+      gm.id AS gm_id, 
+      gm.nombre AS gm_nombre 
     FROM 
       actividad_fisica af 
     INNER JOIN 
@@ -711,14 +992,14 @@ router.get("/actualizar_f/:id", (req, res) => {
 //PLAN DE ENTRENAMIENTO
 
 // Ruta para "Ver Plan Entrenamiento"
-router.get("/ver_plan_ent", autenticateToken, (req, res) => {
+router.get("/ver_plan_ent", (req, res) => {
   const query = `
-      SELECT pe.id AS id_plan_entrenamiento, pe.dia, pe.id_cliente, pe.id_actividad_fisica, pe.series, pe.repeticiones,
-      c.id AS id_del_cliente, c.nombre,
-      ac.id AS id_actividad, ac.nombre_ejercicio, ac.id_grupo_muscular,
-      gm.id AS id_grupo, gm.nombre AS nombre_musculo, gm.seccion
-      FROM plan_entrenamiento AS pe
-      INNER JOIN clientes AS c ON pe.id_cliente = c.id
+  SELECT pe.id AS id_plan_entrenamiento, pe.dia, pe.id_cliente, pe.id_actividad_fisica, pe.series, pe.repeticiones,
+  c.id AS id_del_cliente, c.nombre,
+  ac.id AS id_actividad, ac.nombre_ejercicio, ac.id_grupo_muscular,
+  gm.id AS id_grupo, gm.nombre AS nombre_musculo, gm.seccion
+  FROM plan_entrenamiento AS pe
+  INNER JOIN clientes AS c ON pe.id_cliente = c.id
       LEFT JOIN actividad_fisica AS ac ON pe.id_actividad_fisica = ac.id
       LEFT JOIN grupos_musculares AS gm ON ac.id_grupo_muscular = gm.id
       ORDER BY pe.id;
@@ -729,20 +1010,27 @@ router.get("/ver_plan_ent", autenticateToken, (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log(results.rows.length); // Debería mostrar cuántas filas se han devuelto
-    console.log(results.rows); // Para ver el contenido de las filas
-
     res.render("administrador/plan_de_entrenamiento/ver_plan_ent", {
       results: results.rows,
     });
   });
 });
 
-// nose si sirve esa cochinada
-router.get("/actualizar_pe/:id", autenticateToken, (req, res) => {
-  const id = req.params.id;
+router.get("/get_actividad_fisica", (req, res) => {
+  conexion.query(
+    `SELECT id, nombre_ejercicio FROM actividad_fisica`,
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+      res.json({ ejercicios: results.rows });
+    }
+  );
+});
 
-  console.log(`ID recibido en la ruta: ${id}`);
+// nose si sirve esa cochinada
+router.get("/actualizar_pe/:id", (req, res) => {
+  const id = req.params.id;
 
   conexion.query(
     `SELECT pe.id AS id_plan_entrenamiento, pe.dia, pe.id_cliente, pe.id_actividad_fisica, pe.series, pe.repeticiones,
@@ -788,34 +1076,273 @@ router.get("/actualizar_pe/:id", autenticateToken, (req, res) => {
 });
 
 // Ruta para obtener actividades físicas por grupo muscular
-router.get("/getActividades/:groupId", (req, res) => {
-  const groupId = req.params.groupId;
+router.get("/get_actividades/:id_grupo_muscular", async (req, res) => {
+  const idGrupoMuscular = req.params.id_grupo_muscular;
+  try {
+    const grupoMuscular = await db.query(
+      "SELECT * FROM grupos_musculares WHERE id = $1",
+      [idGrupoMuscular]
+    );
+    const actividades = await db.query(
+      "SELECT * FROM actividades_fisicas WHERE id_grupo_muscular = $1",
+      [idGrupoMuscular]
+    );
 
-  conexion.query(
-    `SELECT id AS id_actividad, nombre_ejercicio AS nombre
-     FROM actividad_fisica
-     WHERE id_grupo_muscular = $1`,
-    [groupId],
-    (error, results) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
-
-      res.json({ actividades: results.rows });
-    }
-  );
+    res.json({
+      grupoMuscular: grupoMuscular.rows[0],
+      actividades: actividades.rows,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error al obtener actividades físicas");
+  }
 });
 
 //Ruta para Crear Plan de Entrenamiento
 router.get("/create_plan_ent", (req, res) => {
   const id_cliente = req.query.id_cliente;
-
   if (id_cliente) {
     // Caso 1: Acceso desde la página de actualizar tallas
     crud.mostrarFormularioConCliente(req, res, id_cliente);
   } else {
     // Caso 2: Acceso directo a la ruta
     crud.mostrarFormularioVacio(req, res);
+  }
+});
+
+// CODIGO PARA ACTUALIZAR ESTADO DE MENSUALIDAD_CLIENTES-----
+cron.schedule("0 0 * * *", () => {
+  console.log("Ejecutando actualización de estados de mensualidades...");
+  crud.actualizarEstadosMensualidades();
+});
+
+// PAYU
+router.get("/mensualidades", (req, res) => {
+  const { tempRegistroId } = req.query;
+
+  if (!tempRegistroId) {
+    return res.status(400).json({
+      success: false,
+      message: "Registro temporal no encontrado",
+    });
+  }
+
+  const query = `SELECT * FROM mensualidades`; // Obtener las mensualidades desde la base de datos
+  conexion.query(query, (error, result) => {
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Error al cargar las mensualidades",
+      });
+    }
+
+    // Renderizar la vista con las mensualidades y el ID del registro temporal
+    res.render("administrador/mensualidades/mensualidades", {
+      mensualidades: result.rows, // Pasa las mensualidades a la vista
+      tempRegistroId: tempRegistroId, // Pasa el ID del registro temporal a la vista
+    });
+  });
+});
+
+router.get("/pago", async (req, res) => {
+  const { mensualidadId, tempRegistroId } = req.query;
+
+  if (!mensualidadId || !tempRegistroId) {
+    return res.status(400).json({
+      success: false,
+      message: "Mensualidad o registro no definidos",
+    });
+  }
+
+  try {
+    // Recuperar la información de la mensualidad seleccionada
+    const queryMensualidad = `SELECT * FROM mensualidades WHERE id = $1`;
+    const mensualidadResult = await conexion.query(queryMensualidad, [
+      mensualidadId,
+    ]);
+
+    if (mensualidadResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Mensualidad no encontrada",
+      });
+    }
+
+    const mensualidad = mensualidadResult.rows[0];
+
+    // Recuperar la información del usuario desde el registro temporal
+    const queryUsuario = `SELECT * FROM temp_registro WHERE id = $1`;
+    const usuarioResult = await conexion.query(queryUsuario, [tempRegistroId]);
+
+    if (usuarioResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Registro no encontrado",
+      });
+    }
+
+    const usuario = usuarioResult.rows[0];
+
+    // Generar firma
+    const referenceCode = `pedido_${tempRegistroId}`;
+    const signature = crypto
+      .createHash("md5")
+      .update(
+        `${process.env.PAYU_API_KEY}~${process.env.PAYU_MERCHANT_ID}~${referenceCode}~${mensualidad.total_pagar}~USD`
+      )
+      .digest("hex");
+
+    // Configurar los detalles del pago para PayU
+    const paymentDetails = {
+      language: "es",
+      command: "SUBMIT_TRANSACTION",
+      merchant: {
+        apiKey: process.env.PAYU_API_KEY,
+        apiLogin: process.env.PAYU_API_LOGIN,
+      },
+      transaction: {
+        order: {
+          accountId: process.env.PAYU_ACCOUNT_ID,
+          referenceCode: referenceCode,
+          description: `Pago de mensualidad: ${mensualidad.tiempo_plan}`,
+          language: "es",
+          signature: signature,
+          notifyUrl: process.env.PAYU_RETURN_URL,
+          additionalValues: {
+            TX_VALUE: {
+              value: mensualidad.total_pagar,
+              currency: "USD",
+            },
+          },
+          buyer: {
+            emailAddress: usuario.correo,
+            contactPhone: usuario.telefono,
+            fullName: `${usuario.nombre} ${usuario.apellido}`,
+          },
+        },
+        payer: {
+          emailAddress: usuario.correo,
+          contactPhone: usuario.telefono,
+          fullName: `${usuario.nombre} ${usuario.apellido}`,
+        },
+        creditCard: {
+          number: "4111111111111111",
+          securityCode: "123",
+          expirationDate: "2025/12",
+          name: "APPROVED",
+        },
+        type: "AUTHORIZATION_AND_CAPTURE",
+        paymentMethod: "VISA",
+        paymentCountry: "CO",
+      },
+      test: true,
+    };
+
+    console.log("PayU Request:", JSON.stringify(paymentDetails, null, 2));
+
+    // Enviar la solicitud a PayU y obtener la URL de redirección
+    const response = await axios.post(process.env.PAYU_API_URL, paymentDetails);
+
+    console.log("PayU Response:", JSON.stringify(response.data, null, 2));
+
+    if (
+      response.data.transactionResponse &&
+      response.data.transactionResponse.extraParameters &&
+      response.data.transactionResponse.extraParameters.BANK_URL
+    ) {
+      // Redirige al usuario a la URL de pago de PayU
+      res.redirect(response.data.transactionResponse.extraParameters.BANK_URL);
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "No se pudo obtener la URL de pago de PayU",
+        payuResponse: response.data,
+      });
+    }
+  } catch (error) {
+    console.error(
+      "Error al procesar el pago:",
+      error.response ? error.response.data : error.message
+    );
+    res.status(500).json({
+      success: false,
+      message: "Error al procesar el pago",
+      error: error.response ? error.response.data : error.message,
+    });
+  }
+});
+
+router.post("/confirmacion-pago", async (req, res) => {
+  const { transactionId, state, order } = req.body;
+
+  if (state === "APPROVED") {
+    const tempRegistroId = order.referenceCode.split("_")[1]; // Extraer el ID del registro temporal
+
+    // Actualizar el estado del registro temporal a "Activo"
+    const queryTemp = `UPDATE temp_registro SET estado = 'Activo' WHERE id = $1 RETURNING *`;
+    conexion.query(queryTemp, [tempRegistroId], async (error, result) => {
+      if (error || result.rows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Error al actualizar el registro",
+        });
+      }
+
+      const usuario = result.rows[0];
+
+      // Mover los datos a las tablas definitivas (usuarios y clientes)
+      const queryUsuario = `
+        INSERT INTO usuarios (id, nombre, apellido, correo_electronico, telefono, contraseña, id_rol, estado)
+        VALUES ($1, $2, $3, $4, $5, $6, 3, 'Activo')
+      `;
+      const queryCliente = `
+        INSERT INTO clientes (id_usuario, estado_cliente)
+        VALUES ($1, 'Activo')
+      `;
+
+      try {
+        await conexion.query(queryUsuario, [
+          usuario.id_usuario,
+          usuario.nombre,
+          usuario.apellido,
+          usuario.correo,
+          usuario.telefono,
+          usuario.contraseña,
+        ]);
+
+        await conexion.query(queryCliente, [usuario.id_usuario]);
+
+        // Eliminar el registro temporal
+        await conexion.query(`DELETE FROM temp_registro WHERE id = $1`, [
+          usuario.id,
+        ]);
+
+        // Redirigir al usuario al login_index después del pago exitoso
+        res.render("confirmacion-exito", {
+          alert: true,
+          alertTitle: "Pago exitoso",
+          alertMessage: "Tu registro ha sido completado con éxito.",
+          alertIcon: "success",
+          showConfirmButton: false,
+          timer: 1500,
+          ruta: "/login_index",
+        });
+      } catch (error) {
+        console.error("Error al confirmar el registro:", error);
+        res.status(500).json({
+          success: false,
+          message: "Error al confirmar el registro",
+        });
+      }
+    });
+  } else {
+    res.render("confirmacion-fallo", {
+      alert: true,
+      alertTitle: "Pago fallido",
+      alertMessage: "El pago no se completó correctamente.",
+      alertIcon: "error",
+      showConfirmButton: true,
+    });
   }
 });
 
@@ -830,6 +1357,7 @@ router.post("/desactivarcliente", crud.desactivarcliente);
 router.post("/activarcliente", crud.activarcliente);
 
 //crear usuarios
+
 router.post("/verUsuarioss", crud.verUsuarios);
 router.post("/crearusu", crud.crearusu);
 router.post("/update_usuarios", crud.update_usuarios);
@@ -873,9 +1401,43 @@ router.post("/update_af", crud.update_af);
 //PLAN DE ENTRENAMIENTO
 router.post("/verPlanEntrenamiento", crud.verPlanEntrenamiento);
 router.post("/update_pe", crud.update_pe);
-router.post("/crearPlanEntrenamiento", crud.crearPlanEntrenamiento);
+router.post("/guardarPlanentrenamiento", crud.guardarPlanentrenamiento);
 
 //INGRESO AL GIMNASIO:
 
 router.post("/registrarIngreso", crud.registrarIngreso);
 module.exports = router;
+
+///////////////////////////////////////////////////////////////////////////////////////////  CLIENTES CODGIO
+
+router.get("/clientes/index_c", (req, res) => {
+  // Verifica si 'userData' está configurado correctamente
+  if (!res.locals.userData) {
+    return res
+      .status(401)
+      .json({ error: "No autorizado: datos del usuario no encontrados" });
+  }
+
+  // Extrae el campo 'id' del objeto 'userData'
+  let identificacion = res.locals.userData.id;
+
+  // Verifica si 'identificacion' es un número entero válido
+  if (!Number.isInteger(identificacion)) {
+    return res.status(400).json({ error: "ID de cliente inválido" });
+  }
+
+  // Usar consultas parametrizadas para prevenir inyecciones SQL
+  conexion.query(
+    "SELECT * FROM tallas WHERE id_cliente = $1",
+    [identificacion], // Pasar solo el 'id' como parámetro
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message }); // Manejo de error
+      }
+
+      res.render("clientes/index_c", {
+        results: results.rows,
+      });
+    }
+  );
+});

@@ -33,7 +33,7 @@
       </style>
     <title>Ver grupos musculares</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
 
     <div  class="px-10 mx-auto mt-4 p-5">
@@ -118,7 +118,6 @@
     
       async function inicializar() {
         datos = await getData();
-        console.log(datos);
     
         const totalPages = Math.ceil(datos.length / itemsPorPagina);
         generatePagination(totalPages);

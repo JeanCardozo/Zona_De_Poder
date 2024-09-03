@@ -1,6 +1,103 @@
-waos loca esta se tiro el ver mensualidadñ onde mentiroso mire ave mrk nos falta
-muchooooo La solicitud no fue exitosa: Not Found at getData
-(ver_mensualidad:357:19) at async inicializar ay gonorre eso q si hace un
-momento se veian las cosas, creo que esa maricada no muestra nada porque ahi
-menos de 5 registros :C si no estoy mal juanito nos falta todo lo de clientes y
-lo de figmaa no se podemos descansar ahora en efecto ._.
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zona de Poder</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <%- include('../administrador/plantillas/navbar_clientes.ejs') %>
+    <h1>joder</h1>
+
+    <!-- Canvas 1 -->
+    <div class="h-80 w-80">
+      <canvas id="myChart1"></canvas>
+    </div>
+
+
+    <div class="">
+      <div class="">
+          <table>
+      <thead class="">
+        <tr>
+          <th class="px-4 py-2">MEDIDA DEL PECHO</th>
+          <th class="px-4 py-2">MEDIDA DEL BRAZO</th>
+          <th class="px-4 py-2">MEDIDA CINTURA</th>
+          <th class="px-4 py-2">MEDIDA ABDOMEN</th>
+          <th class="px-4 py-2">MEDIDA CADERA</th>
+          <th class="px-4 py-2">MEDIDA PIERNA</th>
+          <th class="px-4 py-2">MEDIDA PANTORRILLA</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        <% results.forEach(function(talla) { %>
+        <tr class="border-b">
+          <td class="px-4 py-2 text-center"><%= talla.medida_pecho %></td>
+          <td class="px-4 py-2 text-center"><%= talla.medida_brazo %></td>
+          <td class="px-4 py-2 text-center"><%= talla.medida_cintura %></td>
+          <td class="px-4 py-2 text-center"><%= talla.medida_abdomen %></td>
+          <td class="px-4 py-2 text-center"><%= talla.medida_cadera %></td>
+          <td class="px-4 py-2 text-center"><%= talla.medida_pierna %></td>
+          <td class="px-4 py-2 text-center"><%= talla.medida_pantorrilla %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    
+  </div>
+    
+
+
+
+
+
+
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      // Prepare the data and config for the first chart
+      const ctx1 = document.getElementById("myChart1").getContext("2d");
+      const labels1 = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+      ];
+
+      const data1 = {
+        labels: labels1,
+        datasets: [
+          {
+            label: "mi peso",
+            data: [65, 59, 80, 81, 56, 55, 40],
+            fill: false,
+            borderColor: "rgb(75, 192, 192)",
+            tension: 0.1,
+          },
+        ],
+      };
+
+      const config1 = {
+        type: "line",
+        data: data1,
+      };
+
+      // Create the first chart
+      new Chart(ctx1, config1);
+    </script>
+  </body>
+</html>

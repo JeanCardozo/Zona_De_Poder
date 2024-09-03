@@ -3,147 +3,144 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
-    />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <title>Crud Roles</title>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+
+    <title>Crear Usuario(s)</title>
   </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
+  <body class="bg-fondo">
+    <%- include('../plantillas/navbar.ejs') %>
 
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
+    <a
+      href="/ver_usuarios"
+      class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    </a>
+
+    <div class="max-w-7xl mx-auto p-4 rounded-md">
+      <div class="bg-gray-200 border border-gray-300">
+        <div class="text-center p-4 bg-gray-400 font-semibold text-white">
+          Crear nuevo Usuario
         </div>
-      </div>
-    </nav>
-
-    <div class="container mt-4">
-      <div class="card border-secondary">
-        <div class="card-header">Nuevo Registro</div>
-        <div class="card-body">
+        <div class="p-4">
           <form action="/crearusu" method="post">
-            <div class="mb-3">
-              <label for="id" class="form-label">ID</label>
+            <div class="mb-4">
+              <label for="id" class="py-2 capitalize block text-sm font-medium text-gray-700"
+                >ID</label
+              >
               <input
                 type="number"
-                class="form-control"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 id="id"
                 name="id"
-                tabindex="1"
                 required
               />
             </div>
 
-            <div class="mb-3">
-              <label for="rol" class="form-label">NOMBRE</label>
+            <div class="mb-4">
+              <label
+                for="nombre"
+                class=" py-2 capitalize block text-sm font-medium text-gray-700"
+                >NOMBRE</label
+              >
               <input
                 type="text"
-                class="form-control"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 id="nombre"
                 name="nombre"
-                tabindex="1"
                 required
               />
             </div>
-            <div class="mb-3">
-              <label for="rol" class="form-label">APELLIDO</label>
+
+            <div class="mb-4">
+              <label for="ape" class=" py-2 capitalize block text-sm font-medium text-gray-700"
+                >APELLIDO</label
+              >
               <input
                 type="text"
-                class="form-control"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 id="ape"
                 name="ape"
-                tabindex="1"
                 required
               />
             </div>
 
-            <div class="mb-3">
-              <label for="rol" class="form-label">TELEFONO</label>
+            <div class="mb-4">
+              <label
+                for="telefono"
+                class=" py-2 capitalize block text-sm font-medium text-gray-700"
+                >TELEFONO</label
+              >
               <input
                 type="text"
-                class="form-control"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 id="telefono"
                 name="telefono"
-                tabindex="1"
                 required
               />
             </div>
 
-            <div class="mb-3">
-              <label for="rol" class="form-label">CORREO ELECTRONICO</label>
+            <div class="mb-4">
+              <label
+                for="correo"
+                class=" py-2 capitalize block text-sm font-medium text-gray-700"
+                >CORREO ELECTRONICO</label
+              >
               <input
-                type="text"
-                class="form-control"
+                type="email"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 id="correo"
                 name="correo"
-                tabindex="1"
                 required
               />
             </div>
 
-            <div class="mb-3">
-              <label for="rol" class="form-label">CONTRASEÑA</label>
+            <div class="mb-4">
+              <label
+                for="contra"
+                class=" py-2 capitalize block text-sm font-medium text-gray-700"
+                >CONTRASEÑA</label
+              >
               <input
                 type="password"
-                class="form-control"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 id="contra"
                 name="contra"
-                tabindex="1"
                 required
               />
             </div>
 
-            <div class="mb-3">
-              <label for="roles" class="form-label">Roles</label>
-              <select class="form-select" name="roles" id="roles" required>
+            <div class="mb-4">
+              <label for="roles" class="py-2 capitalize block text-sm font-medium text-gray-700"
+                >Roles</label
+              >
+              <select
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                name="roles"
+                id="roles"
+                required
+              >
                 <option value="">Seleccione un rol</option>
                 <% roles.forEach(function(rol) { %>
                 <option value="<%= rol.id %>"><%= rol.tipo_de_rol %></option>
@@ -151,10 +148,13 @@
               </select>
             </div>
 
-            <button type="submit" class="btn btn-primary" tabindex="5">
-              Guardar
-            </button>
-            <a href="/ver_usuarios" class="btn btn-secondary">cancelar</a>
+            <div class="flex space-x-4">
+              <button
+                type="submit"
+                class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              >
+                Guardar
+              </button>
           </form>
         </div>
       </div>

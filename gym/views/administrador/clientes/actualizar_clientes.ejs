@@ -6,184 +6,114 @@
 
     <!-- para llamar a Tailwind Css -->
     <link rel="stylesheet" href="../../src/output.css" />
-
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
-    />
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
     <title>Actualizar clientes</title>
   </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
+  <body class="bg-fondo">
+    <%- include('../plantillas/navbar.ejs') %>
+
+    <a
+    href="/ver_clientes"
+    class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M15 19l-7-7 7-7"
+      />
+    </svg>
+  </a>
+
 
     <% if (user) { %>
-    <div class="container mt-4">
-      <div class="card border-secondary">
-        <div class="card-header">Editar Registro</div>
-        <div class="card-body">
-          <form action="/update_cliente" method="post">
-            <!-- Campo oculto para enviar el ID del cliente -->
-            <input
-              type="hidden"
-              id="id"
-              name="id"
-              value="<%= user.id_cliente %>"
-            />
-            <div class="mb-3">
-              <label for="nombre" class="form-label">NOMBRE</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre"
-                name="nombre"
-                value="<%= user.nombre %>"
-                tabindex="1"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="ape" class="form-label">APELLIDO</label>
-              <input
-                type="text"
-                class="form-control"
-                id="apellido"
-                name="apellido"
-                value="<%= user.apellido %>"
-                tabindex="1"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="edad" class="form-label">EDAD</label>
-              <input
-                type="number"
-                class="form-control"
-                id="edad"
-                name="edad"
-                max="100"
-                min="1"
-                value="<%= user.edad %>"
-                tabindex="1"
-                required
-              />
-            </div>
-            <div class="mb-3">
-              <label for="sexo" class="form-label">SEXO</label>
-              <select
-                name="sexo"
-                id="sexo"
-                class="form-select"
-                required
-              >
-                <option value="" disabled <%= !user.sexo ? 'selected' : '' %>>Seleccione el Sexo</option>
-                <option value="Masculino" <%= user.sexo === "Masculino" ? 'selected' : '' %>>Masculino</option>
-                <option value="Femenino" <%= user.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="correo_electronico" class="form-label">CORREO</label>
-              <input
-                type="email"
-                class="form-control"
-                id="correo_electronico"
-                name="correo_electronico"
-                value="<%= user.correo_electronico %>"
-                tabindex="1"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="peso" class="form-label">TELEFONO</label>
-              <input
-                type="number"
-                class="form-control"
-                id="numero_telefono"
-                name="numero_telefono"
-                value="<%= user.numero_telefono %>"
-                tabindex="1"
-                required
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="mensualidad" class="form-label">MENSUALIDADES</label>
-              <select
-                class="form-select"
-                name="id_mensualidad"
-                id="id_mensualidad"
-                required
-              >
-                <option value="" disabled required>Seleccione una mensualidad</option>
-                <% mensualidades.forEach(function(mensual) { %>
-                  <option value="<%= mensual.id_mensu %>" <%= mensual.id_mensu === user.id_mensualidad ? 'selected' : '' %>>
-                    <%= mensual.tiempo_plan %> - <%= mensual.total_pagar %>
-                  </option>
-                <% }) %>
-              </select>
-            </div>         
-            <button type="submit" class="btn btn-primary" tabindex="5">
-              Guardar
-            </button>
-            <a href="/ver_clientes" class="btn btn-secondary">Cancelar</a>
-          </form>
+      <div class="max-w-7xl mx-auto p-4 rounded-md">
+        <div class="bg-gray-200 border border-gray-300">
+          <div class="text-center p-4 bg-gray-400 font-semibold text-white">
+            Editar Registro
+          </div>
+          <div class="p-4">
+            <form action="/update_cliente" method="post">
+              <input type="hidden" id="id" name="id" value="<%= user.id_cliente %>" />
+      
+              <div class="mb-4">
+                <label for="nombre" class="block text-sm font-medium text-gray-700">NOMBRE</label>
+                <input type="text" id="nombre" name="nombre" value="<%= user.nombre %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="apellido" class="block text-sm font-medium text-gray-700">APELLIDO</label>
+                <input type="text" id="apellido" name="apellido" value="<%= user.apellido %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="edad" class="block text-sm font-medium text-gray-700">EDAD</label>
+                <input type="number" id="edad" name="edad" max="100" min="1" value="<%= user.edad %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="sexo" class="block text-sm font-medium text-gray-700">SEXO</label>
+                <select name="sexo" id="sexo" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                  <option value="" disabled <%= !user.sexo ? 'selected' : '' %>>Seleccione el Sexo</option>
+                  <option value="Masculino" <%= user.sexo === "Masculino" ? 'selected' : '' %>>Masculino</option>
+                  <option value="Femenino" <%= user.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
+                </select>
+              </div>
+      
+              <div class="mb-4">
+                <label for="correo_electronico" class="block text-sm font-medium text-gray-700">CORREO</label>
+                <input type="email" id="correo_electronico" name="correo_electronico" value="<%= user.correo_electronico %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="numero_telefono" class="block text-sm font-medium text-gray-700">TELÉFONO</label>
+                <input type="number" id="numero_telefono" name="numero_telefono" value="<%= user.numero_telefono %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+              </div>
+      
+              <div class="mb-6">
+                <label for="id_mensualidad" class="block text-sm font-medium text-gray-700">MENSUALIDADES</label>
+                <select name="id_mensualidad" id="id_mensualidad" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                  <option value="" disabled required>Seleccione una mensualidad</option>
+                  <% mensualidades.forEach(function(mensual) { %>
+                    <option value="<%= mensual.id_mensu %>" <%= mensual.id_mensu === user.id_mensualidad ? 'selected' : '' %>>
+                      <%= mensual.tiempo_plan %> - <%= mensual.total_pagar %>
+                    </option>
+                  <% }) %>
+                </select>
+              </div>
+      
+              <div class="flex justify-between">
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+      
+      
     <% } %>
 
     <% if (typeof alert !=="undefined") { %>

@@ -34,7 +34,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Ver Mensualidad</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
 
     <div class="flex justify-center p-5">
@@ -163,10 +163,7 @@
               >
                 Editar
               </a>
-              <a
-                class="cursor-pointer px-2 py-1 bg-red-500 text-white rounded-md flex items-center justify-center hover:bg-red-700"
-                onclick="verificar('${dato.id_mensualidad}')"
-              >Borrar</a>
+              
             </td>
           </tr>
         `
@@ -283,24 +280,6 @@
 
         document.getElementById("meses").value = meses;
         document.getElementById("dias").value = dias;
-      }
-
-      function verificar(id) {
-        Swal.fire({
-          title: "¿Estas seguro?",
-          text: "!No podrás revertir esto¡",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Sí, Bórralo",
-          confirmButtonClass: "btn-confirmar",
-          cancelButtonText: "No, Cancelar",
-          cancelButtonClass: "btn-cancelar",
-          reverseButtons: true,
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = "/eliminar_mensualidad/" + id;
-          }
-        });
       }
 
       document.querySelector("tbody").addEventListener("click", function (e) {

@@ -1,16 +1,25 @@
 <head>
   <style>
-    .bg-fondo {
-      background-image: url("https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo.jpeg");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      min-height: 100vh;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap');
+* {
+  font-family: 'Lexend Deca', sans-serif;
+}
+
+.bg-fondo {
+  background-image: url("https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo.jpeg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+}
+
   </style>
 </head>
 
-<nav class="bg-white border-b">
+<nav class="bg-gray-200 border-b">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 p-1">
     <div class="flex justify-between h-16">
       <div class="flex"></div>
@@ -18,7 +27,7 @@
         <form class="flex w-full relative" onsubmit="return false;">
           <input
             id="inputSearch"
-            class="flex-grow form-input rounded-md shadow-sm border-gray-300 placeholder-gray-500 p-2 pr-10"
+            class="flex-grow bg-gray-200 form-input rounded-md shadow-sm border-gray-500 placeholder-gray-500 p-2 pr-10"
             type="search"
             placeholder="¿Qué deseas buscar?..."
             aria-label="Search"
@@ -56,49 +65,31 @@
             />
           </button>
           <div
-            id="profileDropdown"
-            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden"
+          id="profileDropdown"
+          class="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-md hidden text-sm"
+        >
+        <% if (userData) { %>
+          <div class="p-2 border-b">
+            <p class="font-semibold">Hola, <%= userData.nombre_usuario %></p>
+            <p class="text-gray-600"><%= userData.rol %></p>
+          </div>
+        <% } else { %>
+          <p class="p-2 text-gray-600">Sin información</p>
+        <% } %>
+        
+          <a
+            href="/logout"
+            class="block p-2 text-gray-700 hover:bg-gray-100 transition-colors"
+            >Cerrar sesión</a
           >
-            <% if (typeof usuario !== 'undefined' && usuario) { %>
-            <div class="px-4 py-2 text-sm text-gray-700">
-              <p><strong>Nombre:</strong> <%= usuario.nombre %></p>
-              <p><strong>Rol:</strong> <%= usuario.rol %></p>
-            </div>
-            <a
-              href="/logout"
-              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >Cerrar sesión</a
-            >
-            <% } else { %> <% } %>
+        </div>
+        
           </div>
         </div>
       </div>
     </div>
   </div>
 </nav>
-<script>
-  document
-    .getElementById("profileButton")
-    .addEventListener("click", function () {
-      document.getElementById("profileDropdown").classList.toggle("hidden");
-    });
-</script>
-
-<script>
-  document
-    .getElementById("profileButton")
-    .addEventListener("click", function () {
-      document.getElementById("profileDropdown").classList.toggle("hidden");
-    });
-</script>
-
-<script>
-  document
-    .getElementById("profileButton")
-    .addEventListener("click", function () {
-      document.getElementById("profileDropdown").classList.toggle("hidden");
-    });
-</script>
 
 <div class="relative">
   <!-- Botón para desplegar la barra lateral -->
@@ -111,15 +102,16 @@
 
   <!-- Barra lateral -->
   <div
-    id="sidebar"
-    class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out"
-  >
+  id="sidebar"
+  class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto max-h-screen"
+>
     <div>
       <div class="sidebar-container flex flex-col items-center">
-        <h2 class="font-bold mb-5 p-5">Menú</h2>
+        <img src="https://raw.githubusercontent.com/JeanCardozo/audios/main/logo.png" alt="Logo" class="w-full h-auto max-w-[200px] mb-5 p-5">
       </div>
-      <h3 class="text-2xl font-bold mb-5 p-5 text-center">
-        Componentes de usuarios
+      
+      <h3 class="text-2xl font-bold mb-2 p-3 text-center">
+        Gestion de usuarios
       </h3>
 
       <div class="space-y-2 w-full h-full w-64 bg-gray-900">
@@ -245,7 +237,7 @@
           <li>
             <a
               href="/ver_plan_ent"
-              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline"
+              class="flex items-center py-2 px-4 hover:bg-gray-700 rounded no-underline text-sm"
             >
               <img
                 src="https://raw.githubusercontent.com/JeanCardozo/audios/main/mancuernas.png"
@@ -257,14 +249,18 @@
           </li>
         </ul>
       </div>
-      <h3 class="text-2xl font-bold mb-5 p-5 text-center">
-        Acceso y Autenticacion
-      </h3>
+
     </div>
   </div>
 </div>
-
+<!-- Incluir en el archivo navbar.ejs -->
 <script>
+  document
+    .getElementById("profileButton")
+    .addEventListener("click", function () {
+      document.getElementById("profileDropdown").classList.toggle("hidden");
+    });
+
   document
     .getElementById("sidebarToggle")
     .addEventListener("click", function (e) {

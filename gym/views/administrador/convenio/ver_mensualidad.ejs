@@ -33,7 +33,7 @@
     </style>
     <title>Ver Convenio</title>
   </head>
-  <body>
+  <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
     <div class="flex justify-right mt-4 p-5">
       <a
@@ -63,7 +63,7 @@
               <th scope="col" class="px-4 py-6">ACCIONES</th>
             </tr>
           </thead>
-          <tbody class="text-center">
+          <tbody class="bg-white divide-y divide-gray-200 text-center">
             <% let rowCounter = 0; %> <% results.forEach((mensu) => { %>
             <tr
               class="hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
