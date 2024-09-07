@@ -2,16 +2,16 @@
 FROM node:20
 
 # Establece el directorio de trabajo dentro del contenedor
-WORKDIR /gym/app
+WORKDIR /app
 
 # Copia los archivos de package.json y package-lock.json al contenedor
-COPY package*.json ./
+COPY gym/package*.json ./
 
 # Instala las dependencias del proyecto
 RUN npm install
 
 # Copia el resto del código al contenedor
-COPY . .
+COPY gym .
 
 # Expone el puerto que tu aplicación utiliza
 EXPOSE 5000
