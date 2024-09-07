@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "app.js",
     "build": "react-scripts build",
     "build:css": "npx tailwindcss -i ./src/input.css -o ./src/styles.css",
     "test": "react-scripts test",
