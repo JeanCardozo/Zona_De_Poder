@@ -2,7 +2,7 @@
 FROM node:20
 
 # Establece el directorio de trabajo dentro del contenedor
-WORKDIR /app
+WORKDIR /gym/app
 
 # Copia los archivos de package.json y package-lock.json al contenedor
 COPY package*.json ./
@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expone el puerto que tu aplicación utiliza
-EXPOSE 3000
+EXPOSE 5000
 
 # Comando para iniciar la aplicación
 CMD ["npm", "start"]
