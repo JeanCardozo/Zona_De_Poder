@@ -1,3 +1,4 @@
+version: "3"
 services:
   # Servicio para la base de datos (PostgreSQL)
   db:
@@ -13,6 +14,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  # Servicio para PgAdmin
   pdAdmin:
     image: dpage/pgadmin4
     container_name: pgadmin4
@@ -27,5 +29,22 @@ services:
       - ./pgadmin:/certs/server.cert
       - ./pgadmin:/certs/server.key
       - ./pgadmin:/pgadmin4/servers.json
+
+  # Servicio para tu aplicación Node.js
+  app:
+    build: .
+    container_name: zona_de_poder_app
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=master
+      - DB_PASSWORD=123456
+      - DB_NAME=zona_de_poder_db
+    volumes:
+      - .:/app
 volumes:
   db_data:

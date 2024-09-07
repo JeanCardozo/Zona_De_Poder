@@ -3,6 +3,12 @@ const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "negrosdemierda"; // Asegúrate de mantener esto en secreto
+const mercadopago = require("mercadopago");
+const {
+  MercadoPagoConfig,
+  Preference,
+  configurations,
+} = require("mercadopago");
 
 //ROLES--------------------------------------------------------------
 
@@ -49,9 +55,7 @@ exports.updateRoles = (req, res) => {
 
 //CLIENTES-------------------------------------------------------------------
 
-//Paginacion
-
-exports.crearclienteS = (req, res) => {
+exports.crearclienteS = async (req, res) => {
   const id = req.body.id;
   const nom = req.body.nombre;
   const ape = req.body.apellido;
@@ -62,148 +66,109 @@ exports.crearclienteS = (req, res) => {
   const mensu = req.body.mensualidad;
   const usu = req.body.usuario;
 
-  // Paso 1: Consultar los valores de meses y días desde la tabla mensualidades
-  const queryMensualidades =
-    "SELECT mes, dias FROM mensualidades WHERE id = $1";
-  conexion.query(
-    queryMensualidades,
-    [mensu],
-    (errorMensualidades, resultsMensualidades) => {
-      if (errorMensualidades) {
-        console.log(errorMensualidades);
-        return res.status(500).json({ error: errorMensualidades.message });
-      }
+  try {
+    // Paso 1: Consultar los valores de meses y días desde la tabla mensualidades
+    const queryMensualidades =
+      "SELECT mes, dias FROM mensualidades WHERE id = $1";
+    const resultsMensualidades = await conexion.query(queryMensualidades, [
+      mensu,
+    ]);
 
-      if (resultsMensualidades.rows.length === 0) {
-        return res.status(404).json({ error: "Mensualidad no encontrada" });
-      }
-
-      const { mes: meses, dias } = resultsMensualidades.rows[0];
-
-      // Validar los valores de meses y días
-      if (isNaN(meses) || isNaN(dias)) {
-        return res
-          .status(400)
-          .json({ error: "Datos de mensualidad inválidos" });
-      }
-
-      // Paso 2: Calcular la fecha final
-      let fechaInicio = new Date();
-      fechaInicio.setTime(
-        fechaInicio.getTime() + new Date().getTimezoneOffset() * 60000
-      );
-      console.log(meses, dias);
-      if (isNaN(fechaInicio.getTime())) {
-        return res.status(400).json({ error: "Fecha de inscripción inválida" });
-      }
-
-      fechaInicio.setMonth(fechaInicio.getMonth() + parseInt(meses, 10));
-      fechaInicio.setDate(fechaInicio.getDate() + parseInt(dias, 10));
-      const fechaFinal = fechaInicio.toISOString().split("T")[0]; // Formato YYYY-MM-DD
-
-      // Paso 3: Realizar las inserciones en la base de datos
-      const queryClientes =
-        "INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado) VALUES ($1, $2, $3, $4, $5, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $6, $7, $8, $9, $10) RETURNING id";
-      const valuesClientes = [
-        id,
-        nom,
-        ape,
-        edad,
-        sexo,
-        correo,
-        numero,
-        mensu,
-        usu,
-        "Activo",
-      ];
-
-      conexion.query("BEGIN", (err) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ error: err.message });
-        }
-
-        conexion.query(queryClientes, valuesClientes, (error, results) => {
-          if (error) {
-            return conexion.query("ROLLBACK", (rollbackErr) => {
-              if (rollbackErr) {
-                console.log(rollbackErr);
-                return res.status(500).json({ error: rollbackErr.message });
-              }
-              console.log(error);
-              return res.status(500).json({ error: error.message });
-            });
-          }
-
-          const ide = results.rows[0].id; // Capturar el ID recién creado
-          const queryTallas =
-            "INSERT INTO tallas (id_cliente, nombre) VALUES ($1, $2)";
-          const valuesTallas = [ide, nom];
-
-          conexion.query(
-            queryTallas,
-            valuesTallas,
-            (errorTallas, resultsTallas) => {
-              if (errorTallas) {
-                return conexion.query("ROLLBACK", (rollbackErr) => {
-                  if (rollbackErr) {
-                    console.log(rollbackErr);
-                    return res.status(500).json({ error: rollbackErr.message });
-                  }
-                  console.log(errorTallas);
-                  return res.status(500).json({ error: errorTallas.message });
-                });
-              }
-
-              const queryMensualidad =
-                "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $3, $4, $5)";
-              const valuesMensualidad = [ide, nom, fechaFinal, mensu, "Activo"];
-
-              conexion.query(
-                queryMensualidad,
-                valuesMensualidad,
-                (errorMensualidad, resultsMensualidad) => {
-                  if (errorMensualidad) {
-                    return conexion.query("ROLLBACK", (rollbackErr) => {
-                      if (rollbackErr) {
-                        console.log(rollbackErr);
-                        return res
-                          .status(500)
-                          .json({ error: rollbackErr.message });
-                      }
-                      console.log(errorMensualidad);
-                      return res
-                        .status(500)
-                        .json({ error: errorMensualidad.message });
-                    });
-                  }
-
-                  conexion.query("COMMIT", (commitErr) => {
-                    if (commitErr) {
-                      console.log(commitErr);
-                      return res.status(500).json({ error: commitErr.message });
-                    }
-                    res.status(200);
-                    res.render("administrador/clientes/create_clientes", {
-                      alert: true,
-                      alertTitle: "Registro Exitoso",
-                      alertMessage:
-                        "Usuario registrado con éxito, Redirigiendo...",
-                      alertIcon: "success",
-                      showConfirmButton: false,
-                      timer: 2500,
-                      ruta: `/actualizar_tallas/${ide}`,
-                      mensualidades: resultsMensualidades.rows, // Pasar la lista de mensualidades
-                    });
-                  });
-                }
-              );
-            }
-          );
-        });
-      });
+    if (resultsMensualidades.rows.length === 0) {
+      return res.status(404).json({ error: "Mensualidad no encontrada" });
     }
-  );
+
+    const { mes: meses, dias } = resultsMensualidades.rows[0];
+
+    // Validar los valores de meses y días
+    if (isNaN(meses) || isNaN(dias)) {
+      return res.status(400).json({ error: "Datos de mensualidad inválidos" });
+    }
+
+    // Paso 2: Calcular la fecha final
+    let fechaInicio = new Date();
+    fechaInicio.setTime(
+      fechaInicio.getTime() + new Date().getTimezoneOffset() * 60000
+    );
+
+    if (isNaN(fechaInicio.getTime())) {
+      return res.status(400).json({ error: "Fecha de inscripción inválida" });
+    }
+
+    fechaInicio.setMonth(fechaInicio.getMonth() + parseInt(meses, 10));
+    fechaInicio.setDate(fechaInicio.getDate() + parseInt(dias, 10));
+    const fechaFinal = fechaInicio.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+
+    // Encriptar la contraseña de forma asíncrona
+    const hashedPassword = await bcrypt.hash(id, saltRounds);
+
+    // Paso 3: Realizar las inserciones en la base de datos con transacción
+    await conexion.query("BEGIN");
+
+    const queryClientes =
+      "INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado, contraseña) VALUES ($1, $2, $3, $4, $5, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $6, $7, $8, $9, $10, $11) RETURNING id";
+    const valuesClientes = [
+      id,
+      nom,
+      ape,
+      edad,
+      sexo,
+      correo,
+      numero,
+      mensu,
+      usu,
+      "Activo",
+      hashedPassword,
+    ];
+
+    const resultClientes = await conexion.query(queryClientes, valuesClientes);
+    const ide = resultClientes.rows[0].id; // Capturar el ID recién creado
+
+    const queryTallas =
+      "INSERT INTO tallas (id_cliente, nombre, fecha) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'))";
+    const valuesTallas = [ide, nom];
+    await conexion.query(queryTallas, valuesTallas);
+
+    const queryMensualidad =
+      "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $3, $4, $5)";
+    const valuesMensualidad = [ide, nom, fechaFinal, mensu, "Activo"];
+    await conexion.query(queryMensualidad, valuesMensualidad);
+
+    // Nueva inserción a la tabla usuarios
+    const queryUsuarios =
+      "INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
+    const valuesUsuarios = [
+      id, // id del cliente como id del usuario
+      nom, // nombre
+      ape, // apellido
+      numero, // telefono
+      correo, // correo electronico
+      hashedPassword, // contraseña encriptada
+      3, // id_rol = 3
+      "Activo", // estado = "Activo"
+    ];
+    await conexion.query(queryUsuarios, valuesUsuarios);
+
+    // Confirmar la transacción
+    await conexion.query("COMMIT");
+
+    res.status(200);
+    res.render("administrador/clientes/create_clientes", {
+      alert: true,
+      alertTitle: "Registro Exitoso",
+      alertMessage: "Usuario registrado con éxito, Redirigiendo...",
+      alertIcon: "success",
+      showConfirmButton: false,
+      timer: 2500,
+      ruta: `/actualizar_tallas/${ide}`,
+      mensualidades: resultsMensualidades.rows, // Pasar la lista de mensualidades
+    });
+  } catch (error) {
+    // Si hay un error, revertir la transacción
+    await conexion.query("ROLLBACK");
+    console.error("Error en la creación del cliente:", error);
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 exports.update_cliente = (req, res) => {
@@ -332,42 +297,169 @@ exports.update_cliente = (req, res) => {
   });
 };
 
-exports.desactivarcliente = (req, res) => {
+exports.renovar_cliente = (req, res) => {
   const id = req.body.id;
+  const mensualidad = req.body.mensualidad;
 
-  if (!id) {
-    return res.status(400).json({ error: "ID es requerido" });
-  }
+  const queryMensualidades =
+    "SELECT mes, dias FROM mensualidades WHERE id = $1";
 
-  const query = "UPDATE clientes SET estado = 'Inactivo' WHERE id = $1";
-  const values = [id];
+  conexion.query(
+    queryMensualidades,
+    [mensualidad],
+    (errorMensualidades, resultsMensualidades) => {
+      if (errorMensualidades) {
+        console.log(errorMensualidades);
+        return res.status(500).json({ error: errorMensualidades.message });
+      }
 
-  conexion.query(query, values, (error, results) => {
-    if (error) {
-      console.error("Error al desactivar el usuario:", error);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
+      if (resultsMensualidades.rows.length === 0) {
+        return res.status(404).json({ error: "Mensualidad no encontrada" });
+      }
+
+      const { mes: meses, dias } = resultsMensualidades.rows[0];
+
+      // Validar los valores de meses y días
+      if (isNaN(meses) || isNaN(dias)) {
+        return res
+          .status(400)
+          .json({ error: "Datos de mensualidad inválidos" });
+      }
+
+      // Calcular la fecha final
+      let fechaInicio = new Date();
+      fechaInicio.setTime(
+        fechaInicio.getTime() + new Date().getTimezoneOffset() * 60000
+      );
+
+      if (isNaN(fechaInicio.getTime())) {
+        return res.status(400).json({ error: "Fecha de inscripción inválida" });
+      }
+
+      fechaInicio.setMonth(fechaInicio.getMonth() + parseInt(meses, 10));
+      fechaInicio.setDate(fechaInicio.getDate() + parseInt(dias, 10));
+      const fechaFinal = fechaInicio.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+
+      const queryVentas = `SELECT * FROM mensualidad_clientes WHERE id = $1`;
+      const valuesVentas = [id];
+
+      conexion.query("BEGIN", (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ error: err.message });
+        }
+
+        conexion.query(queryVentas, valuesVentas, (error, resultsVentas) => {
+          if (error) {
+            return conexion.query("ROLLBACK", (rollbackErr) => {
+              if (rollbackErr) {
+                console.log(rollbackErr);
+                return res.status(500).json({ error: rollbackErr.message });
+              }
+              console.log(error);
+              return res.status(500).json({ error: error.message });
+            });
+          }
+
+          if (resultsVentas.rows.length === 0) {
+            return res.status(404).json({ error: "Cliente no encontrado" });
+          }
+          const id_cliente = resultsVentas.rows[0].id_cliente;
+          const clienteNombre = resultsVentas.rows[0].nombre;
+
+          const queryInsertMensualidadCliente =
+            "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $3, $4, $5)";
+          const valuesInsertMensualidadCliente = [
+            id_cliente,
+            clienteNombre,
+            fechaFinal,
+            mensualidad,
+            "Activo",
+          ];
+
+          conexion.query(
+            queryInsertMensualidadCliente,
+            valuesInsertMensualidadCliente,
+            (errorInsert) => {
+              if (errorInsert) {
+                return conexion.query("ROLLBACK", (rollbackErr) => {
+                  if (rollbackErr) {
+                    console.log(rollbackErr);
+                    return res.status(500).json({ error: rollbackErr.message });
+                  }
+                  console.log(errorInsert);
+                  return res.status(500).json({ error: errorInsert.message });
+                });
+              }
+
+              const queryUpdateEstado =
+                "UPDATE mensualidad_clientes SET estado = 'Inactivo' WHERE id = $1 ";
+              const valuesUpdateEstado = [id];
+
+              conexion.query(
+                queryUpdateEstado,
+                valuesUpdateEstado,
+                (errorUpdate) => {
+                  if (errorUpdate) {
+                    return conexion.query("ROLLBACK", (rollbackErr) => {
+                      if (rollbackErr) {
+                        console.log(rollbackErr);
+                        return res
+                          .status(500)
+                          .json({ error: rollbackErr.message });
+                      }
+                      console.log(errorUpdate);
+                      return res
+                        .status(500)
+                        .json({ error: errorUpdate.message });
+                    });
+                  }
+
+                  const queryUpdateCliente =
+                    "UPDATE clientes SET estado = 'Activo' WHERE id = $1 ";
+                  const valuesUpdateCliente = [id_cliente];
+
+                  conexion.query(
+                    queryUpdateCliente,
+                    valuesUpdateCliente,
+                    (errorUpdate) => {
+                      if (errorUpdate) {
+                        return conexion.query("ROLLBACK", (rollbackErr) => {
+                          if (rollbackErr) {
+                            console.log(rollbackErr);
+                            return res
+                              .status(500)
+                              .json({ error: rollbackErr.message });
+                          }
+                          console.log(errorUpdate);
+                          return res
+                            .status(500)
+                            .json({ error: errorUpdate.message });
+                        });
+                      }
+
+                      // Si todo está bien, hacemos el COMMIT y redireccionamos
+                      conexion.query("COMMIT", (errCommit) => {
+                        if (errCommit) {
+                          console.log(errCommit);
+                          return res
+                            .status(500)
+                            .json({ error: errCommit.message });
+                        }
+
+                        // Redireccionar a otra página después de realizar las operaciones
+                        res.redirect("/index_admin"); // Cambia la URL a la que quieres redirigir
+                      });
+                    }
+                  );
+                }
+              );
+            }
+          );
+        });
+      });
     }
-    res.redirect("/ver_clientes");
-  });
-};
-
-exports.activarcliente = (req, res) => {
-  const id = req.body.id;
-
-  if (!id) {
-    return res.status(400).json({ error: "ID es requerido" });
-  }
-
-  const query = "UPDATE clientes SET estado = 'Activo' WHERE id = $1";
-  const values = [id];
-
-  conexion.query(query, values, (error, results) => {
-    if (error) {
-      console.error("Error al desactivar el usuario:", error);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
-    }
-    res.redirect("/ver_clientes");
-  });
+  );
 };
 
 // USUARIOS -----------------------------------------------------------------
@@ -770,8 +862,10 @@ exports.register = async (req, res) => {
 
       const tempRegistroId = result.rows[0].id;
 
-      // Redirigir a la página de selección de mensualidades
-      res.redirect(`/mensualidades?tempRegistroId=${tempRegistroId}`);
+      // Mostrar una alerta de redirección y redirigir a la selección de mensualidades
+      res.render("administrador/mensualidades/registro_exito", {
+        tempRegistroId: tempRegistroId, // Pasar el ID del registro temporal a la vista
+      });
     });
   } catch (error) {
     console.error("Error al registrar:", error);
@@ -779,14 +873,114 @@ exports.register = async (req, res) => {
   }
 };
 
-// ruta para la redirección a PayU -----------------------------------------------
+// LOGICA PARA USAR MERCADO PAGO-----------------------------------------------
+
+let TOKEN = process.env.MP_ACCESS_TOKEN_V;
+
+mercadopago.configure({
+  access_token: TOKEN,
+  sandbox: true, // Habilitar modo sandbox
+});
+
+exports.createOrder = async (req, res) => {
+  const { title, unit_price, tempRegistroId } = req.body;
+
+  if (!title || !unit_price || !tempRegistroId) {
+    return renderMensualidadesPage(res, {
+      alertTitle: "Advertencia",
+      alertMessage: "¡Faltan datos necesarios para crear la orden!",
+      alertIcon: "warning",
+      showConfirmButton: true,
+      tempRegistroId: req.body.tempRegistroId,
+      mensualidades: [], // Manejar adecuadamente el resultado de las mensualidades
+    });
+  }
+
+  try {
+    const preference1 = {
+      items: [
+        {
+          title: title,
+          unit_price: parseFloat(unit_price),
+          currency_id: "COP", // Cambia la moneda según tu caso
+          quantity: 1,
+        },
+      ],
+      back_urls: {
+        success: `http://localhost:5000/success?tempRegistroId=${tempRegistroId}`,
+        failure: `http://localhost:5000/failure?tempRegistroId=${tempRegistroId}`,
+        pending: `http://localhost:5000/pending?tempRegistroId=${tempRegistroId}`,
+      },
+      notification_url: "http://localhost:5000/webhook",
+      auto_return: "approved",
+    };
+
+    console.log(preference1);
+
+    const result = await mercadopago.preferences.create(preference1);
+
+    // Renderizar la vista de redirección con la URL de Mercado Pago
+    return res.render("administrador/mensualidades/redirect-to-mercadopago", {
+      init_point: result.body.init_point,
+    });
+  } catch (error) {
+    console.error("Error al crear la orden de pago:", error);
+    return renderMensualidadesPage(res, {
+      alertTitle: "Error",
+      alertMessage: "Hubo un problema al crear la orden de pago.",
+      alertIcon: "error",
+      showConfirmButton: true,
+      tempRegistroId: null,
+      mensualidades: [],
+    });
+  }
+};
+
+exports.receiveWebhook = async (req, res) => {
+  try {
+    const payment = req.query;
+
+    if (payment.type === "payment") {
+      const data = await mercadopago.payment.findById(payment["data.id"]);
+      console.log(data);
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error("Error en el webhook:", error);
+    // No es necesario renderizar una página de error aquí ya que los webhooks no devuelven una vista
+    res.sendStatus(500);
+  }
+};
+
+// Función para renderizar la página de mensualidades con alertas
+function renderMensualidadesPage(
+  res,
+  {
+    alertTitle,
+    alertMessage,
+    alertIcon,
+    showConfirmButton,
+    tempRegistroId,
+    mensualidades,
+  }
+) {
+  if (!res.headersSent) {
+    res.render("administrador/mensualidades/mensualidades", {
+      alertTitle,
+      alertMessage,
+      alertIcon,
+      showConfirmButton,
+      tempRegistroId,
+      mensualidades,
+    });
+  }
+}
 
 // INICIO DE SESION --------------------------------------------------------------------------------------------------
 exports.login = async (req, res) => {
   const user = req.body.user;
   const pass = req.body.pass;
-
-  console.log("hpta: ", user);
 
   if (!user || !pass) {
     return renderLoginPage(res, {
@@ -1106,6 +1300,7 @@ exports.update_pe = (req, res) => {
 };
 
 // INGRESO DE CLIENTES AL GIMNASIO PRESENCIAL
+// Controlador para registrar ingreso
 exports.registrarIngreso = async (req, res) => {
   try {
     const identificacionConAsterisco = req.body.identificacion;
@@ -1124,6 +1319,7 @@ exports.registrarIngreso = async (req, res) => {
     const clienteResult = await conexion.query(clienteQuery, [id_cliente]);
 
     if (clienteResult.rowCount === 0) {
+      // Si el cliente no existe, renderizamos la página index con un error
       return res.render("administrador/index", {
         alert: true,
         alertTitle: "Error",
@@ -1133,6 +1329,12 @@ exports.registrarIngreso = async (req, res) => {
         sonido:
           "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
         ruta: "index_admin",
+        ultimosClientes: [], // En caso de error, puedes dejar vacíos los datos
+        datosVentas: [],
+        datosSumaPorMes: [],
+        datosIngresosHoy: [],
+        datosVentasVencidas: [],
+        datosMensualidades: [],
       });
     }
 
@@ -1151,8 +1353,8 @@ exports.registrarIngreso = async (req, res) => {
     // Insertar un nuevo ingreso en la tabla ingresos_clientes
     const insertQuery = `
       INSERT INTO ingresos_clientes (id_cliente, contraseña, cantidad_ingresos, fecha_ingresos)
-VALUES ($1, $2, $3, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'))
-RETURNING id_cliente;
+      VALUES ($1, $2, $3, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'))
+      RETURNING id_cliente;
     `;
     const insertResult = await conexion.query(insertQuery, [
       id_cliente,
@@ -1170,59 +1372,122 @@ RETURNING id_cliente;
         sonido:
           "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
         ruta: "index_admin",
+        ultimosClientes: [],
+        datosVentas: [],
+        datosSumaPorMes: [],
+        datosIngresosHoy: [],
+        datosVentasVencidas: [],
+        datosMensualidades: [],
       });
     }
 
-    // Obtener los últimos clientes para pasarlos a la vista
-    const ultimosClientesQuery = `
-    SELECT 
-      c.nombre, 
-      c.id_mensualidad AS id_mensu_cliente, 
-      m.id AS id_mensu, 
-      m.tiempo_plan
-    FROM  
-      clientes c
-    INNER JOIN 
-      mensualidades m ON c.id_mensualidad = m.id
-    ORDER BY 
-      c.fecha_de_inscripcion DESC
-    LIMIT 5;
-  `;
-    const ultimosClientesResult = await conexion.query(ultimosClientesQuery);
-    const ultimosClientes = ultimosClientesResult.rows;
+    // Llamada a la lógica para obtener los datos necesarios antes de renderizar la página
 
+    const fechaHoyBogota = new Date().toLocaleDateString("en-CA", {
+      timeZone: "America/Bogota",
+    });
+
+    // Consulta SQL para obtener el total de ventas por mes
+    const queryVentas = `
+      SELECT 
+        mc.id AS id_ventas, 
+        mc.fecha_inicio, 
+        m.id AS id_mensualidad, 
+        m.total_pagar,
+        TO_CHAR(mc.fecha_inicio, 'Mon YYYY') AS mes_anio 
+      FROM 
+        mensualidad_clientes AS mc 
+      INNER JOIN 
+        mensualidades AS m ON mc.id_mensualidad = m.id
+      ORDER BY 
+        mc.fecha_inicio DESC;
+    `;
+    const resultVentas = await conexion.query(queryVentas);
+    const datosVentas = resultVentas.rows;
+
+    // Sumar las ventas por mes
+    const datosSumaPorMes = datosVentas.reduce((acc, curr) => {
+      const mes = curr.mes_anio;
+      if (!acc[mes]) {
+        acc[mes] = 0;
+      }
+      acc[mes] += parseFloat(curr.total_pagar);
+      return acc;
+    }, {});
+
+    const datosSumaArray = Object.keys(datosSumaPorMes).map((mes) => ({
+      mes: mes,
+      total: datosSumaPorMes[mes],
+    }));
+
+    // Consulta SQL para obtener los ingresos de hoy
+    const queryIngresosHoy = `
+      SELECT 
+        ic.fecha_ingresos,
+        ic.cantidad_ingresos
+      FROM 
+        ingresos_clientes AS ic
+      WHERE 
+        DATE(ic.fecha_ingresos) = $1
+      ORDER BY 
+        ic.fecha_ingresos DESC;
+    `;
+    const resultIngresosHoy = await conexion.query(queryIngresosHoy, [
+      fechaHoyBogota,
+    ]);
+    const datosIngresosHoy = resultIngresosHoy.rows;
+
+    // Consulta SQL para obtener los últimos 5 clientes registrados
+    const queryUltimosClientes = `
+      SELECT 
+        c.nombre, 
+        c.id_mensualidad AS id_mensu_cliente, 
+        m.id AS id_mensu, 
+        m.tiempo_plan
+      FROM  
+        clientes c
+      INNER JOIN 
+        mensualidades m ON c.id_mensualidad = m.id
+      ORDER BY 
+        c.fecha_de_inscripcion DESC
+      LIMIT 5;
+    `;
+    const resultUltimosClientes = await conexion.query(queryUltimosClientes);
+    const ultimosClientes = resultUltimosClientes.rows;
+
+    // Consulta SQL para obtener ventas vencidas
     const queryVentasVencidas = `
-    SELECT * FROM mensualidad_clientes WHERE estado = 'Vencida' ORDER BY fecha_inicio DESC;`;
-
+      SELECT * FROM mensualidad_clientes WHERE estado = 'Vencida' ORDER BY fecha_fin DESC LIMIT 5;
+    `;
     const resultVentasVencidas = await conexion.query(queryVentasVencidas);
     const datosVentasVencidas = resultVentasVencidas.rows;
 
-    // Renderizar la vista index_admin con un mensaje de éxito
+    const querymensualidades = `
+      SELECT * FROM mensualidades;
+    `;
+    const resultMensualidades = await conexion.query(querymensualidades);
+    const datosMensualidades = resultMensualidades.rows;
+
+    // Finalmente, renderizamos la vista con todos los datos
     res.render("administrador/index", {
       alert: true,
-      alertTitle: "Éxito",
-      alertMessage: "Ingreso registrado exitosamente",
+      alertTitle: "Ingreso registrado",
+      alertMessage: "Ingreso registrado correctamente.",
       alertIcon: "success",
       showConfirmButton: true,
       sonido:
         "https://raw.githubusercontent.com/JeanCardozo/audios/main/inicio.mp3",
       ruta: "index_admin",
+      datosVentas: datosVentas,
+      datosSumaPorMes: datosSumaArray,
+      datosIngresosHoy: datosIngresosHoy,
       ultimosClientes: ultimosClientes,
       datosVentasVencidas: datosVentasVencidas,
+      datosMensualidades: datosMensualidades,
     });
   } catch (error) {
-    console.error("Error en registrarIngreso:", error);
-    res.render("administrador/index", {
-      alert: true,
-      alertTitle: "Error",
-      alertMessage: "Error interno del servidor.",
-      alertIcon: "error",
-      showConfirmButton: true,
-      sonido:
-        "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
-      ruta: "index_admin",
-      ultimosClientes: [], // Pasar una lista vacía en caso de error
-    });
+    console.error("Error al registrar el ingreso:", error);
+    res.status(500).send("Error en el servidor");
   }
 };
 
@@ -1305,7 +1570,8 @@ SELECT mc.id AS id_mensu_cliente, mc.id_cliente, mc.nombre, mc.fecha_inicio, mc.
        mensu.id AS id_mensualidad_convencional, mensu.tipo_de_mensualidad 
        FROM mensualidad_clientes AS mc
        INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
-       INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id`;
+       INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id
+       ORDER BY id_mensu_cliente`;
 
   conexion.query(query, (error, results) => {
     if (error) {
@@ -1358,29 +1624,29 @@ exports.guardarPlanentrenamiento = async (req, res) => {
   try {
     const { id_cliente, dias, actividades, seriesRepeticiones } = req.body;
 
-    // Verificar que 'dias' es un array y 'actividades' es un array
-    if (!Array.isArray(dias) || !Array.isArray(actividades)) {
-      throw new Error("Los días o las actividades no son válidos.");
-    }
+    console.log("Datos del formulario recibidos:", req.body);
 
-    // Validar que seriesRepeticiones es un objeto
+    console.log("Días recibidos:", dias);
+
+    if (!Array.isArray(dias) || dias.length === 0) {
+      throw new Error("Los días no son válidos.");
+    }
+    if (!Array.isArray(actividades)) {
+      throw new Error("Las actividades no son válidas.");
+    }
     if (typeof seriesRepeticiones !== "object") {
       throw new Error("La estructura de series y repeticiones no es válida.");
     }
 
-    // Por cada día seleccionado, guarda las actividades con series y repeticiones
     for (const dia of dias) {
       for (const actividad of actividades) {
-        // Obtener series y repeticiones para cada actividad
         const series = seriesRepeticiones[`series_${actividad}`];
         const repeticiones = seriesRepeticiones[`repeticiones_${actividad}`];
 
-        // Verificar que series y repeticiones no sean undefined
         if (series === undefined || repeticiones === undefined) {
           throw new Error(`Faltan datos para la actividad ${actividad}.`);
         }
 
-        // Inserta en la base de datos
         await pool.query(
           `INSERT INTO plan_entrenamiento (dia, id_cliente, id_actividad_fisica, series, repeticiones)
            VALUES ($1, $2, $3, $4, $5)`,
@@ -1392,7 +1658,11 @@ exports.guardarPlanentrenamiento = async (req, res) => {
     res.redirect("/ver_plan_ent");
   } catch (error) {
     console.error("Error al guardar el plan de entrenamiento:", error.message);
-    res.status(500).send("Error al guardar el plan de entrenamiento.");
+    res
+      .status(500)
+      .send(
+        "Error al guardar el plan de entrenamiento. Por favor, intente de nuevo."
+      );
   }
 };
 
@@ -1426,7 +1696,6 @@ exports.verActividadFisica = (req, res) => {
 // ACTUALIZAR EL ESTADO DE MENSUALIDAD_CLIENTES CADA DIA--------------------
 exports.actualizarEstadosMensualidades = () => {
   console.log("Iniciando actualización de estados...");
-  console.log("Fecha actual:", new Date());
 
   const query = `
     UPDATE mensualidad_clientes
@@ -1436,15 +1705,78 @@ exports.actualizarEstadosMensualidades = () => {
     RETURNING *;
   `;
 
-  console.log("Query a ejecutar:", query);
-
   conexion.query(query, (error, results) => {
     if (error) {
-      console.error("Error al actualizar los estados:", error);
-    } else {
-      console.log(`${results.rowCount} registros actualizados a 'Vencida'.`);
-      console.log("Registros actualizados:", results.rows);
+      console.error(
+        "Error al actualizar los estados de mensualidad_clientes:",
+        error
+      );
+      return;
     }
-    console.log("Finalización de la actualización de estados.");
+
+    console.log(`${results.rowCount} registros actualizados a 'Vencida'.`);
+
+    // Ahora hacemos la consulta para obtener los clientes afectados
+    const consultaCliente = `
+      SELECT id_cliente FROM mensualidad_clientes WHERE estado = 'Vencida';
+    `;
+
+    conexion.query(consultaCliente, (error, clientes) => {
+      if (error) {
+        console.error(
+          "Error al obtener los clientes con mensualidades vencidas:",
+          error
+        );
+        return;
+      }
+
+      const idsClientes = clientes.rows.map((cliente) => cliente.id_cliente);
+      if (idsClientes.length === 0) {
+        console.log("No hay clientes con mensualidades vencidas.");
+        return;
+      }
+
+      // Actualizamos el estado de esos clientes
+      const updateCliente = `
+        UPDATE clientes
+        SET estado = 'Inactivo' -- o el estado deseado
+        WHERE id = ANY($1);
+      `;
+
+      conexion.query(updateCliente, [idsClientes], (error, results) => {
+        if (error) {
+          console.error(
+            "Error al actualizar el estado de los clientes:",
+            error
+          );
+        } else {
+          console.log(
+            `${results.rowCount} clientes actualizados a 'Inactivo'.`
+          );
+        }
+      });
+    });
+  });
+
+  console.log("Finalización de la actualización de estados.");
+};
+
+exports.mensaje_ayuda = (req, res) => {
+  const id = req.body.id;
+  const nom = req.body.nombre;
+  const co = req.body.correo;
+  const mensajeAyuda = req.body.mensaje_ayuda;
+
+  const query =
+    "INSERT INTO pqrs (id,nombre,correo_electronico,mensaje) VALUES ($1,$2,$3,$4)";
+  const values = [id, nom, co, mensajeAyuda];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    } else {
+      res.redirect("/ayuda"); // Redirigir a la página principal o donde desees
+    }
   });
 };

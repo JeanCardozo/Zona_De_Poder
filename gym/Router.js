@@ -9,7 +9,7 @@ const path = require("path");
 const crud = require("./controllers/crud");
 const cron = require("node-cron");
 const { log } = require("console");
-const axios = require("axios");
+const { createOrder, receiveWebhook } = require("./controllers/crud");
 // que tas hachendo???, se me jodio el index de clientes jajaja
 // Middleware global para asegurar que userData esté disponible en todas las vistas
 router.use((req, res, next) => {
@@ -166,7 +166,16 @@ router.get("/", (req, res) => {
 
 // Asegúrate de que también exista esta ruta
 router.get("/index_p", (req, res) => {
-  res.render("index_p");
+  const message = req.query.message;
+  let alertMessage = null;
+
+  if (message === "cancel_success") {
+    alertMessage = {
+      type: "success",
+      text: "Compra cancelada exitosamente.",
+    };
+  }
+  res.render("index_p", { message: alertMessage });
 });
 
 // Login
@@ -292,6 +301,12 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
     const resultVentasVencidas = await conexion.query(queryVentasVencidas);
     const datosVentasVencidas = resultVentasVencidas.rows;
 
+    const querymensualidades = `
+      SELECT * FROM mensualidades`;
+
+    const resultMensualidades = await conexion.query(querymensualidades);
+    const datosMensualidades = resultMensualidades.rows;
+
     // Renderizar la vista con los datos de todas las consultas
     res.render("administrador/index", {
       datosVentas: datosVentas,
@@ -299,6 +314,7 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       datosIngresosHoy: datosIngresosHoy,
       ultimosClientes: ultimosClientes,
       datosVentasVencidas: datosVentasVencidas,
+      datosMensualidades: datosMensualidades,
     });
   } catch (error) {
     console.error("Error al obtener los datos:", error);
@@ -306,6 +322,19 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
+router.get("/events", async (req, res) => {
+  try {
+    const result = await conexion.query("SELECT * FROM eventos");
+    const eventos = result.rows.map((evento) => ({
+      title: evento.evento,
+      start: evento.fecha_inicio,
+      end: evento.fecha_fin,
+    }));
+    res.json(eventos);
+  } catch (error) {
+    console.error("Error al obtener eventos", error);
+  }
+});
 // Cliente
 
 //ver ROLES
@@ -391,7 +420,7 @@ router.get("/tallas/:id", (req, res) => {
 
   // Consulta para obtener las tallas del cliente
   const sizesQuery = `
-    SELECT medida_pecho, medida_brazo, medida_cintura, medida_abdomen, medida_cadera, medida_pierna, medida_pantorrilla, peso, altura
+    SELECT medida_pecho, medida_brazo, medida_cintura, medida_abdomen, medida_cadera, medida_pierna, medida_pantorrilla, peso, altura,fecha_modificacion
     FROM tallas_temporales
     WHERE id_cliente = $1`;
 
@@ -805,7 +834,8 @@ router.get("/ver_ventas", async (req, res) => {
        mensu.id AS id_mensualidad_convencional, mensu.tipo_de_mensualidad 
        FROM mensualidad_clientes AS mc
        INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
-       INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id`,
+       INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id
+       ORDER BY id_mensu_cliente`,
       async (error, results) => {
         if (error) {
           return res.status(500).json({ error: error.message }); // Manejo de error
@@ -855,7 +885,9 @@ router.get("/ver_ventas", async (req, res) => {
                      mensu.id AS id_mensualidad_convencional, mensu.tipo_de_mensualidad 
                      FROM mensualidad_clientes AS mc
                      INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
-                     INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id`,
+                     INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id
+                     ORDER BY id_mensu_cliente 
+                     `,
                     (error, updatedResults) => {
                       if (error) {
                         return res.status(500).json({ error: error.message }); // Manejo de error
@@ -1111,12 +1143,14 @@ router.get("/create_plan_ent", (req, res) => {
 });
 
 // CODIGO PARA ACTUALIZAR ESTADO DE MENSUALIDAD_CLIENTES-----
-cron.schedule("0 0 * * *", () => {
+cron.schedule("* * * * *", () => {
   console.log("Ejecutando actualización de estados de mensualidades...");
   crud.actualizarEstadosMensualidades();
 });
 
-// PAYU
+// // MERCADO PAGO
+
+// Ruta para mostrar la página de mensualidades
 router.get("/mensualidades", (req, res) => {
   const { tempRegistroId } = req.query;
 
@@ -1144,217 +1178,94 @@ router.get("/mensualidades", (req, res) => {
   });
 });
 
-router.get("/pago", async (req, res) => {
-  const { mensualidadId, tempRegistroId } = req.query;
-
-  if (!mensualidadId || !tempRegistroId) {
-    return res.status(400).json({
-      success: false,
-      message: "Mensualidad o registro no definidos",
-    });
-  }
-
+// Ruta para crear una orden de Mercado Pago y mostrar alerta antes de redirigir
+router.post("/create-order", async (req, res) => {
   try {
-    // Recuperar la información de la mensualidad seleccionada
-    const queryMensualidad = `SELECT * FROM mensualidades WHERE id = $1`;
-    const mensualidadResult = await conexion.query(queryMensualidad, [
-      mensualidadId,
-    ]);
-
-    if (mensualidadResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Mensualidad no encontrada",
-      });
-    }
-
-    const mensualidad = mensualidadResult.rows[0];
-
-    // Recuperar la información del usuario desde el registro temporal
-    const queryUsuario = `SELECT * FROM temp_registro WHERE id = $1`;
-    const usuarioResult = await conexion.query(queryUsuario, [tempRegistroId]);
-
-    if (usuarioResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Registro no encontrado",
-      });
-    }
-
-    const usuario = usuarioResult.rows[0];
-
-    // Generar firma
-    const referenceCode = `pedido_${tempRegistroId}`;
-    const signature = crypto
-      .createHash("md5")
-      .update(
-        `${process.env.PAYU_API_KEY}~${process.env.PAYU_MERCHANT_ID}~${referenceCode}~${mensualidad.total_pagar}~USD`
-      )
-      .digest("hex");
-
-    // Configurar los detalles del pago para PayU
-    const paymentDetails = {
-      language: "es",
-      command: "SUBMIT_TRANSACTION",
-      merchant: {
-        apiKey: process.env.PAYU_API_KEY,
-        apiLogin: process.env.PAYU_API_LOGIN,
-      },
-      transaction: {
-        order: {
-          accountId: process.env.PAYU_ACCOUNT_ID,
-          referenceCode: referenceCode,
-          description: `Pago de mensualidad: ${mensualidad.tiempo_plan}`,
-          language: "es",
-          signature: signature,
-          notifyUrl: process.env.PAYU_RETURN_URL,
-          additionalValues: {
-            TX_VALUE: {
-              value: mensualidad.total_pagar,
-              currency: "USD",
-            },
-          },
-          buyer: {
-            emailAddress: usuario.correo,
-            contactPhone: usuario.telefono,
-            fullName: `${usuario.nombre} ${usuario.apellido}`,
-          },
-        },
-        payer: {
-          emailAddress: usuario.correo,
-          contactPhone: usuario.telefono,
-          fullName: `${usuario.nombre} ${usuario.apellido}`,
-        },
-        creditCard: {
-          number: "4111111111111111",
-          securityCode: "123",
-          expirationDate: "2025/12",
-          name: "APPROVED",
-        },
-        type: "AUTHORIZATION_AND_CAPTURE",
-        paymentMethod: "VISA",
-        paymentCountry: "CO",
-      },
-      test: true,
-    };
-
-    console.log("PayU Request:", JSON.stringify(paymentDetails, null, 2));
-
-    // Enviar la solicitud a PayU y obtener la URL de redirección
-    const response = await axios.post(process.env.PAYU_API_URL, paymentDetails);
-
-    console.log("PayU Response:", JSON.stringify(response.data, null, 2));
-
-    if (
-      response.data.transactionResponse &&
-      response.data.transactionResponse.extraParameters &&
-      response.data.transactionResponse.extraParameters.BANK_URL
-    ) {
-      // Redirige al usuario a la URL de pago de PayU
-      res.redirect(response.data.transactionResponse.extraParameters.BANK_URL);
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "No se pudo obtener la URL de pago de PayU",
-        payuResponse: response.data,
-      });
-    }
+    await createOrder(req, res);
   } catch (error) {
-    console.error(
-      "Error al procesar el pago:",
-      error.response ? error.response.data : error.message
-    );
-    res.status(500).json({
-      success: false,
-      message: "Error al procesar el pago",
-      error: error.response ? error.response.data : error.message,
-    });
+    if (!res.headersSent) {
+      res.render("administrador/mensualidades/mensualidades", {
+        alertTitle: "Error",
+        alertMessage: "Hubo un problema al crear la orden de pago.",
+        alertIcon: "error",
+        showConfirmButton: true,
+        tempRegistroId: req.body.tempRegistroId,
+        mensualidades: [], // Manejar adecuadamente el resultado de las mensualidades
+      });
+    }
   }
 });
 
-router.post("/confirmacion-pago", async (req, res) => {
-  const { transactionId, state, order } = req.body;
-
-  if (state === "APPROVED") {
-    const tempRegistroId = order.referenceCode.split("_")[1]; // Extraer el ID del registro temporal
-
-    // Actualizar el estado del registro temporal a "Activo"
-    const queryTemp = `UPDATE temp_registro SET estado = 'Activo' WHERE id = $1 RETURNING *`;
-    conexion.query(queryTemp, [tempRegistroId], async (error, result) => {
-      if (error || result.rows.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Error al actualizar el registro",
-        });
-      }
-
-      const usuario = result.rows[0];
-
-      // Mover los datos a las tablas definitivas (usuarios y clientes)
-      const queryUsuario = `
-        INSERT INTO usuarios (id, nombre, apellido, correo_electronico, telefono, contraseña, id_rol, estado)
-        VALUES ($1, $2, $3, $4, $5, $6, 3, 'Activo')
-      `;
-      const queryCliente = `
-        INSERT INTO clientes (id_usuario, estado_cliente)
-        VALUES ($1, 'Activo')
-      `;
-
-      try {
-        await conexion.query(queryUsuario, [
-          usuario.id_usuario,
-          usuario.nombre,
-          usuario.apellido,
-          usuario.correo,
-          usuario.telefono,
-          usuario.contraseña,
-        ]);
-
-        await conexion.query(queryCliente, [usuario.id_usuario]);
-
-        // Eliminar el registro temporal
-        await conexion.query(`DELETE FROM temp_registro WHERE id = $1`, [
-          usuario.id,
-        ]);
-
-        // Redirigir al usuario al login_index después del pago exitoso
-        res.render("confirmacion-exito", {
-          alert: true,
-          alertTitle: "Pago exitoso",
-          alertMessage: "Tu registro ha sido completado con éxito.",
-          alertIcon: "success",
-          showConfirmButton: false,
-          timer: 1500,
-          ruta: "/login_index",
-        });
-      } catch (error) {
-        console.error("Error al confirmar el registro:", error);
-        res.status(500).json({
-          success: false,
-          message: "Error al confirmar el registro",
-        });
-      }
-    });
-  } else {
-    res.render("confirmacion-fallo", {
-      alert: true,
-      alertTitle: "Pago fallido",
-      alertMessage: "El pago no se completó correctamente.",
-      alertIcon: "error",
-      showConfirmButton: true,
-    });
+// Ruta para recibir webhooks de Mercado Pago
+router.post("/webhook", async (req, res) => {
+  try {
+    await receiveWebhook(req, res);
+    res.sendStatus(204); // No hay contenido que devolver
+  } catch (error) {
+    if (!res.headersSent) {
+      res.sendStatus(500); // Enviar un estado de error si falla el webhook
+    }
   }
+});
+
+// Rutas de redirección después del pago
+router.get("/success", (req, res) => {
+  res.render("administrador/mensualidades/mensualidades", {
+    alertTitle: "Pago Exitoso",
+    alertMessage: "Tu pago ha sido realizado con éxito.",
+    alertIcon: "success",
+    showConfirmButton: true,
+    tempRegistroId: req.query.tempRegistroId, // Añade esto
+  });
+});
+
+router.get("/failure", (req, res) => {
+  res.render("administrador/mensualidades/mensualidades", {
+    alertTitle: "Pago Fallido",
+    alertMessage: "Hubo un problema al procesar tu pago.",
+    alertIcon: "error",
+    showConfirmButton: true,
+    tempRegistroId: req.query.tempRegistroId, // Añade esto
+  });
+});
+
+router.get("/pending", (req, res) => {
+  res.render("administrador/mensualidades/mensualidades", {
+    alertTitle: "Pago Pendiente",
+    alertMessage: "Tu pago está en proceso. Espera la confirmación.",
+    alertIcon: "info",
+    showConfirmButton: true,
+    tempRegistroId: req.query.tempRegistroId, // Añade esto
+  });
+});
+
+router.get("/cancelar", (req, res) => {
+  const { tempRegistroId } = req.query;
+
+  // Eliminar el registro temporal de la base de datos
+  const query = `DELETE FROM temp_registro WHERE id = $1`;
+  conexion.query(query, [tempRegistroId], (error) => {
+    if (error) {
+      console.error("Error al eliminar el registro temporal:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Error al cancelar el registro" });
+    }
+
+    res.redirect("/index_p?message=cancel_success");
+  });
 });
 
 //roles
 router.post("/crearRoles", crud.crearRoles);
 router.post("/updateRoles", crud.updateRoles);
+
 //Clientes
 router.post("/verClientess", crud.verClientes);
 router.post("/crearclienteS", crud.crearclienteS);
 router.post("/update_cliente", crud.update_cliente);
-router.post("/desactivarcliente", crud.desactivarcliente);
-router.post("/activarcliente", crud.activarcliente);
+
+router.post("/renovar_cliente", crud.renovar_cliente);
 
 //crear usuarios
 
@@ -1406,11 +1317,104 @@ router.post("/guardarPlanentrenamiento", crud.guardarPlanentrenamiento);
 //INGRESO AL GIMNASIO:
 
 router.post("/registrarIngreso", crud.registrarIngreso);
-module.exports = router;
 
 ///////////////////////////////////////////////////////////////////////////////////////////  CLIENTES CODGIO
 
+// Define la función clasificarIMC fuera del callback
+// Define la función clasificarIMC fuera del callback
+// Define la función clasificarIMC fuera del callback
+function clasificarIMC(imc) {
+  if (imc < 18.5) return "Bajo peso";
+  if (imc >= 18.5 && imc < 25) return "Normal";
+  if (imc >= 25 && imc < 30) return "Sobrepeso";
+  if (imc >= 30) return "Obesidad";
+  return "No clasificado";
+}
+
 router.get("/clientes/index_c", (req, res) => {
+  if (!res.locals.userData) {
+    return res
+      .status(401)
+      .json({ error: "No autorizado: datos del usuario no encontrados" });
+  }
+
+  let identificacion = res.locals.userData.id;
+
+  if (!Number.isInteger(identificacion)) {
+    return res.status(400).json({ error: "ID de cliente inválido" });
+  }
+
+  // Consulta para obtener la talla más reciente
+  conexion.query(
+    `SELECT * FROM tallas 
+      WHERE id_cliente = $1
+      ORDER BY fecha DESC
+      LIMIT 1`,
+    [identificacion],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      const tallaReciente = results.rows.length > 0 ? results.rows[0] : null;
+
+      // Calcular el IMC
+      let imc = null;
+      let resultadoIMC = "No clasificado";
+      if (tallaReciente && tallaReciente.peso && tallaReciente.altura) {
+        const peso = parseFloat(tallaReciente.peso);
+        const altura = parseFloat(tallaReciente.altura);
+        const alturaEnMetros = altura / 100;
+        imc = (peso / (alturaEnMetros * alturaEnMetros)).toFixed(2);
+        console.log(`Peso: ${peso}, Altura: ${altura}, IMC: ${imc}`); // Verifica los valores
+        resultadoIMC = clasificarIMC(parseFloat(imc));
+        console.log(`Resultado IMC clasificado: ${resultadoIMC}`); // Verifica el resultado
+      }
+
+      // Consulta para obtener el peso, altura y fecha_modificacion de tallas temporales
+      conexion.query(
+        `SELECT peso, altura, fecha_modificacion FROM tallas_temporales 
+          WHERE id_cliente = $1
+          AND peso IS NOT NULL
+          AND altura IS NOT NULL
+          AND fecha_modificacion IS NOT NULL
+          ORDER BY fecha_modificacion ASC`,
+        [identificacion],
+        (errorTemp, resultsTemp) => {
+          if (errorTemp) {
+            return res.status(500).json({ error: errorTemp.message });
+          }
+
+          // Extrae los pesos, alturas y fechas para el gráfico
+          const pesos = resultsTemp.rows.map((row) => row.peso);
+          const alturas = resultsTemp.rows.map((row) => row.altura);
+          const fechas = resultsTemp.rows.map((row) => {
+            const fecha = new Date(row.fecha_modificacion);
+            return fecha.toLocaleDateString("es-ES", {
+              timeZone: "America/Bogota",
+              year: "numeric",
+              month: "2-digit",
+              hour12: false,
+            });
+          });
+
+          res.render("clientes/index_c", {
+            tallaReciente: tallaReciente,
+            imc: imc, // Asegúrate de pasar imc a la vista
+            resultadoIMC: resultadoIMC, // Pasa el resultado del IMC a la vista
+            pesos: pesos,
+            alturas: alturas,
+            fechas: fechas,
+          });
+        }
+      );
+    }
+  );
+});
+
+//informacion personal
+
+router.get("/info_personal", (req, res) => {
   // Verifica si 'userData' está configurado correctamente
   if (!res.locals.userData) {
     return res
@@ -1428,16 +1432,72 @@ router.get("/clientes/index_c", (req, res) => {
 
   // Usar consultas parametrizadas para prevenir inyecciones SQL
   conexion.query(
-    "SELECT * FROM tallas WHERE id_cliente = $1",
+    "SELECT * FROM clientes WHERE id = $1",
     [identificacion], // Pasar solo el 'id' como parámetro
     (error, results) => {
       if (error) {
         return res.status(500).json({ error: error.message }); // Manejo de error
       }
 
-      res.render("clientes/index_c", {
+      res.render("clientes/informacion_personal/ver_info", {
         results: results.rows,
       });
     }
   );
 });
+
+router.get("/mis_planes", (req, res) => {
+  let identificacion = res.locals.userData.id;
+
+  conexion.query(
+    ` SELECT mc.id AS id_mensu_cliente, mc.id_cliente, mc.nombre, mc.fecha_inicio, mc.fecha_fin, mc.id_mensualidad, mc.estado,
+       m.id AS id_mensualidad, m.tiempo_plan, m.total_pagar, m.id_mensualidad_convencional, 
+       mensu.id AS id_mensualidad_convencional, mensu.tipo_de_mensualidad 
+       FROM mensualidad_clientes AS mc
+       INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
+       INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id
+       WHERE mc.id_cliente = $1`,
+    [identificacion],
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      res.render("clientes/informacion_personal/mis_planes", {
+        results: results.rows,
+      });
+      console.log("mondades", results.rows);
+    }
+  );
+});
+
+router.get("/ayuda", (req, res) => {
+  let identificacion = res.locals.userData.id;
+
+  conexion.query(
+    "SELECT * FROM clientes WHERE id = $1",
+    [identificacion], // Pasar solo el 'id' como parámetro
+    (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message }); // Manejo de error
+      }
+
+      res.render("clientes/informacion_personal/ayuda", {
+        results: results.rows,
+      });
+    }
+  );
+});
+
+router.use((req, res) => {
+  res.status(404).render("error", {
+    title: "Página no encontrada",
+    message: "Lo sentimos, la página que estás buscando no existe.",
+  });
+});
+
+//////////////////////
+
+router.post("/mensaje_ayuda", crud.mensaje_ayuda);
+
+module.exports = router;

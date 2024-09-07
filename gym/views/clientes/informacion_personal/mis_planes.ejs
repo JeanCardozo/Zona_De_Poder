@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tailwind CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/output.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
+    <title>Mis planes</title>
+  </head>
+  <body class="bg-gray-100">
+    <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
+    <div class="flex justify-right mt-4 p-5">
+      <a
+        href="#"
+        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        id="crearConvenioBtn"
+      >
+        <i class="bx bx-plus-circle"></i> Mis Planes
+      </a>
+      <a
+        href="/clientes/index_c"
+        class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Volver
+      </a>
+    </div>
+
+    <div class="bg-white max-w-7xl mx-auto p-4 text-center">
+      <% if (results.length > 0) { %> <% results.forEach(function(mensualidad) {
+      %>
+      <div class="bg-gray-200 shadow-md rounded-lg mb-3 p-3">
+        <h2 class="text-lg font-bold mb-1">
+          Mensualidad: <%= mensualidad.tipo_de_mensualidad %>
+        </h2>
+        <p class="p-2 mb-1">
+          <strong>Inicio:</strong> <%= new
+          Date(mensualidad.fecha_inicio).toLocaleDateString() %>
+        </p>
+        <p class="p-2 mb-1">
+          <strong>Fin:</strong> <%= new
+          Date(mensualidad.fecha_fin).toLocaleDateString() %>
+        </p>
+        <p class="p-2 mb-1">
+          <strong>Plan:</strong> <%= mensualidad.tiempo_plan %>
+        </p>
+        <p class="p-2 mb-1">
+          <strong>Total a Pagar:</strong> $<%= mensualidad.total_pagar %>
+        </p>
+        <p><strong>Estado:</strong> <%= mensualidad.estado %></p>
+      </div>
+      <% }); %> <% } else { %>
+      <p class="text-center text-gray-600 text-sm">
+        No se han encontrado mensualidades para este cliente.
+      </p>
+      <% } %>
+    </div>
+
+    <footer class="bg-white h-max p-4 text-center">
+      <p>© 2024 Zona de poder</p>
+    </footer>
+  </body>
+</html>

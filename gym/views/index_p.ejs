@@ -3,72 +3,594 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <title>Inicio de sesion</title>
+    <title>Zona de poder</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap");
+      * {
+        font-family: "Lexend Deca", sans-serif;
+      }
+    </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex-shrink-0 flex items-center">
+            <img
+              src="https://raw.githubusercontent.com/JeanCardozo/audios/main/logo.png"
+              alt="Logo"
+              class="w-auto h-12 max-w-[120px]"
             />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
+          </div>
+          <div class="hidden sm:flex sm:space-x-8">
+            <a
+              href="/mis_planes"
+              class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+              >Mis Planes</a
+            >
+            <a
+              href="/info_personal"
+              class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+              >Información</a
+            >
+            <a
+              href="/inicio"
+              class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+              >Inicio</a
+            >
+            <a
+              href="/ayuda"
+              class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+              >Ayuda</a
+            >
+          </div>
+          <div>
+            <a
+              href="/login_index"
+              class="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >Iniciar Sesión</a
+            >
+          </div>
         </div>
       </div>
     </nav>
 
-    <div class="container">
-      <a href="/login_index" class="btn btn-outline-primary mt-5"
-        >Iniciar Sesion</a
-      >
+    <div class="flex-grow overflow-y-auto">
+      <div class="container mx-auto">
+        <div class="">
+          <!-- primer contenedor -->
+          <div
+            class="bg-cover bg-center p-6 flex flex-col justify-between w-full h-96"
+            style="
+              background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/img-index_p.jpeg');
+              min-height: 36rem;
+            "
+          >
+            <div class="text-right text-white">
+              <div
+                class="text-8xl font-bold"
+                style="font-family: 'Your-Unique-Font', sans-serif"
+              >
+                Zona de poder
+              </div>
+            </div>
+            <div class="flex justify-between items-end">
+              <div class="bg-white p-3 rounded-lg shadow-md">
+                <span class="font-semibold">Pasión y disciplina:</span>
+                <a href="#" class="text-blue-600 hover:underline">ver más</a>
+              </div>
+              <div class="text-right text-white text-2xl">
+                <div class="font-semibold">Próximo evento:</div>
+                <div>Rumba, 24 de mayo 7pm</div>
+              </div>
+            </div>
+          </div>
+          <!-- segundo contenedor -->
+          <div
+            class="bg-cover bg-center bg-no-repeat p-6 w-full relative overflow-hidden"
+            style="
+              background-image: linear-gradient(
+                  rgba(0, 0, 0, 0.6),
+                  rgba(0, 0, 0, 0.6)
+                ),
+                url('https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo_indexp.jpeg');
+              min-height: 36rem;
+            "
+          >
+            <h1 class="text-6xl font-bold text-white absolute left-6 top-6">
+              <span class="glitch" data-text="¡ZONA DE PODER!"
+                >¡ZONA DE PODER!</span
+              >
+            </h1>
+
+            <div
+              class="absolute left-6 top-1/2 transform -translate-y-1/2 w-2/5"
+            >
+              <div id="carrusel" class="overflow-hidden text-white">
+                <div
+                  id="slides"
+                  class="flex transition-transform duration-500 ease-in-out"
+                >
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    El éxito es la suma de pequeños esfuerzos repetidos día tras
+                    día.
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    La actitud lo es todo. Elige una positiva y conquistarás tus
+                    metas.
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    Cree en ti mismo y todo será posible.
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    Supera tus límites, conquista tus metas. ¡Tu mejor versión
+                    te espera aquí!
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    No se trata de ser perfecto, se trata de ser mejor que ayer.
+                    ¡Entrena con nosotros!
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    El cuerpo que deseas comienza con la decisión de empezar.
+                    ¡Da el primer paso!
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    Tu salud es tu mayor inversión. ¡Entrena hoy, disfruta
+                    mañana!
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    La disciplina de hoy, la fuerza del mañana. ¡No te rindas!
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    El dolor es temporal, el orgullo es para siempre. ¡Sigue
+                    adelante!
+                  </div>
+                  <div class="flex-shrink-0 w-full text-2xl font-bold">
+                    No hay atajos al éxito, solo trabajo duro y dedicación.
+                    ¡Entrena con pasión!
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="absolute inset-y-0 right-0 w-1/2 flex items-center justify-end pr-8"
+            >
+              <div class="text-right text-white">
+                <p class="text-4xl font-bold">
+                  Bienvenido a <br />
+                  <span class="text-6xl text-yellow-400">¡ZONA DE PODER!</span>
+                </p>
+                <p
+                  class="text-xl mt-4 bg-black bg-opacity-50 p-2 rounded-lg inline-block"
+                >
+                  Donde cada paso es un avance hacia tu mejor versión
+                </p>
+                <button
+                  class="mt-6 bg-yellow-400 text-black font-bold py-2 px-4 rounded-full hover:bg-yellow-500 transition duration-300"
+                >
+                  ¡Comienza ahora!
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            const slides = document.getElementById("slides");
+            let currentSlide = 0;
+
+            function nextSlide() {
+              currentSlide = (currentSlide + 1) % slides.children.length;
+              slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }
+
+            setInterval(nextSlide, 3000);
+          </script>
+
+          <style>
+            .glitch {
+              position: relative;
+              animation: glitch 1s linear infinite;
+            }
+
+            .glitch::before,
+            .glitch::after {
+              content: attr(data-text);
+              position: absolute;
+              left: 0;
+              opacity: 0.8;
+            }
+
+            .glitch::before {
+              animation: glitch 650ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both
+                infinite;
+              color: #00ffff;
+              z-index: -1;
+            }
+
+            .glitch::after {
+              animation: glitch 375ms cubic-bezier(0.25, 0.46, 0.45, 0.94)
+                reverse both infinite;
+              color: #ff00ff;
+              z-index: -2;
+            }
+
+            @keyframes glitch {
+              0% {
+                transform: translate(0);
+              }
+              20% {
+                transform: translate(-2px, 2px);
+              }
+              40% {
+                transform: translate(-2px, -2px);
+              }
+              60% {
+                transform: translate(2px, 2px);
+              }
+              80% {
+                transform: translate(2px, -2px);
+              }
+              100% {
+                transform: translate(0);
+              }
+            }
+          </style>
+          <!-- tercer contendor -->
+          <div
+            class="bg-black bg-center p-6 w-full flex"
+            style="
+              background-image: url('ruta/a/tu/imagen-de-fondo.jpg');
+              min-height: 36rem;
+            "
+          >
+            <div class="w-1/2 pr-4">
+              <h2
+                class="text-center min-h-600 text-6xl font-bold text-white mb-4"
+              >
+                Servicios y membresías: todo a tu alcance
+              </h2>
+            </div>
+            <div class="w-1/2 grid grid-cols-2 gap-4">
+              <div
+                class="bg-cover bg-center rounded-2xl p-4 flex flex-col justify-center items-center transform -translate-y-4 min-h-[200px]"
+                style="
+                  background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/img1_index.jpeg');
+                "
+              >
+                <h1
+                  class="text-4xl font-bold text-white text-center uppercase tracking-wide py-2 px-4 mb-auto"
+                >
+                  Novedades
+                </h1>
+                <button
+                  class="bg-red-600 text-white px-3 py-1 rounded-xl mt-2 w-28"
+                >
+                  Ver más
+                </button>
+              </div>
+
+              <div
+                class="bg-cover bg-center rounded-2xl p-4 flex flex-col justify-between"
+                style="
+                  background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/img2_index.jpeg');
+                "
+              >
+                <h3
+                  class="text-4xl font-bold text-white text-center uppercase tracking-wide py-2 px-4 mb-auto"
+                >
+                  Sobre nosotros
+                </h3>
+                <button
+                  class="ml-28 bg-red-600 text-white px-3 py-1 rounded-xl mt-2 w-28"
+                >
+                  Ver más
+                </button>
+              </div>
+              <div
+                class="bg-cover bg-center rounded-2xl p-4 flex flex-col justify-between transform -translate-y-4"
+                style="
+                  background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/img3_index.jpeg');
+                "
+              >
+                <h3
+                  class="text-4xl font-bold text-white text-center uppercase tracking-wide py-2 px-4 mb-auto"
+                >
+                  Horarios
+                </h3>
+                <button
+                  class="ml-28 bg-red-600 text-white px-3 py-1 rounded-xl mt-2 w-28"
+                >
+                  Ver más
+                </button>
+              </div>
+              <div
+                class="bg-cover bg-center rounded-2xl p-4 flex flex-col justify-between"
+                style="
+                  background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/img4_index.jpeg');
+                "
+              >
+                <h3
+                  class="text-4xl font-bold text-white text-center uppercase tracking-wide py-2 px-4 mb-auto"
+                >
+                  Consejos
+                </h3>
+                <button
+                  class="ml-28 bg-red-600 text-white px-3 py-1 rounded-xl mt-2 w-28"
+                >
+                  Ver más
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- cuarto contenedor -->
+          <div
+            class="bg-gray-200 bg-center p-6 w-full flex"
+            style="
+              background-image: url('ruta/a/tu/imagen-de-fondo.jpg');
+              min-height: 36rem;
+            "
+          >
+            <div class="flex w-full space-x-8">
+              <div class="w-1/2">
+                <div class="bg-gray-800 bg-opacity-50 p-6 rounded">
+                  <h2 class="text-2xl font-bold mb-4 text-center text-white">
+                    Afiliación Comfenalco
+                  </h2>
+                  <div class="h-48 bg-gray-300 mb-4 rounded"></div>
+                  <p class="text-lg mb-2 text-white">
+                    ¿Estás afiliado con Comfenalco?
+                  </p>
+                  <p class="text-sm mb-4 text-gray-300">
+                    Tenemos un plan hecho exclusivamente para ti
+                  </p>
+                  <div class="text-center">
+                    <a
+                      href="#"
+                      class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition duration-300 inline-block"
+                      >ADQUIERE TU PLAN</a
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="w-1/2">
+                <div class="bg-gray-800 bg-opacity-50 p-6 rounded">
+                  <h2 class="text-2xl font-bold mb-4 text-center text-white">
+                    Planes
+                  </h2>
+                  <p class="text-white mb-6 text-center">
+                    Cada tipo de plan tiene un descuento por su cantidad de
+                    compra
+                  </p>
+
+                  <div class="relative overflow-hidden w-full">
+                    <div
+                      class="flex transition-transform duration-300 ease-in-out"
+                      id="planCarousel"
+                    >
+                      <!-- Plan 1 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 1
+                          </h3>
+                          <p>
+                            3 meses:
+                            <strong class="font-bold">15% de descuento</strong>
+                          </p>
+                          <p>$ 153.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Plan 2 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 2
+                          </h3>
+                          <p>
+                            6 meses:
+                            <strong class="font-bold">20% de descuento</strong>
+                          </p>
+                          <p>$ 280.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Plan 3 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 3
+                          </h3>
+                          <p>
+                            1 año:
+                            <strong class="font-bold">25% de descuento</strong>
+                          </p>
+                          <p>$ 540.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Plan 4 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 4
+                          </h3>
+                          <p>
+                            1 año:
+                            <strong class="font-bold">25% de descuento</strong>
+                          </p>
+                          <p>$ 540.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Plan 5 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 5
+                          </h3>
+                          <p>
+                            1 año:
+                            <strong class="font-bold">25% de descuento</strong>
+                          </p>
+                          <p>$ 540.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Plan 6 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 6
+                          </h3>
+                          <p>
+                            1 año:
+                            <strong class="font-bold">25% de descuento</strong>
+                          </p>
+                          <p>$ 540.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                      <!-- Plan 7 -->
+                      <div class="w-1/3 flex-shrink-0 p-2">
+                        <div
+                          class="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-between h-full"
+                        >
+                          <h3 class="text-center text-xl font-bold mb-2">
+                            PLAN 7
+                          </h3>
+                          <p>
+                            1 año:
+                            <strong class="font-bold">25% de descuento</strong>
+                          </p>
+                          <p>$ 540.000</p>
+                          <button
+                            class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-blue-600 transition duration-300 w-full"
+                          >
+                            Ver más
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Flechas de navegación -->
+                    <button
+                      class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-3 rounded-full shadow-md hover:bg-blue-600 transition duration-300 focus:outline-none"
+                      id="prevBtn"
+                    >
+                      <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 19l-7-7 7-7"
+                        ></path>
+                      </svg>
+                    </button>
+                    <button
+                      class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-3 rounded-full shadow-md hover:bg-blue-600 transition duration-300 focus:outline-none"
+                      id="nextBtn"
+                    >
+                      <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <script>
+                    const carousel = document.getElementById("planCarousel");
+                    const prevBtn = document.getElementById("prevBtn");
+                    const nextBtn = document.getElementById("nextBtn");
+                    let currentIndex = 0;
+                    const totalPlans = 7;
+                    const visiblePlans = 3;
+                    const maxIndex = totalPlans - visiblePlans;
+
+                    function showPlans(index) {
+                      const offset = index * -33.33;
+                      carousel.style.transform = `translateX(${offset}%)`;
+                    }
+
+                    prevBtn.addEventListener("click", () => {
+                      currentIndex = Math.max(currentIndex - 1, 0);
+                      showPlans(currentIndex);
+                    });
+
+                    nextBtn.addEventListener("click", () => {
+                      currentIndex = Math.min(currentIndex + 1, maxIndex);
+                      showPlans(currentIndex);
+                    });
+                  </script>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-100 p-6 w-full"></div>
+        </div>
+      </div>
     </div>
 
     <script
@@ -86,7 +608,7 @@
       if (urlParams.get("logout") === "success") {
         const Toast = Swal.mixin({
           toast: true,
-          position: "top-end",
+          position: "bottom-end",
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,
@@ -100,6 +622,57 @@
           title: "Cierre de sesión exitoso",
         });
       }
+    </script>
+
+    <a
+      href="https://wa.me/tunumerodewhatsapp"
+      target="_blank"
+      class="fixed bottom-4 left-4 z-10 transition duration-300 ease-in-out transform hover:scale-110"
+    >
+      <i class="fab fa-whatsapp text-5xl text-green-500"></i>
+    </a>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <!-- // iconos redes sociales -->
+    <!-- <div class="absolute bottom-6 left-6 flex space-x-4">
+      <a
+        href="#"
+        class="text-white hover:text-yellow-400 transition duration-300"
+      >
+        <i class="fab fa-facebook-f text-2xl"></i>
+      </a>
+      <a
+        href="#"
+        class="text-white hover:text-yellow-400 transition duration-300"
+      >
+        <i class="fab fa-instagram text-2xl"></i>
+      </a>
+      <a
+        href="#"
+        class="text-white hover:text-yellow-400 transition duration-300"
+      >
+        <i class="fab fa-twitter text-2xl"></i>
+      </a>
+    </div> -->
+
+    <script>
+      // Verificar si hay un mensaje de alerta en la respuesta
+      `<% if (typeof message !== 'undefined' && message) { %>`;
+      Swal.fire({
+        title: "Éxito",
+        text: "<%= message.text %>",
+        icon: "<%= message.type %>",
+        confirmButtonText: "OK",
+      }).then(() => {
+        // Remover el parámetro de la URL después de mostrar la alerta
+        const url = new URL(window.location);
+        url.searchParams.delete("message");
+        window.history.replaceState({}, "", url);
+      });
+      `<% } %>`;
     </script>
   </body>
 </html>

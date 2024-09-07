@@ -14,7 +14,6 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <title>Ver clientes</title>
   </head>
   <body class="bg-fondo">
@@ -37,206 +36,241 @@
       </div>
       <div class="max-w-7xl mx-auto p-4">
         <div class="overflow-x-auto">
-            <table class="min-w-full table-auto table-fixed
-             sm:text-sm text-left text-gray-500
-              dark:text-gray-400">
-                <thead class="text-xs bg-gray-500 text-white">
-                    <tr>
-                        <% const headers = ["ID", "NOMBRE", "APELLIDO", "EDAD", "SEXO", "INSCRIPCIÓN",
-                         "CORREO", "TELÉFONO", "PLAN", "TOTAL", "ESTADO", "TALLAS", "ACCIONES"]; %>
-                        <% headers.forEach(header => { %>
-                        <th scope="col" class="px-4 py-6 text-center">
-                            <%= header %>
-                        </th>
-                        <% }); %>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 text-center">
-                </tbody>
-            </table>
-            
-
-          </div>
-          <div id="pagination" class="w-full flex justify-center"></div>
+          <table
+            class="min-w-full table-auto table-fixed sm:text-sm text-left text-gray-500 dark:text-gray-400"
+          >
+            <thead class="text-xs bg-gray-500 text-white">
+              <tr>
+                <% const headers = ["ID", "NOMBRE", "APELLIDO", "EDAD", "SEXO",
+                "INSCRIPCIÓN", "CORREO", "TELÉFONO", "PLAN", "TOTAL", "ESTADO",
+                "TALLAS", "ACCIONES"]; %> <% headers.forEach(header => { %>
+                <th scope="col" class="px-4 py-6 text-center"><%= header %></th>
+                <% }); %>
+              </tr>
+            </thead>
+            <tbody
+              class="bg-white divide-y divide-gray-200 text-center"
+            ></tbody>
+          </table>
+        </div>
+        <div id="pagination" class="w-full flex justify-center"></div>
+      </div>
     </div>
-    
+
     <script defer>
-      const divPagination = document.getElementById('pagination');
+      const divPagination = document.getElementById("pagination");
       let datos = [];
+      let tableRows = [];
       const itemsPorPagina = 5;
-    
+
       async function getData() {
         try {
-          const response = await fetch('/verClientess', {
-            method: 'POST',
+          const response = await fetch("/verClientess", {
+            method: "POST",
           });
-    
+
           if (!response.ok) {
-            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+            throw new Error(
+              "La solicitud no fue exitosa: " + response.statusText
+            );
           }
-    
+
           return await response.json();
         } catch (error) {
-          console.error('Error al obtener datos:', error);
+          console.error("Error al obtener datos:", error);
           return [];
         }
       }
-    
+
       async function inicializar() {
         datos = await getData();
-     
-    
+
         const totalPages = Math.ceil(datos.length / itemsPorPagina);
         generatePagination(totalPages);
         mostrarPagina(1);
       }
-    
+
       function generatePagination(totalPages) {
-        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
-          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
-`
-        ).join('');
-    
-        divPagination.addEventListener('click', (e) => {
-          if (e.target.tagName === 'BUTTON') {
+        divPagination.innerHTML = Array.from(
+          { length: totalPages },
+          (_, i) =>
+            `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${
+              i + 1
+            }">${i + 1}</button>`
+        ).join("");
+
+        divPagination.addEventListener("click", (e) => {
+          if (e.target.tagName === "BUTTON") {
             mostrarPagina(parseInt(e.target.dataset.page));
           }
         });
       }
-    
+
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
         const fin = inicio + itemsPorPagina;
         const datosParaMostrar = datos.slice(inicio, fin);
-    
-        const tbody = document.querySelector('tbody');
-        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
-          <tr class="py-0    text-xm max-w-sm text-center  hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
-            <td class="p-2">${dato.id}</td>
-            <td class="p-2">${dato.nombre}</td>
-            <td class="p-2">${dato.apellido}</td>
-            <td class="p-2">${dato.edad}</td>
-            <td class="p-2">${dato.sexo}</td>
-            <td class="p-2">${dato.fecha_de_inscripcion}</td>
-            <td class="p-2">${dato.correo_electronico}</td>
-            <td class="p-2">${dato.numero_telefono}</td>
-            <td class="p-2">${dato.tiempo_plan}</td>
-            <td class="p-2">${dato.total_pagar}</td>
-            <td class="p-2">${dato.estado}</td>
-            <td class="p-2">
-              <button 
-                data-client-id="${dato.id}" 
-                class="px-2 py-1 bg-blue-500 text-white rounded-md inline-flex items-center justify-center hover:bg-blue-700 ver-tallas"
-              >Ver</button>
-            </td>
-            <td class="py-4 text-center flex items-center justify-around gap-2">
-              <a href="/actualizar_clientes/${dato.id}" 
-                class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
-              ${dato.estado === "Inactivo" ? `
-                <form action="/activarcliente" method="post" class="inline-flex items-center justify-center">
-                  <input type="hidden" name="id" value="${dato.id}" />
-                  <button type="submit" class="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700">Activar</button>
-                </form>
-              ` : `
-                <form action="/desactivarcliente" method="post" class="inline-flex items-center justify-center">
-                  <input type="hidden" name="id" value="${dato.id}" />
-                  <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-700">Desactivar</button>
-                </form>
-              `}
-            </td>
-          </tr>
-        `).join('');
+
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = datosParaMostrar
+          .map(
+            (dato, index) => `
+        <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+          index % 2 === 0 ? "bg-gray-100" : ""
+        }">
+          <td class="p-2">${dato.id}</td>
+          <td class="p-2">${dato.nombre}</td>
+          <td class="p-2">${dato.apellido}</td>
+          <td class="p-2">${dato.edad}</td>
+          <td class="p-2">${dato.sexo}</td>
+          <td class="p-2">${new Date(
+            dato.fecha_de_inscripcion
+          ).toLocaleDateString()}</td>
+          <td class="p-2">${dato.correo_electronico}</td>
+          <td class="p-2">${dato.numero_telefono}</td>
+          <td class="p-2">${dato.tiempo_plan}</td>
+          <td class="p-2">${dato.total_pagar}</td>
+          <td class="p-2">${dato.estado}</td>
+          <td class="p-2">
+            <button data-client-id="${
+              dato.id
+            }" class="px-2 py-1 bg-blue-500 text-white rounded-md inline-flex items-center justify-center hover:bg-blue-700 ver-tallas">Ver</button>
+          </td>
+          <td class="py-4 text-center flex items-center justify-around gap-2">
+            <a href="/actualizar_clientes/${
+              dato.id
+            }" class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
+          </td>
+        </tr>
+      `
+          )
+          .join("");
+
+        // Actualiza las filas de la tabla después de mostrar la página
+        tableRows = Array.from(tbody.querySelectorAll("tr"));
       }
-    
+
+      // Llama a la función de inicialización al cargar la página
       inicializar();
     </script>
-    
-    
 
-    
-    
     <script>
-     
-  document.body.addEventListener('click', function (event) {
-    if (event.target.classList.contains('ver-tallas')) {
-      const clientId = event.target.dataset.clientId;
-      fetch(`/tallas/${clientId}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (!data.sizes.length) {
-            Swal.fire({
-              title: 'Error',
-              text: 'No se encontraron tallas para este cliente.',
-              icon: 'error',
-              confirmButtonText: 'Cerrar',
-            });
-            return;
-          }
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
 
-          const clientName = data.clientName;
-          let tallasContent = '';
+        searchInput.addEventListener("keyup", function () {
+          const query = searchInput.value.toLowerCase();
 
-          data.sizes.forEach((talla, index) => {
-            tallasContent += `
-              <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-2">Conjunto de tallas ${
-                  index + 1
-                }</h3>
-                <table class="min-w-full bg-white mb-4">
-                  <thead class="bg-gray-800 text-white">
-                    <tr>
-                      <th class="py-2 px-4">Medida</th>
-                      <th class="py-2 px-4">Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody class="text-gray-700">
-                    <tr>
-                      <td class="py-2 px-4 border">Pecho</td>
-                      <td class="py-2 px-4 border">${talla.medida_pecho} cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Brazo</td>
-                      <td class="py-2 px-4 border">${talla.medida_brazo} cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Cintura</td>
-                      <td class="py-2 px-4 border">${talla.medida_cintura} cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Abdomen</td>
-                      <td class="py-2 px-4 border">${talla.medida_abdomen} cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Cadera</td>
-                      <td class="py-2 px-4 border">${talla.medida_cadera} cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Pierna</td>
-                      <td class="py-2 px-4 border">${talla.medida_pierna} cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Pantorrilla</td>
-                      <td class="py-2 px-4 border">${
-                        talla.medida_pantorrilla
-                      } cm</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Peso</td>
-                      <td class="py-2 px-4 border">${talla.peso} kg</td>
-                    </tr>
-                    <tr>
-                      <td class="py-2 px-4 border">Altura</td>
-                      <td class="py-2 px-4 border">${talla.altura} cm</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            `;
+          tableRows.forEach((row) => {
+            const cells = Array.from(row.cells);
+            const matchesQuery = cells.some((cell) =>
+              cell.textContent.toLowerCase().includes(query)
+            );
+            row.style.display = matchesQuery ? "" : "none";
           });
+        });
+      });
+    </script>
 
-          Swal.fire({
-            title: `Tallas del Cliente: ${clientName}`,
-            html:
+    <script>
+      document.body.addEventListener("click", function (event) {
+        if (event.target.classList.contains("ver-tallas")) {
+          const clientId = event.target.dataset.clientId;
+          fetch(`/tallas/${clientId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              if (!data.sizes.length) {
+                Swal.fire({
+                  title: "Error",
+                  text: "No se encontraron tallas para este cliente.",
+                  icon: "error",
+                  confirmButtonText: "Cerrar",
+                });
+                return;
+              }
+
+              const clientName = data.clientName;
+              let tallasContent = "";
+
+              data.sizes.forEach((talla, index) => {
+                tallasContent += `
+                <div class="mb-6">
+                  <h3 class="text-lg font-semibold mb-2">Conjunto de tallas ${
+                    index + 1
+                  }</h3>
+                  <table class="min-w-full bg-white mb-4">
+                    <thead class="bg-gray-800 text-white">
+                      <tr>
+                        <th class="py-2 px-4">Medida</th>
+                        <th class="py-2 px-4">Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                      <tr>
+                        <td class="py-2 px-4 border">Pecho</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_pecho
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Brazo</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_brazo
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Cintura</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_cintura
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Abdomen</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_abdomen
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Cadera</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_cadera
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Pierna</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_pierna
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Pantorrilla</td>
+                        <td class="py-2 px-4 border">${
+                          talla.medida_pantorrilla
+                        } cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Peso</td>
+                        <td class="py-2 px-4 border">${talla.peso} kg</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Altura</td>
+                        <td class="py-2 px-4 border">${talla.altura} cm</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 px-4 border">Fecha medida</td>
+                        <td class="py-2 px-4 border">${new Date(
+                          talla.fecha_modificacion
+                        ).toLocaleDateString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              `;
+              });
+
+              Swal.fire({
+                title: `Tallas del Cliente: ${clientName}`,
+                html:
                   tallasContent ||
                   "<p>No se encontraron tallas para este cliente.</p>",
                 icon: "info",
@@ -254,10 +288,8 @@
                 confirmButtonText: "Cerrar",
               });
             });
-          };
-        });
-  
-      
+        }
+      });
     </script>
   </body>
 </html>

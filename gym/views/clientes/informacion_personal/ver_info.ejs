@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Información de Clientes</title>
+    <!-- Tailwind CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/output.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
+    <div class="flex justify-right mt-4 p-5">
+      <a
+        href="#"
+        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        id="crearConvenioBtn"
+      >
+        <i class="bx bx-plus-circle"></i> Editar
+      </a>
+      <a
+        href="/clientes/index_c"
+        class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Volver
+      </a>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-4 text-center">Mi Informacion</h1>
+
+      <table class="min-w-full bg-white shadow-md rounded-lg">
+        <thead>
+          <tr class="bg-gray-200 text-gray-700">
+            <th class="py-2 px-4 border-b-2 border-gray-300">Identificación</th>
+            <th class="py-2 px-4 border-b-2 border-gray-300">Nombre</th>
+            <th class="py-2 px-4 border-b-2 border-gray-300">Apellido</th>
+            <th class="py-2 px-4 border-b-2 border-gray-300">Correo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% results.forEach(function(cliente) { %>
+          <tr class="text-center">
+            <td class="py-2 px-4 border-b border-gray-300">
+              <%= cliente.id %>
+            </td>
+            <td class="py-2 px-4 border-b border-gray-300">
+              <%= cliente.nombre %>
+            </td>
+            <td class="py-2 px-4 border-b border-gray-300">
+              <%= cliente.apellido %>
+            </td>
+            <td class="py-2 px-4 border-b border-gray-300">
+              <%= cliente.correo_electronico %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="bg-white h-max p-4 text-center mt-4">
+      <p>© 2024 Zona de poder</p>
+    </footer>
+  </body>
+</html>

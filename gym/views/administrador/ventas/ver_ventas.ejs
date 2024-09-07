@@ -107,16 +107,16 @@
         const tbody = document.querySelector('tbody');
         tbody.innerHTML = datosParaMostrar.map((dato, index) => `
           <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
-            <td class="p-2">${dato.id_mensu_cliente}</td>
-            <td class="p-2">${dato.id_cliente}</td>
-            <td class="p-2">${dato.nombre}</td>
-            <td class="p-2">${dato.fecha_inicio}</td>
-            <td class="p-2">${dato.fecha_fin}</td>
-            <td class="p-2">${dato.total_pagar}</td>
-            <td class="p-2">${dato.tipo_de_mensualidad}</td>
-            <td class="p-2">${dato.tiempo_plan}</td>
-            <td class="p-2">${dato.estado}</td>
-            <td class="p-2">
+            <td class="p-6">${dato.id_mensu_cliente}</td>
+            <td class="p-6">${dato.id_cliente}</td>
+            <td class="p-6">${dato.nombre}</td>
+            <td class="p-6">${new Date(dato.fecha_inicio).toLocaleDateString()}</td>
+            <td class="p-6">${new Date(dato.fecha_fin).toLocaleDateString()}</td>
+            <td class="p-6">${dato.total_pagar}</td>
+            <td class="p-6">${dato.tipo_de_mensualidad}</td>
+            <td class="p-6">${dato.tiempo_plan}</td>
+            <td class="p-6">${dato.estado}</td>
+            <td class="p-6">
               <a
                 id="estadoBtn-${dato.id_cliente}"
                 class="block w-full px-2 py-1 text-xs font-medium rounded-full text-center truncate hover:text-clip"

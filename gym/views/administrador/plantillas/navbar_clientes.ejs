@@ -28,30 +28,27 @@
           class="w-auto h-16 max-w-[150px] my-2 ml-2"
         />
       </div>
-      <!-- Logo de la empresa -->
 
-      <!-- Catálogo de enlaces -->
       <div class="hidden sm:flex sm:space-x-8">
         <a
-          href="/servicios"
+          href="/mis_planes"
           class="hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
-          >Servicios</a
+          >Mis Planes</a
         >
         <a
-          href="/planes"
+          href="/info_personal"
           class="hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
-          >Planes</a
+          >Informacion</a
         >
         <a
-          href="/ubicacion"
+          href="/ayuda"
           class="hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
-          >Ubicación</a
-        >
+          >Ayuda
+        </a>
       </div>
 
-      <!-- Botón de perfil -->
-      <div class="flex items-center">
-        <div class="relative ml-4">
+      <div class="flex items-center space-x-4">
+        <div class="relative">
           <button
             id="profileButton"
             class="flex items-center focus:outline-none"
@@ -75,13 +72,13 @@
             <p class="p-4 text-gray-600">Sin información</p>
             <% } %>
           </div>
+          <a
+            href="/logout"
+            class="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+            >Cerrar sesión</a
+          >
         </div>
       </div>
-      <a
-        href="/logout"
-        class="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-        >Cerrar sesión</a
-      >
     </div>
   </div>
 </nav>

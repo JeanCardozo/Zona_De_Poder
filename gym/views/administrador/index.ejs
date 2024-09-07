@@ -8,6 +8,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
+  
+      <!-- Incluyendo Font Awesome desde CDN -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+   
+    
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -28,42 +33,36 @@
 
     <div class="container mx-auto px-4 py-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-        <!-- fila 1 -->
-        <div class="flex flex-col bg-white p-2 rounded-lg shadow">
+        <!-- Fila 1 -->
+        <div class="flex flex-col justify-center bg-white p-2 rounded-lg shadow text-center text-gray-700 font-bold"id="mensajeErrorVentas">
           <h2 class="text-center mb-16 font-bold">Resumen general de ventas</h2>
           <div class="flex justify-center items-center">
+            
             <canvas id="myChart"></canvas>
+            
           </div>
         </div>
         
-        <div class="flex flex-col bg-white p-2 rounded-lg shadow">
-          <h2 class="text-center mb-2 font-bold">
-            Resumen de ingresos diarios
-          </h2>
-          <div class="flex justify-center items-center">
-            <canvas id="myCharts"></canvas>
-          </div>
-        </div>
-
-        <div class="flex justify-center items-center bg-white p-2 rounded-lg shadow max-w-full max-h-[600px] overflow-hidden">
-          <div id="calendari" class="w-full h-full"></div>
+        <div class="flex flex-col justify-center bg-white p-2 rounded-lg shadow text-center text-gray-700 font-bold "id="mensajeErrorIngresos">
+         
+            <h2 class="text-center mb-2 font-bold">
+              Resumen de ingresos diarios
+            </h2>
+            <div class="flex justify-center items-center ">
+              <canvas id="myCharts"></canvas>
+            </div>
         </div>
         
-
-        <!-- fila 2 -->
-        <div class="col-span-1 bg-white p-4 rounded-lg shadow">
+        <div class="bg-white p-4 rounded-lg shadow"> 
+          <% if (ultimosClientes.length > 0) { %> 
           <h2 class="text-sm font-semibold mb-4 text-gray-800 text-center">
-            Movimientos de ultimas compras
+            Movimientos de últimas compras
           </h2>
           <div class="overflow-x-auto">
-            <table
-              class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
-            >
+            <table class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400">
               <thead class="bg-gray-400 text-white text-center">
                 <tr>
-                  <th
-                    class="text-left py-4 px-6 uppercase font-semibold text-sm"
-                  >
+                  <th class="text-left py-4 px-6 uppercase font-semibold text-sm">
                     Nombre
                   </th>
                   <th class="py-4 px-6 uppercase font-semibold text-sm">
@@ -71,72 +70,128 @@
                   </th>
                 </tr>
               </thead>
-
               <tbody class="bg-white divide-y divide-gray-200 text-center">
                 <% ultimosClientes.forEach((roles) => { %>
-                <tr>
-                  <td class="text-left py-3 px-4"><%= roles.nombre %></td>
-                  <td class="py-3 px-4"><%= roles.tiempo_plan %></td>
-                </tr>
+                  <tr>
+                    <td class="text-left py-3 px-4"><%= roles.nombre %></td>
+                    <td class="py-3 px-4"><%= roles.tiempo_plan %></td>
+                  </tr>
                 <% }); %>
               </tbody>
             </table>
           </div>
         </div>
-        <!-- aqui -->
-        <div
-          class="col-span-2 bg-white p-4 rounded-lg shadow h-full flex flex-col"
-        >
-          <h2 class="text-sm font-semibold mb-4 text-gray-800 text-center">
-            Resumen de Mensualidades Vencidas
-          </h2>
-          <div class="overflow-x-auto flex-grow">
-            <table
-              class="min-w-full table-auto text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400"
-            >
-              <thead class="bg-gray-400 text-white text-center sticky top-0">
-                <tr>
-                  <th
-                    class="text-left py-4 px-6 uppercase font-semibold text-xs"
-                  >
-                    Nombre
-                  </th>
-                  <th class="py-2 px-4 uppercase font-semibold text-xs">
-                    Fecha vencimiento
-                  </th>
-                  <th class="py-2 px-4 uppercase font-semibold text-xs">
-                    Estado
-                  </th>
-                  <th class="py-2 px-4 uppercase font-semibold text-xs">
-                    Renovar
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200 text-center">
-                <% datosVentasVencidas.forEach((mensusven) => { %>
-                <tr>
-                  <td class="text-left py-2 px-3"><%= mensusven.nombre %></td>
-                  <td class="py-4 px-6">
-                    <%= new
-                    Date(mensusven.fecha_fin).toLocaleDateString('es-ES', {
-                    year: 'numeric', month: 'long', day: 'numeric' }) %>
-                  </td>
-                  <td class="py-4 px-6"><%= mensusven.estado %></td>
-                  <td class="py-4 px-6">
-                    <a href="#">Editar</a>
-                  </td>
-                </tr>
-                <% }); %>
-              </tbody>
-            </table>
+        <% } else { %>
+          <div class="bg-white p-4 rounded-lg shadow">
+            <div class="py-10 text-center text-lg font-semibold text-gray-600">
+              <!-- Ícono de "X" usando Font Awesome -->
+              <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
+              <div>No ha ingresado ningún cliente hoy</div>
+            </div>
+          </div>
+        <% } %>
+        
+      
+          <!-- fila 2 -->
+          <div class="col-span-3 p-2 rounded-lg shadow max-w-ws overflow-auto bg-white">
+            <div id="calendari" class="w-90"></div>
+          </div>
+          
+      
+          <!-- fila 3 -->
+          
+          <div class="col-span-3 bg-white p-4 rounded-lg shadow h-full flex flex-col">
+            
+            <h2 class="text-sm font-semibold mb-4 text-gray-800 text-center">
+              <% if (datosVentasVencidas.length > 0) { %> 
+              Resumen de Mensualidades Vencidas
+            </h2>
+            <form action="" method="post">
+              <div class="overflow-x-auto flex-grow">
+                <table class="min-w-full table-auto text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400">
+                  
+                  <thead class="bg-gray-400 text-white text-center sticky top-0">
+                    <tr>
+                      <th class="text-left py-4 px-6 uppercase font-semibold text-xs">Nombre</th>
+                      <th class="py-2 px-4 uppercase font-semibold text-xs">Fecha vencimiento</th>
+                      <th class="py-2 px-4 uppercase font-semibold text-xs">Estado</th>
+                      <th class="py-2 px-4 uppercase font-semibold text-xs">Renovar</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200 text-center">
+                    
+                      <% datosVentasVencidas.forEach((mensusven) => { %>
+                        <tr>
+                          <td class="text-left py-2 px-3"><%= mensusven.nombre %></td>
+                          <td class="py-4 px-6">
+                            <%= new Date(mensusven.fecha_fin).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                          </td>
+                          <td class="py-4 px-6"><%= mensusven.estado %></td>
+                          <td class="py-4 px-6">
+                            <a href="#" class="bg-green-500 text-white font-bold py-1 px-3 rounded renovar-btn" data-id="<%=mensusven.id%>">Renovar</a>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    <% } else { %>
+                      <tr>
+                        <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
+                          <!-- Ícono de "X" usando Font Awesome -->
+                          <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
+                          <div>No hay mensualidades vencidas este mes</div>
+                        </td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
+    <script>
+      document.querySelectorAll('.renovar-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const idMensualidad = this.getAttribute('data-id');
 
-    <div class="flex justify-center items-start pt-10 h-screen">
-      <a href="https://biz.payulatam.com/B0f769c666AEC4A"><img src="https://ecommerce.payulatam.com/img-secure-2015/boton_pagar_mediano.png"></a>
-    </div>
+          console.log("id mensualidad",idMensualidad);
+          
+          Swal.fire({
+            title: 'Renovar mensualidad',
+            html: `
+              <form id="renovarform" action="/renovar_cliente" method="post" class="space-y-4">
+                <input type="hidden" name="id" value="${idMensualidad}" />
+
+                <div class="mb-4">
+                  <label for="mensualidad" class="block text-sm font-medium text-gray-700">MENSUALIDADES</label>
+                  <select id="mensualidad" name="mensualidad" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option disabled selected>Seleccione una mensualidad</option>
+                    <% datosMensualidades.forEach(function(mensual) { %>
+                      <option value="<%= mensual.id %>"><%= mensual.total_pagar %> - <%= mensual.tiempo_plan %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+              const selectMensualidad = document.getElementById('mensualidad');
+              if (selectMensualidad.value === "" || selectMensualidad.value === "Seleccione una mensualidad") {
+                Swal.showValidationMessage('Por favor seleccione una mensualidad válida');
+                return false; // Evitar el envío del formulario
+              }
+              document.getElementById('renovarform').submit();
+            }
+          });
+        });
+      });
+    </script>
+    
+
+    
 
     <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden"></div>
 
@@ -225,7 +280,15 @@
                     const labelsVentas = datosSumaPorMes.map(d => d.mes);
                     const dataVentas = datosSumaPorMes.map(d => d.total);
 
-
+                    if (datosVentas == 0) {
+                        document.getElementById("mensajeErrorVentas").innerHTML = `<tr>
+                        <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
+                          
+                          <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
+                          <div>No hay ventas realizadas este mes</div>
+                        </td>
+                      </tr>`;
+                    } else {
                     // Configuración del primer gráfico para Ventas
                     const ctxVentas = document.getElementById("myChart").getContext("2d");
                     new Chart(ctxVentas, {
@@ -256,11 +319,21 @@
                             }
                         }
                     });
+                  };
 
                     // Procesar los datos para el gráfico de ingresos
                     const labelsIngresos = ['Hoy']; // Label único para el día actual
                     const dataIngresos = dataIngresadosHoy; // Total de ingresos del día actual
-                    const totalIngresosHoy = dataIngresos.length;
+                    const totalIngresosHoy = dataIngresos.length; 
+                    if (dataIngresadosHoy == 0) {
+                        document.getElementById("mensajeErrorIngresos").innerHTML = `<tr>
+                        <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
+                          
+                          <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
+                          <div>Todavia no hay ingresos el dia de hoy</div>
+                        </td>
+                      </tr>`;
+                    } else {
 
                     // Configuración del segundo gráfico para Ingresos
                     const ctxIngresos = document.getElementById("myCharts").getContext("2d");
@@ -284,7 +357,7 @@
                         },
                         plugins: [plugin],
                     });
-                });
+                }});
 
                 const plugin = {
         id: 'customCanvasBackgroundColor',
@@ -382,24 +455,21 @@
             center:'title',
             right: ''
           },
-          events: [
-            {
-              title: 'Nutricion',
-              start: '2024-09-10',
-              end:'2024-09-13',
-            },
-            {
-              title: 'cardio rumbas',
-              start: '2024-09-15',
-              end: '2024-09-18'
-            }
-          ],
-          editable:true,
-          // Agrega opciones adicionales si es necesario
+          events: function(fetchInfo, successCallback, failureCallback) {
+            fetch('/events')
+              .then(response => response.json())
+              .then(data => successCallback(data))
+              .catch(error => {
+                console.error('Error al obtener eventos:', error);
+                failureCallback(error);
+              });
+          },
+
         });
-      
+    
         calendar.render();
       });
     </script>
+    
   </body>
 </html>

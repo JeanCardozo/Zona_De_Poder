@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <!-- Tailwind CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .btn-primary {
+        background-color: #1d4ed8;
+        color: white;
+      }
+      .btn-primary:hover {
+        background-color: #2563eb;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 text-gray-900">
+    <header class="bg-white shadow-md py-4">
+      <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-3xl font-bold text-center"><%= title %></h1>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <p class="text-lg mb-4"><%= message %></p>
+        <a
+          href="/logout"
+          class="btn-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Volver al inicio
+        </a>
+      </div>
+    </main>
+
+    <footer class="bg-white py-4 text-center shadow-inner mt-8">
+      <p>&copy; 2024 Tu Empresa</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Información de Clientes</title>
+    <!-- Tailwind CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/output.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
+
+    <!-- Botones de acción -->
+    <div class="flex justify-right mt-4 p-5">
+      <a
+        href="/clientes/index_c"
+        class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Volver
+      </a>
+    </div>
+
+    <!-- Contenedor principal -->
+
+    <div class="max-w-7xl mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-4 text-center">Mi Información</h1>
+
+      <!-- Tarjetas de información del cliente -->
+      <% results.forEach(function(cliente) { %>
+      <form
+        id="ayuda_mensaje"
+        action="/mensaje_ayuda"
+        method="post"
+        class="mt-2"
+      >
+        <div class="bg-white shadow-md rounded-lg mb-4 p-4">
+          <!-- Identificación -->
+          <div class="mb-2">
+            <label for="id" class="font-bold">Identificación:</label>
+            <input
+              type="text"
+              id="id"
+              name="id"
+              value="<%= cliente.id %>"
+              class="w-full p-2 border border-gray-300 rounded"
+              readonly
+            />
+          </div>
+
+          <!-- Nombre -->
+          <div class="mb-2">
+            <label for="nombre" class="font-bold">Nombre:</label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              value="<%= cliente.nombre %>"
+              class="w-full p-2 border border-gray-300 rounded"
+              readonly
+            />
+          </div>
+
+          <!-- Correo -->
+          <div class="mb-2">
+            <label for="correo" class="font-bold">Correo:</label>
+            <input
+              type="text"
+              id="correo"
+              name="correo"
+              value="<%= cliente.correo_electronico %>"
+              class="w-full p-2 border border-gray-300 rounded"
+              readonly
+            />
+          </div>
+
+          <!-- Mensaje de ayuda -->
+          <div class="mb-2">
+            <label for="mensaje_ayuda" class="font-bold">Mensaje Ayuda:</label>
+            <input
+              type="text"
+              id="mensaje_ayuda"
+              name="mensaje_ayuda"
+              class="w-full p-2 border border-gray-300 rounded"
+              placeholder="Escribe tu mensaje de ayuda aquí"
+            />
+          </div>
+
+          <!-- Botón de envío -->
+          <button
+            type="submit"
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Enviar
+          </button>
+        </div>
+      </form>
+      <% }); %>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="bg-white h-max p-4 text-center mt-4">
+      <p>© 2024 Zona de poder</p>
+    </footer>
+  </body>
+</html>

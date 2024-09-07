@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirigiendo a Mercado Pago...</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body>
+    <script>
+      // Mostrar alerta de redirección
+      Swal.fire({
+        title: "Redirigiendo...",
+        text: "Serás redirigido a la página de Mercado Pago en breve.",
+        icon: "info",
+        showConfirmButton: false,
+        timer: 2000,
+      }).then(() => {
+        // Redirigir a la página de Mercado Pago después de la alerta
+        window.location.href = "<%= init_point %>";
+      });
+    </script>
+  </body>
+</html>

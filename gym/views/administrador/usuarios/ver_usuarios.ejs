@@ -151,6 +151,23 @@
         inicializar();
       </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+
+    searchInput.addEventListener("keyup", function () {
+      const query = searchInput.value.toLowerCase();
+
+      tableRows.forEach((row) => {
+        const cells = Array.from(row.cells);
+        const matchesQuery = cells.some((cell) =>
+          cell.textContent.toLowerCase().includes(query)
+        );
+        row.style.display = matchesQuery ? "" : "none";
+      });
+    });
+  });
+</script>
     </div>
   </body>
 </html>

@@ -15,21 +15,21 @@
     />
 
     <style>
-    .btn-confirmar {
-      background-color: green;
-      color: white;
-    }
-    .btn-confirmar:hover {
-      background-color: #22C55E; 
-    }
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
 
-    .btn-cancelar {
-      background-color: red; 
-      color: white;
-    }
-    .btn-cancelar:hover {
-      background-color: #c53222c4; 
-    }
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
     </style>
 
     <title>Ver roles</title>
@@ -39,77 +39,94 @@
 
     <div class="px-10 mx-auto mt-4 p-5">
       <div class="flex justify-start gap-2 mb-4">
-          <a
-            href="#"
-            class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
-            id="crearRolesBtn">
-            
-            <i class="bx bx-plus-circle mr-2 br-md"></i>Crear Rol
-            </a
-          >
-          <a
-            href="/index_admin"
-            class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
-            >Volver</a
-          >
-        </div>
+        <a
+          href="#"
+          class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+          id="crearRolesBtn"
+        >
+          <i class="bx bx-plus-circle mr-2 br-md"></i>Crear Rol
+        </a>
+        <a
+          href="/index_admin"
+          class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+        >
+          Volver
+        </a>
+      </div>
 
-        <div class="max-w-7xl mx-auto p-4">
-          <div class="overflow-x-auto">
-            <table
-              class=" min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
-            >
-              <thead class="bg-gray-400 text-white text-center">
-                <tr>
-                  <th
-                    class="text-left py-3 px-6 uppercase font-semibold text-sm"
+      <div class="max-w-7xl mx-auto p-4">
+        <!-- Barra de búsqueda -->
+
+        <div class="overflow-x-auto">
+          <table
+            class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
+          >
+            <thead class="bg-gray-400 text-white text-center">
+              <tr>
+                <th class="text-left py-3 px-6 uppercase font-semibold text-sm">
+                  ID
+                </th>
+                <th class="py-4 px-6 uppercase font-semibold text-sm">ROLES</th>
+                <th class="py-4 px-6 uppercase font-semibold text-sm">
+                  ACCIONES
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 text-center">
+              <% let rowCounter = 0; %> <% results.forEach((roles) => { %>
+              <tr
+                class="text-center hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
+              >
+                <td class="text-left py-3 px-4"><%= roles.id %></td>
+                <td class="py-3 px-4"><%= roles.tipo_de_rol %></td>
+                <td class="flex gap-2 rounded-md justify-center p-4">
+                  <a
+                    href="#"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateRolesBtn"
+                    data-id="<%= roles.id %>"
                   >
-                    ID
-                  </th>
-                  <th class="py-4 px-6 uppercase font-semibold text-sm">
-                    ROLES
-                  </th>
-                  <th class="py-4 px-6 uppercase font-semibold text-sm">
-                    ACCIONES
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200 text-center">
-                <% let rowCounter = 0; %> 
-                <% results.forEach((roles) => { %>
-                <tr
-                  class="text-center hover:bg-gray-100 <%= rowCounter % 2 < 1 ? 'bg-gray-100' : '' %>"
-                >
-                  <td class="text-left py-3 px-4"><%= roles.id %></td>
-                  <td class=" py-3 px-4"><%= roles.tipo_de_rol %></td>
-                  <td class=" flex gap-2  rounded-md justify-center p-4">
-                    <a
-                      href="#"
-                      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateRolesBtn"
-                      data-id="<%= roles.id %>"
-                    >
-                      Editar
+                    Editar
                   </a>
-                    <a
-                      onclick="verificar('<%= roles.id %>')"
-                      class="cursor-pointer px-2 py-1 bg-red-500 text-white rounded-md
-                               
-                      hover:bg-red-700"                      >Borrar</a
-                    >
-                  </td>
-                </tr>
-                <% rowCounter++; %> <% }) %>
-              </tbody>
-            </table>
-          </div>
+                  <a
+                    onclick="verificar('<%= roles.id %>')"
+                    class="cursor-pointer px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-700"
+                  >
+                    Borrar
+                  </a>
+                </td>
+              </tr>
+              <% rowCounter++; %> <% }) %>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    
+    <!-- JavaScript para la búsqueda -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+        const tableRows = document.querySelectorAll("tbody tr");
 
-    <!-- un modal para crear el roles ahi melo caramelo -->
+        searchInput.addEventListener("keyup", function () {
+          const query = searchInput.value.toLowerCase();
+
+          tableRows.forEach((row) => {
+            const cellText = row.cells[1].textContent.toLowerCase();
+
+            if (cellText.includes(query)) {
+              row.style.display = "";
+            } else {
+              row.style.display = "none";
+            }
+          });
+        });
+      });
+    </script>
+
+    <!-- Modal para crear roles -->
     <script>
       document
         .getElementById("crearRolesBtn")
@@ -118,20 +135,20 @@
           Swal.fire({
             title: "Crear roles",
             html: `
-                <form id="convenioForm" action="/crearRoles" method="post">
-                  <div class="mb-6">
-                    <label for="rol" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Tipo de rol</label>
-                    <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-                     focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-                      dark:placeholder-gray-400 dark:text-white" id="rol" name="rol" required>
-                  </div>
-                </form>
-                `,
-            confirmButtonClass : 'btn-confirmar',
-            cancelButtonClass : 'btn-cancelar',
+              <form id="convenioForm" action="/crearRoles" method="post">
+                <div class="mb-6">
+                  <label for="rol" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">Tipo de rol</label>
+                  <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                   focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
+                    dark:placeholder-gray-400 dark:text-white" id="rol" name="rol" required>
+                </div>
+              </form>
+            `,
+            confirmButtonClass: "btn-confirmar",
+            cancelButtonClass: "btn-cancelar",
             customClass: {
-              confirmButton: 'btn-confirmar',
-              cancelButton: 'btn-cancelar'
+              confirmButton: "btn-confirmar",
+              cancelButton: "btn-cancelar",
             },
             showCancelButton: true,
             confirmButtonText: "Guardar",
@@ -143,126 +160,88 @@
         });
     </script>
 
-    <!-- modal para actualizar roles nitidos nitidos -->
+    <!-- Modal para actualizar roles -->
     <script>
-      // Selecciona todos los botones de actualizar por clase o un atributo común
-document.querySelectorAll(".updateRolesBtn").forEach(button => {
-  button.addEventListener("click", function (e) {
-    e.preventDefault();
-    const rolId = this.dataset.id; // Obtén el ID del rol a actualizar
+      document.querySelectorAll(".updateRolesBtn").forEach((button) => {
+        button.addEventListener("click", function (e) {
+          e.preventDefault();
+          const rolId = this.dataset.id;
 
-    // Realiza la solicitud GET para obtener los datos del rol
-    fetch(`/actualizar/${rolId}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          Swal.fire("Error", data.error, "error");
-        } else {
-          Swal.fire({
-            title: "Actualizar Rol",
-            html: `
-            <form id="updateRolesForm" action="/updateRoles" method="post" class="space-y-4">
-              <input type="hidden" name="id" value="${rolId}">
-              <div>
-                <label for="tipo_de_rol" class="block text-sm font-medium text-gray-700">Tipo de Rol</label>
-                <input type="text" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300
-                 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="tipo_de_rol" name="tipo_de_rol" value="${data.tipo_de_rol}" required>
-              </div>
-            </form>
-            `,
-            confirmButtonClass : 'btn-confirmar',
-            cancelButtonClass : 'btn-cancelar',
-            customClass: {
-              confirmButton: 'btn-confirmar',
-              cancelButton: 'btn-cancelar'
-            },
-            showCancelButton: true,
-            confirmButtonText: "Guardar",
-            cancelButtonText: "Cancelar",
-            preConfirm: () => {
-              document.getElementById("updateRolesForm").submit();
-            },
-          });
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        Swal.fire("Error", "Ocurrió un error al obtener los datos del rol", "error");
+          fetch(`/actualizar/${rolId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.error) {
+                Swal.fire("Error", data.error, "error");
+              } else {
+                Swal.fire({
+                  title: "Actualizar Rol",
+                  html: `
+                    <form id="updateRolesForm" action="/updateRoles" method="post" class="space-y-4">
+                      <input type="hidden" name="id" value="${rolId}">
+                      <div>
+                        <label for="tipo_de_rol" class="block text-sm font-medium text-gray-700">Tipo de Rol</label>
+                        <input type="text" class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300
+                         rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="tipo_de_rol" name="tipo_de_rol" value="${data.tipo_de_rol}" required>
+                      </div>
+                    </form>
+                  `,
+                  confirmButtonClass: "btn-confirmar",
+                  cancelButtonClass: "btn-cancelar",
+                  customClass: {
+                    confirmButton: "btn-confirmar",
+                    cancelButton: "btn-cancelar",
+                  },
+                  showCancelButton: true,
+                  confirmButtonText: "Actualizar",
+                  cancelButtonText: "Cancelar",
+                  preConfirm: () => {
+                    document.getElementById("updateRolesForm").submit();
+                  },
+                });
+              }
+            })
+            .catch((error) => {
+              Swal.fire("Error", "No se pudo obtener la información.", "error");
+            });
+        });
       });
-  });
-});
-
-
-
     </script>
-    <!-- melos no melos -->
 
+    <!-- Modal para eliminar roles -->
     <script>
       function verificar(id) {
-        const swalWithBootstrapButtons = Swal.mixin({
-          customClass: {
-            confirmButton:
-              "bg-green-500 hover:bg-green-700 px-5 text-white font-bold py-2 px-4 rounded- ml-4",
-            cancelButton:
-              "bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded",
-          },
-          buttonsStyling: false,
+        Swal.fire({
+          title: "¿Estás seguro?",
+          text: "¡Esta acción no se puede deshacer!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/borrar/${id}`, { method: "DELETE" })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  Swal.fire(
+                    "Eliminado",
+                    "El rol ha sido eliminado.",
+                    "success"
+                  ).then(() => {
+                    location.reload();
+                  });
+                } else {
+                  Swal.fire("Error", data.error, "error");
+                }
+              })
+              .catch((error) => {
+                Swal.fire("Error", "No se pudo eliminar el rol.", "error");
+              });
+          }
         });
-
-        swalWithBootstrapButtons
-          .fire({
-            title: "¿Estás seguro?",
-            text: "¡No podrás revertir esto!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "¡Sí, elimínalo!",
-            cancelButtonText: "¡No, cancela!",
-            reverseButtons: true,
-          })
-          .then((result) => {
-            if (result.isConfirmed) {
-              window.location.href = `/eliminarRol/${id}`;
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-              swalWithBootstrapButtons.fire(
-                "Cancelado",
-                "Tus datos están a salvo :)",
-                "error"
-              );
-            }
-          });
       }
     </script>
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  const Toast = Swal.mixin({
-    toast: true,
-    position: 'bottom-end', // Mostrar en la esquina inferior derecha
-    showConfirmButton: false,
-    timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
-      toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
-    },
-  });
-
-  // Verificar si el parámetro create=success está en la URL
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get("create") === "success") {
-    Toast.fire({
-      icon: 'success',
-      title: '¡Éxito! Rol creada exitosamente.',
-    });
-  }
-
-  // Verificar si el parámetro update=success está en la URL
-  if (urlParams.get("update") === "success") {
-    Toast.fire({
-      icon: 'success',
-      title: '¡Éxito! Rol actualizada exitosamente.',
-    });
-  }
-</script>
   </body>
 </html>

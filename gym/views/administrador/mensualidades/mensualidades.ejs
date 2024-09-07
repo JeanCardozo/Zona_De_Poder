@@ -1,63 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <!-- Tailwind CSS -->
+    <title>Selecciona tu Plan de Mensualidad</title>
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css"
       rel="stylesheet"
     />
-    <link
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-      rel="stylesheet"
-    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      /* Estilos del carrusel */
+      .carrusel {
+        display: flex;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+        transition: transform 0.5s ease-in-out;
+      }
+
+      .carrusel-item {
+        min-width: 100%;
+        flex: 0 0 100%;
+        padding: 2rem;
+        box-sizing: border-box;
+      }
+
+      /* Estilos de las tarjetas de mensualidades */
+      .tarjeta {
+        background: linear-gradient(135deg, #1e3a8a, #6d28d9);
+        border-radius: 1rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        color: white;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        height: 400px;
+        max-width: 300px;
+        margin: auto;
+        text-align: center;
+      }
+
+      .tarjeta h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .tarjeta p {
+        font-size: 1.5rem;
+        font-weight: 400;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .tarjeta button {
+        background-color: #00a650;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        font-weight: 600;
+        color: white;
+        transition: background-color 0.3s ease-in-out;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .tarjeta button:hover {
+        background-color: #008f3e;
+      }
+
+      /* Tipografía legible y centrada */
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+    </style>
   </head>
-  <body>
+  <body class="bg-gray-900 text-white">
+    <!-- Logo del gimnasio -->
+    <div
+      class="w-full bg-gradient-to-r from-blue-700 to-purple-900 p-4 flex items-center justify-between"
+    >
+      <img
+        src="https://raw.githubusercontent.com/JeanCardozo/audios/main/logo.png"
+        alt="Logo del Gimnasio"
+        class="h-16"
+      />
+      <a
+        href="/cancelar?tempRegistroId=<%= tempRegistroId %>"
+        class="text-white font-bold hover:text-red-400"
+      >
+        Cancelar
+      </a>
+    </div>
+
     <div class="container mx-auto mt-10">
-      <h1 class="text-3xl font-bold text-center mb-8">
+      <h1 class="text-5xl font-bold text-center mb-8">
         Selecciona tu Plan de Mensualidad
       </h1>
 
       <!-- Carrusel -->
       <div class="relative">
-        <div class="overflow-x-auto flex space-x-4 pb-4">
+        <div class="carrusel" id="carrusel">
           <% mensualidades.forEach(function(mensualidad) { %>
-          <div
-            class="w-80 h-60 bg-white rounded-lg shadow-md flex-shrink-0 p-6 hover:bg-gray-100 transition duration-300 ease-in-out"
-          >
-            <h2 class="text-xl font-semibold mb-2">
-              <%= mensualidad.tiempo_plan %>
-            </h2>
-            <p class="text-gray-700 mb-4">
-              Precio: $<%= mensualidad.total_pagar %>
-            </p>
-            <div class="flex justify-center">
-              <input
-                type="radio"
-                id="mensualidad_<%= mensualidad.id %>"
-                name="mensualidadId"
-                value="<%= mensualidad.id %>"
-                class="hidden"
-              />
-              <label
-                for="mensualidad_<%= mensualidad.id %>"
-                class="cursor-pointer px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
-              >
-                Seleccionar
-              </label>
+          <div class="carrusel-item flex justify-center items-center">
+            <div class="tarjeta">
+              <h2><%= mensualidad.tiempo_plan %></h2>
+              <p>Precio: $<%= mensualidad.total_pagar %></p>
+              <form action="/create-order" method="POST">
+                <input
+                  type="hidden"
+                  name="title"
+                  value="<%= mensualidad.tiempo_plan %>"
+                />
+                <input
+                  type="hidden"
+                  name="unit_price"
+                  value="<%= mensualidad.total_pagar %>"
+                />
+                <input
+                  type="hidden"
+                  name="tempRegistroId"
+                  value="<%= tempRegistroId %>"
+                />
+                <button type="submit">Pagar con Mercado Pago</button>
+              </form>
             </div>
           </div>
           <% }) %>
         </div>
 
-        <!-- Botones de navegación -->
+        <!-- Botones de navegación manual -->
         <button
-          class="absolute left-0 top-0 bottom-0 px-4 text-gray-600 hover:text-gray-900 focus:outline-none"
+          class="absolute left-0 top-0 bottom-0 px-4 text-gray-400 hover:text-gray-200 focus:outline-none"
+          onclick="moverCarrusel(-1)"
         >
           <svg
-            class="w-8 h-8"
+            class="w-10 h-10"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -73,10 +151,11 @@
         </button>
 
         <button
-          class="absolute right-0 top-0 bottom-0 px-4 text-gray-600 hover:text-gray-900 focus:outline-none"
+          class="absolute right-0 top-0 bottom-0 px-4 text-gray-400 hover:text-gray-200 focus:outline-none"
+          onclick="moverCarrusel(1)"
         >
           <svg
-            class="w-8 h-8"
+            class="w-10 h-10"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -91,62 +170,36 @@
           </svg>
         </button>
       </div>
-
-      <!-- Botón de envío -->
-      <div class="mt-8 flex justify-center">
-        <form action="/pago" method="GET">
-          <input
-            type="hidden"
-            name="tempRegistroId"
-            value="<%= tempRegistroId %>"
-          />
-          <input
-            type="hidden"
-            name="mensualidadId"
-            id="mensualidadSeleccionada"
-            required
-          />
-          <button
-            type="submit"
-            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500"
-          >
-            Proceder al Pago
-          </button>
-        </form>
-      </div>
     </div>
 
-    <!-- Script para actualizar el campo oculto con la selección -->
     <script>
-      document
-        .querySelectorAll('input[name="mensualidadId"]')
-        .forEach((radio) => {
-          radio.addEventListener("change", function () {
-            document.getElementById("mensualidadSeleccionada").value =
-              this.value;
-          });
-        });
-    </script>
+      const carrusel = document.getElementById("carrusel");
+      let scrollPosition = 0;
 
-    <!-- Carrusel de navegación -->
-    <script>
-      const carrusel = document.querySelector(".overflow-x-auto");
-      const btnPrev = document.querySelector(".left-0");
-      const btnNext = document.querySelector(".right-0");
-
-      btnPrev.addEventListener("click", () => {
-        carrusel.scrollBy({
-          left: -200, // Ajusta este valor según el tamaño de tus tarjetas
+      function moverCarrusel(direction) {
+        const width = carrusel.clientWidth;
+        scrollPosition += direction * width;
+        if (scrollPosition < 0) scrollPosition = 0;
+        if (scrollPosition > carrusel.scrollWidth - width) scrollPosition = 0;
+        carrusel.scrollTo({
+          left: scrollPosition,
           behavior: "smooth",
         });
-      });
+      }
 
-      btnNext.addEventListener("click", () => {
-        carrusel.scrollBy({
-          left: 200, // Ajusta este valor según el tamaño de tus tarjetas
-          behavior: "smooth",
-        });
+      // Transición automática cada 5 segundos
+      setInterval(() => {
+        moverCarrusel(1);
+      }, 5000);
+      // Mostrar alertas si están disponibles
+      `<% if (typeof alertTitle !== "undefined") { %>`;
+      Swal.fire({
+        title: "<%= alertTitle %>",
+        text: "<%= alertMessage %>",
+        icon: "<%= alertIcon %>",
+        showConfirmButton: "<%= showConfirmButton %>",
       });
+      `<% } %>`;
     </script>
   </body>
 </html>
