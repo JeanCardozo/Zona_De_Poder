@@ -7,8 +7,9 @@ WORKDIR /app
 # Copia el archivo package.json y package-lock.json al directorio de trabajo
 COPY package*.json ./
 
-# Instala las dependencias
+# Instala las dependencias, incluyendo nodemon para el entorno de desarrollo
 RUN npm install
+RUN npm install -g nodemon
 
 # Copia el resto del código al contenedor
 COPY . .
