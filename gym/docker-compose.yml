@@ -13,20 +13,18 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  pdAdmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin4
-    restart: always
-    ports:
-      - 8080:80
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=123456
-    volumes:
-      - ./pgadmin:/var/lib/pgadmin
-      - ./pgadmin:/certs/server.cert
-      - ./pgadmin:/certs/server.key
-      - ./pgadmin:/pgadmin4/servers.json
+pgadmin:
+  image: dpage/pgadmin4
+  container_name: pgadmin4
+  restart: always
+  ports:
+    - 8080:80
+  environment:
+    - PGADMIN_DEFAULT_EMAIL=admin@example.com
+    - PGADMIN_DEFAULT_PASSWORD=123456
+  volumes:
+    - pgadmin_data:/var/lib/pgadmin
+  user: "5050:5050"
 
   app:
     build: .
@@ -48,3 +46,4 @@ services:
 
 volumes:
   db_data:
+  pgadmin_data:
