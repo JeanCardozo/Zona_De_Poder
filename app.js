@@ -18,9 +18,6 @@ app.use(
   })
 );
 
-// mercadopago.configure({
-//   access_token: "<ACCESS_TOKEN>",
-// });
 app.use(cookieParser());
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
@@ -29,7 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // Importa y usa las rutas desde el Router
-app.use("/", require("./Router"));
+app.use("/", require("./gym/Router"));
 
 // Programar la tarea para que se ejecute todos los días a la medianoche
 cron.schedule("0 0 * * *", () => {

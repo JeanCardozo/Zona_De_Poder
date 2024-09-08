@@ -46,5 +46,6 @@ services:
       - DB_NAME=zona_de_poder_db
     volumes:
       - .:/app
+
 volumes:
   db_data:
