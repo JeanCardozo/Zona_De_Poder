@@ -9,6 +9,7 @@ const {
   Preference,
   configurations,
 } = require("mercadopago");
+const { token } = require("morgan");
 
 //ROLES--------------------------------------------------------------
 
@@ -876,6 +877,7 @@ exports.register = async (req, res) => {
 // LOGICA PARA USAR MERCADO PAGO-----------------------------------------------
 
 let TOKEN = process.env.MP_ACCESS_TOKEN_V;
+console.log(TOKEN);
 
 mercadopago.configure({
   access_token: TOKEN,
