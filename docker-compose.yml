@@ -1,6 +1,5 @@
 version: "3"
 services:
-  # Servicio para la base de datos (PostgreSQL)
   db:
     image: postgres:16.3
     container_name: postgres_db
@@ -14,7 +13,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  # Servicio para PgAdmin
   pdAdmin:
     image: dpage/pgadmin4
     container_name: pgadmin4
@@ -30,7 +28,6 @@ services:
       - ./pgadmin:/certs/server.key
       - ./pgadmin:/pgadmin4/servers.json
 
-  # Servicio para tu aplicación Node.js
   app:
     build: .
     container_name: zona_de_poder_app
@@ -46,6 +43,8 @@ services:
       - DB_NAME=zona_de_poder_db
     volumes:
       - .:/app
+      - /app/node_modules
     command: ["npm", "run", "dev"]
+
 volumes:
   db_data:
