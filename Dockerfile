@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Instala nodemon globalmente
+# Instalar nodemon globalmente
 RUN npm install -g nodemon && npm install
 
 COPY . .
