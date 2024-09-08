@@ -24,7 +24,6 @@ pgadmin:
     - PGADMIN_DEFAULT_PASSWORD=123456
   volumes:
     - pgadmin_data:/var/lib/pgadmin
-  user: "5050:5050"
 
   app:
     build: .
@@ -42,7 +41,7 @@ pgadmin:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["npm", "run", "dev"]
+    command: npx nodemon app.js
 
 volumes:
   db_data:
