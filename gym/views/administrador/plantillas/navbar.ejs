@@ -100,7 +100,7 @@
     class="fixed top-4 left-4 z-50 text-2xl text-gray-800 transition-transform duration-300"
     >☰</a
   >
-  <div id="sidebarOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
+  <div id="sidebarOverlay" class="fixed top-0 right-0 bottom-0 bg-gray-900 bg-opacity-50 z-40 pointer-events-none transition-all duration-300 ease-in-out"></div>
 
   <!-- Barra lateral -->
   <div
@@ -258,28 +258,31 @@
 
 <!-- Incluir en el archivo navbar.ejs -->
 <script>
-  document
-  .getElementById("sidebarToggle")
-  .addEventListener("click", function (e) {
-    e.preventDefault();
-    const sidebar = document.getElementById("sidebar");
-    const toggleButton = document.getElementById("sidebarToggle");
-    const overlay = document.getElementById("sidebarOverlay");
+ document.getElementById("sidebarToggle").addEventListener("click", function (e) {
+  e.preventDefault();
+  const sidebar = document.getElementById("sidebar");
+  const toggleButton = document.getElementById("sidebarToggle");
+  const overlay = document.getElementById("sidebarOverlay");
 
-    sidebar.classList.toggle("translate-x-0");
-    sidebar.classList.toggle("-translate-x-full");
-    overlay.classList.toggle("hidden");
+  sidebar.classList.toggle("translate-x-0");
+  sidebar.classList.toggle("-translate-x-full");
+  
+  if (sidebar.classList.contains("translate-x-0")) {
+    toggleButton.style.transform = "translateX(16rem)";
+    overlay.style.width = "calc(100% - 16rem)";
+    overlay.style.left = "16rem";
+    overlay.classList.remove("opacity-0");
+    overlay.classList.add("opacity-100");
+  } else {
+    toggleButton.style.transform = "translateX(0)";
+    overlay.style.width = "100%";
+    overlay.style.left = "0";
+    overlay.classList.remove("opacity-100");
+    overlay.classList.add("opacity-0");
+  }
+});
 
-    if (sidebar.classList.contains("translate-x-0")) {
-      toggleButton.style.transform = "translateX(16rem)";
-      overlay.classList.add("opacity-100");
-      overlay.classList.remove("opacity-0");
-    } else {
-      toggleButton.style.transform = "translateX(0)";
-      overlay.classList.add("opacity-0");
-      overlay.classList.remove("opacity-100");
-    }
-  });
+
 
 // Cerrar la barra lateral al hacer clic en el fondo
 document.getElementById("sidebarOverlay").addEventListener("click", function() {

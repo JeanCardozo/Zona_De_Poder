@@ -327,9 +327,10 @@ router.get("/events", async (req, res) => {
     const result = await conexion.query("SELECT * FROM eventos");
     const eventos = result.rows.map((evento) => ({
       title: evento.evento,
-      start: evento.fecha_inicio,
-      end: evento.fecha_fin,
+      start: evento.fecha,
+      end: evento.fecha,
     }));
+
     res.json(eventos);
   } catch (error) {
     console.error("Error al obtener eventos", error);
