@@ -39,7 +39,7 @@ pgadmin:
       - DB_PASSWORD=123456
       - DB_NAME=zona_de_poder_db
     volumes:
-      - .:/app
+      - ./gym:/app
       - /app/node_modules
     command: npx nodemon app.js
 

@@ -100,6 +100,7 @@
     class="fixed top-4 left-4 z-50 text-2xl text-gray-800 transition-transform duration-300"
     >☰</a
   >
+  <div id="sidebarOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
 
   <!-- Barra lateral -->
   <div
@@ -254,50 +255,37 @@
     </div>
   </div>
 </div>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("searchInput");
-    const tableRows = document.querySelectorAll("tbody tr");
 
-    searchInput.addEventListener("keyup", function () {
-      const query = searchInput.value.toLowerCase();
-
-      tableRows.forEach((row) => {
-        const cellText = row.cells[1].textContent.toLowerCase();
-
-        if (cellText.includes(query)) {
-          row.style.display = "";
-        } else {
-          row.style.display = "none";
-        }
-      });
-    });
-  });
-</script>
 <!-- Incluir en el archivo navbar.ejs -->
 <script>
   document
-    .getElementById("profileButton")
-    .addEventListener("click", function () {
-      document.getElementById("profileDropdown").classList.toggle("hidden");
-    });
+  .getElementById("sidebarToggle")
+  .addEventListener("click", function (e) {
+    e.preventDefault();
+    const sidebar = document.getElementById("sidebar");
+    const toggleButton = document.getElementById("sidebarToggle");
+    const overlay = document.getElementById("sidebarOverlay");
 
-  document
-    .getElementById("sidebarToggle")
-    .addEventListener("click", function (e) {
-      e.preventDefault();
-      const sidebar = document.getElementById("sidebar");
-      const toggleButton = document.getElementById("sidebarToggle");
+    sidebar.classList.toggle("translate-x-0");
+    sidebar.classList.toggle("-translate-x-full");
+    overlay.classList.toggle("hidden");
 
-      sidebar.classList.toggle("translate-x-0");
-      sidebar.classList.toggle("-translate-x-full");
+    if (sidebar.classList.contains("translate-x-0")) {
+      toggleButton.style.transform = "translateX(16rem)";
+      overlay.classList.add("opacity-100");
+      overlay.classList.remove("opacity-0");
+    } else {
+      toggleButton.style.transform = "translateX(0)";
+      overlay.classList.add("opacity-0");
+      overlay.classList.remove("opacity-100");
+    }
+  });
 
-      if (sidebar.classList.contains("translate-x-0")) {
-        toggleButton.style.transform = "translateX(16rem)";
-      } else {
-        toggleButton.style.transform = "translateX(0)";
-      }
-    });
+// Cerrar la barra lateral al hacer clic en el fondo
+document.getElementById("sidebarOverlay").addEventListener("click", function() {
+  document.getElementById("sidebarToggle").click();
+});
+
 
   // Barra de Búsqueda
   const inputSearch = document.getElementById("inputSearch");
@@ -326,4 +314,24 @@
     .getElementById("searchButton")
     .addEventListener("click", filterTable);
   inputSearch.addEventListener("keyup", filterTable);
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    const tableRows = document.querySelectorAll("tbody tr");
+
+    searchInput.addEventListener("keyup", function () {
+      const query = searchInput.value.toLowerCase();
+
+      tableRows.forEach((row) => {
+        const cellText = row.cells[1].textContent.toLowerCase();
+
+        if (cellText.includes(query)) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+  });
 </script>
