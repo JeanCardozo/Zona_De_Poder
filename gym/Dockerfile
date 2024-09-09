@@ -9,6 +9,6 @@ RUN npm install -g nodemon
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 3000
 
 CMD ["npx", "nodemon", "app.js"]

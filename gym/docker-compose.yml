@@ -30,7 +30,7 @@ services:
     container_name: zona_de_poder_app
     restart: always
     ports:
-      - "5000:5000"
+      - "3000:3000"
     depends_on:
       - db
     environment:
