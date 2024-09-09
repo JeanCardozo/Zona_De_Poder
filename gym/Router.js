@@ -541,6 +541,7 @@ router.get("/ver_usuarios", authenticateToken, verifyAdmin, (req, res) => {
       if (error) {
         return res.status(500).json({ error: error.message }); // Manejo de error
       }
+      console.log("usuarios segun eso", results.rows);
       res.render("administrador/usuarios/ver_usuarios", {
         results: results.rows,
         loggedUserId: req.user.id,

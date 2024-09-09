@@ -448,14 +448,15 @@
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendari');
-    
+  
         var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth', // Vista inicial
+          initialView: 'dayGridMonth',
           headerToolbar: {
             left: 'prev,next',
-            center:'title',
+            center: 'title',
             right: ''
           },
+          locale: 'es', // Cambiar idioma a español
           events: function(fetchInfo, successCallback, failureCallback) {
             fetch('/events')
               .then(response => response.json())
@@ -464,10 +465,9 @@
                 console.error('Error al obtener eventos:', error);
                 failureCallback(error);
               });
-          },
-
+          }
         });
-    
+  
         calendar.render();
       });
     </script>

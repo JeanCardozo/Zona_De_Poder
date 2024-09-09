@@ -1523,9 +1523,9 @@ exports.verUsuarios = (req, res) => {
     [1, 2],
     (error, results) => {
       if (error) {
-        return res.status(500).json({ error: error.message }); // Manejo de error
+        return res.status(500).json({ error: error.message });
       }
-
+      console.log("usuarios segun eso", results.rows);
       res.status(200).json(results.rows);
     }
   );
