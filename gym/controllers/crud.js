@@ -1512,7 +1512,6 @@ exports.verClientes = (req, res) => {
   });
 };
 
-// ver usuarios API POST
 exports.verUsuarios = (req, res) => {
   conexion.query(
     `SELECT u.id AS id_usuarios, u.nombre, u.apellido, u.telefono, u.correo_electronico, u.contraseña, u.id_rol, u.estado,

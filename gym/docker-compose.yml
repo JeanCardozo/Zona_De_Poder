@@ -34,7 +34,8 @@ services:
     depends_on:
       - db
     environment:
-      - DB_HOST=zonadepoder.co
+      - DB_HOST=db # Nombre del servicio Docker
+      - DB_PORT=5432 # Puerto predeterminado dentro del contenedor
       - DB_USER=master
       - DB_PASSWORD=123456
       - DB_NAME=zona_de_poder_db
