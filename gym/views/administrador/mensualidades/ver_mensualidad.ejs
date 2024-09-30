@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS -->
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
@@ -13,6 +17,7 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
       .btn-confirmar {
@@ -42,7 +47,7 @@
         <div class="flex space-x-4 my-4">
           <a
             href="#"
-            class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+            class="btn mt-4 inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 crearMensualidadBtn"
             id="crearMensualidadBtn"
           >
             <i class="bx bx-plus-circle mr-2 br-md"></i>Crear Mensualidad
@@ -62,7 +67,7 @@
               <thead class="bg-gray-500 text-white text-center">
                 <tr>
                   <th scope="col" class="px-4 py-6 text-sm font-medium">
-                    IDENTIFICACION
+                    Identificacion
                   </th>
                   <th scope="col" class="px-4 py-6 text-sm font-medium">
                     Total Pagar
@@ -74,7 +79,7 @@
                     Tiempo Plan
                   </th>
                   <th scope="col" class="px-4 py-6 text-sm font-medium">
-                    ACCIONES
+                    Acciones
                   </th>
                 </tr>
               </thead>
@@ -88,8 +93,11 @@
 
     <script defer>
       const divPagination = document.getElementById("pagination");
+      const searchInput = document.getElementById("searchInput");
       let datos = [];
+      let filteredData = [];
       const itemsPorPagina = 5;
+      let currentPage = 1;
 
       async function getData() {
         try {
@@ -112,65 +120,113 @@
 
       async function inicializar() {
         datos = await getData();
-        console.log(datos);
-
-        const totalPages = Math.max(
-          1,
-          Math.ceil(datos.length / itemsPorPagina)
-        );
+        filteredData = datos;
+        const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
         generatePagination(totalPages);
         mostrarPagina(1);
       }
 
       function generatePagination(totalPages) {
-        totalPages = Math.max(1, totalPages);
-        divPagination.innerHTML = Array.from(
-          { length: totalPages },
-          (_, i) =>
-            `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${
-              i + 1
-            }">${i + 1}</button>`
-        ).join("");
+        let startPage = Math.max(currentPage - 1, 1);
+        let endPage = Math.min(startPage + 2, totalPages);
+
+        if (endPage - startPage < 2) {
+          startPage = Math.max(endPage - 2, 1);
+        }
+
+        let paginationHTML = "";
+
+        // Botón "Anterior"
+        paginationHTML += `
+          <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-l hover:bg-gray-100" 
+          ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">
+            Anterior
+          </button>
+        `;
+
+        // Páginas visibles (solo 3)
+        for (let i = startPage; i <= endPage; i++) {
+          paginationHTML += `
+            <button class=" mt-4 px-4 py-2 font-bold ${
+              i === currentPage
+                ? "text-blue-500 bg-blue-100"
+                : "text-gray-700 bg-white"
+            } hover:bg-gray-100 ${
+            i === currentPage ? "active" : ""
+          }" data-page="${i}">${i}</button>
+          `;
+        }
+
+        // Botón "Siguiente"
+        paginationHTML += `
+          <button class=" mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-r hover:bg-gray-100" 
+          ${currentPage === totalPages ? "disabled" : ""} data-page="${
+          currentPage + 1
+        }">
+            Siguiente
+          </button>
+        `;
+
+        divPagination.innerHTML = paginationHTML;
 
         divPagination.addEventListener("click", (e) => {
-          if (e.target.tagName === "BUTTON") {
-            mostrarPagina(parseInt(e.target.dataset.page));
+          if (e.target.tagName === "BUTTON" && !e.target.disabled) {
+            currentPage = parseInt(e.target.dataset.page);
+            mostrarPagina(currentPage);
+            generatePagination(totalPages);
           }
         });
       }
 
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
-        const fin = Math.min(inicio + itemsPorPagina, datos.length);
-        const datosParaMostrar = datos.slice(inicio, fin);
+        const fin = inicio + itemsPorPagina;
+        const datosParaMostrar = filteredData.slice(inicio, fin);
 
         const tbody = document.querySelector("tbody");
         tbody.innerHTML = datosParaMostrar
           .map(
             (dato, index) => `
-          <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
-            index % 2 == 0 && "bg-gray-100"
-          }">
-            <td class="p-2">${dato.id_mensualidad}</td>
-            <td class="p-2">${dato.total_pagar}</td>
-            <td class="p-2">${dato.tipo_de_mensualidad}</td>
-            <td class="p-2">${dato.tiempo_plan}</td>
-            <td class="flex justify-center gap-2 px-6 py-4 whitespace-nowrap">
-              <a
-                href="#"
-                class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700 updateMensualidadBtn"
-                data-id="${dato.id_mensualidad}"
-              >
-                Editar
-              </a>
-              
-            </td>
-          </tr>
-        `
+              <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+                index % 2 == 0 && "bg-gray-100"
+              }">
+                <td class="p-2">${dato.id_mensualidad}</td>
+                <td class="p-2">${dato.total_pagar}</td>
+                <td class="p-2">${dato.tipo_de_mensualidad}</td>
+                <td class="p-2">${dato.tiempo_plan}</td>
+                <td class="flex justify-center gap-2 px-6 py-4 whitespace-nowrap">
+                  <a
+                    href="#"
+                    class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700 updateMensualidadBtn"
+                    data-id="${dato.id_mensualidad}"
+                  >
+                    Editar
+                  </a>
+                </td>
+              </tr>
+            `
           )
           .join("");
       }
 
+      // Barra de búsqueda
+      searchInput.addEventListener("input", function () {
+        const query = searchInput.value.toLowerCase();
+
+        // Filtrar los datos basados en la búsqueda
+        filteredData = datos.filter((dato) =>
+          Object.values(dato).some((valor) =>
+            String(valor).toLowerCase().includes(query)
+          )
+        );
+
+        const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
+        currentPage = 1;
+        generatePagination(totalPages);
+        mostrarPagina(1);
+      });
+
+      // Llama a la función de inicialización al cargar la página
       inicializar();
     </script>
 
@@ -194,12 +250,7 @@
                 title: "Crear Mensualidad",
                 html: `
                 <form id="MensualidadForm" action="/crear_mensualidad" method="post" class="space-y-4">
-                  <div>
-                    <label for="id" class="block text-sm font-medium text-gray-700">Identificacion</label>
-                    <input type="number" id="id" name="id" required class="mt-1 block w-full rounded-md borde
-            r border-gray-300 shadow-sm focus:border-indigo-300
-             focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                  </div>
+
                   <div>
                     <label for="con" class="block text-sm font-medium text-gray-700">Convenios</label>
                     <select id="con" name="con" required class="mt-1 block w-full rounded-md borde
@@ -226,6 +277,7 @@
                       <option value="3 Meses">3 Meses</option>
                       <option value="6 Meses">6 Meses</option>
                       <option value="1 Año">1 Año</option>
+                       <option value="1 Mes">1 Mes + personalizado</option>
                     </select>
                   </div>
                   <input type="hidden" name="meses" id="meses" value="0">
@@ -245,9 +297,37 @@
                 showCancelButton: true,
                 focusConfirm: false,
                 preConfirm: () => {
-                  const form =
-                    Swal.getPopup().querySelector("#MensualidadForm");
-                  form.submit();
+                  const conInput = document.getElementById("con");
+                  const pagarInput = document.getElementById("pagar");
+                  const tiempoInput = document.getElementById("tiempo");
+
+                  if (!conInput.value) {
+                    Swal.showValidationMessage(
+                      "Por favor, ingrese un tipo de convenio"
+                    );
+                    return false;
+                  } else {
+                    if (!pagarInput.value) {
+                      Swal.showValidationMessage(
+                        "Por favor, ingrese el total a pagar"
+                      );
+                      return false;
+                    } else {
+                      if (!tiempoInput.value) {
+                        Swal.showValidationMessage(
+                          "Por favor, ingrese el tiempo del plan"
+                        );
+                        return false;
+                      } else {
+                        document
+                          .getElementById("MensualidadForm")
+                          .requestSubmit();
+                        const form =
+                          Swal.getPopup().querySelector("#MensualidadForm");
+                        form.requestSubmit();
+                      }
+                    }
+                  }
                 },
               });
             })
@@ -264,6 +344,9 @@
         switch (tiempo) {
           case "1 dias":
             dias = 1;
+            break;
+          case "1 Mes + Personalizado":
+            meses = 1;
             break;
           case "15 dias":
             dias = 15;
@@ -330,8 +413,8 @@
                 html: `
                         <form id="UpdateMensualidadForm" action="/update_mensualidad" method="post" class="space-y-4">
                             <div>
-                                <label for="id" class="block text-sm font-medium text-gray-700">Identificación</label>
-                                <input type="number" id="ide" name="ide" value="${mensualidades.id_mensualidad}" readonly required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                
+                                <input type="hidden" id="ide" name="ide" value="${mensualidades.id_mensualidad}" readonly required class="border-gray-300 mt-1 block w-full rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                             </div>
                             <div>
                                 <label for="tipo" class="block text-sm font-medium text-gray-700">Convenios</label>
@@ -351,6 +434,12 @@
                             </div>
                         </form>
                     `,
+                confirmButtonClass: "btn-confirmar",
+                cancelButtonClass: "btn-cancelar",
+                customClass: {
+                  confirmButton: "btn-confirmar",
+                  cancelButton: "btn-cancelar",
+                },
                 confirmButtonText: "Actualizar",
                 confirmButtonClass: "btn-confirmar",
                 cancelButtonText: "Cancelar",
@@ -358,18 +447,51 @@
                 showCancelButton: true,
                 focusConfirm: false,
                 preConfirm: () => {
-                  const form = Swal.getPopup().querySelector(
-                    "#UpdateMensualidadForm"
-                  );
-                  form.submit();
+                  const idInput = document.getElementById("ide");
+                  const conInput = document.getElementById("tipo");
+                  const pagarInput = document.getElementById("pagar");
+                  const tiempoInput = document.getElementById("tiempo");
+
+                  if (!idInput.value) {
+                    Swal.showValidationMessage(
+                      "Por favor, ingrese un id de la mensualidad"
+                    );
+                    return false;
+                  } else {
+                    if (!conInput.value) {
+                      Swal.showValidationMessage(
+                        "Por favor, ingrese un tipo de convenio"
+                      );
+                      return false;
+                    } else {
+                      if (!pagarInput.value) {
+                        Swal.showValidationMessage(
+                          "Por favor, ingrese el total a pagar"
+                        );
+                        return false;
+                      } else {
+                        if (!tiempoInput.value) {
+                          Swal.showValidationMessage(
+                            "Por favor, ingrese el tiempo del plan"
+                          );
+                          return false;
+                        } else {
+                          document
+                            .getElementById("UpdateMensualidadForm")
+                            .requestSubmit();
+                          const form = Swal.getPopup().querySelector(
+                            "#UpdateMensualidadForm"
+                          );
+                          form.requestSubmit();
+                        }
+                      }
+                    }
+                  }
                 },
               });
             })
             .catch((error) =>
-              console.error(
-                "Error al obtener los datos de la mensualidad:",
-                error
-              )
+              console.error("Error al obtener los convenios:", error)
             );
         }
       });
@@ -377,34 +499,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "bottom-end", // Mostrar en la esquina inferior derecha
-        showConfirmButton: false,
-        timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
-          toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
-        },
+      document.addEventListener("DOMContentLoaded", function () {
+        // Verificar si hay un mensaje de alerta en la respuesta
+        `<% if (typeof alertMessage !== 'undefined' && alertMessage) { %>`;
+        Swal.fire({
+          title: "Éxito",
+          text: "<%= alertMessage.text %>",
+          icon: "<%= alertMessage.type %>",
+          confirmButtonText: "OK",
+          timer: 2000,
+        }).then(() => {
+          // Remover el parámetro de la URL después de mostrar la alerta
+          const url = new URL(window.location);
+          url.searchParams.delete("message");
+          window.history.replaceState({}, "", url);
+        });
+        `<% } %>`;
       });
-
-      // Verificar si el parámetro create=success está en la URL
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get("create") === "success") {
-        Toast.fire({
-          icon: "success",
-          title: "¡Éxito! Mensualidad creada exitosamente.",
-        });
-      }
-
-      // Verificar si el parámetro update=success está en la URL
-      if (urlParams.get("update") === "success") {
-        Toast.fire({
-          icon: "success",
-          title: "¡Éxito! Mensualidad actualizada exitosamente.",
-        });
-      }
     </script>
   </body>
 </html>

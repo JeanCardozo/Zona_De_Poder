@@ -3,15 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
 
     <!-- !!Lammar a Tailwind Css -->
     <link rel="stylesheet" href="./src/styles.css" />
 
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
     />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -19,240 +21,273 @@
     />
     <title>Actualizar tallas</title>
   </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid bg-blue-500">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-            />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
+  <body class="bg-fondo">
+    <%- include('../plantillas/navbar.ejs') %> <% if (user) { %>
 
-    <% if (user) { %>
-    <div class="container mt-4">
-      <div class="card border-secondary">
-        <div class="card-header">Editar Registro</div>
-        <div class="card-body">
+    <a
+      href="/ver_talla  "
+      class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    </a>
+
+    <div class="py-2">
+      <a
+        id="descargar-btn"
+        class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700"
+        href="/cliente/pdf/<%= user.id_cliente %>"
+        onclick="mostrarBotonWhatsApp(event)"
+      >
+        Descargar Factura
+      </a>
+      <a
+        id="whatsapp-btn"
+        class="ml-2 px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700 hidden"
+        href="https://api.whatsapp.com/send?phone=+57<%= cliente.numero_telefono %>&text=Hola%21%20<%= encodeURIComponent(cliente.nombre) %>%2C%20te%20dejo%20una%20copia%20de%20tu%20recibo.%20Gracias%20por%20preferir%20Zona%20De%20Poder%20Gym%20%F0%9F%92%AA"
+        target="_blank"
+      >
+        Enviar a WhatsApp
+      </a>
+    </div>
+
+    <script>
+      function mostrarBotonWhatsApp(event) {
+        // Evitar la navegación automática
+        event.preventDefault();
+
+        // Redirigir a la URL de descarga
+        window.location.href = event.target.href;
+
+        // Mostrar el botón de WhatsApp
+        document.getElementById("whatsapp-btn").classList.remove("hidden");
+      }
+    </script>
+
+    <div class="max-w-7xl mx-auto p-4 rounded-md">
+      <div class="bg-gray-200 border border-gray-300">
+        <div class="text-center p-4 bg-gray-400 font-semibold text-white">
+          Editar Registro
+        </div>
+        <div class="p-4">
           <form action="/update_tallas" method="post">
             <input type="hidden" id="id" name="id" value="<%= user.id %>" />
-            <div class="mb-3">
-              <label for="id" class="form-label">ID</label>
+
+            <div class="mb-4">
+              <label for="id" class="block text-sm font-medium text-gray-700"
+                >ID</label
+              >
               <input
                 type="number"
-                class="form-control"
                 id="id"
                 name="id"
                 value="<%= user.id %>"
-                tabindex="1"
                 readonly
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="id" class="form-label">IDENTIFICACION CLIENTE</label>
+
+            <div class="mb-4">
+              <label
+                for="id_cliente"
+                class="block text-sm font-medium text-gray-700"
+                >IDENTIFICACIÓN CLIENTE</label
+              >
               <input
                 type="number"
-                class="form-control"
                 id="id_cliente"
                 name="id_cliente"
                 value="<%= user.id_cliente %>"
-                tabindex="1"
                 readonly
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="id" class="form-label">NOMBRE</label>
+
+            <div class="mb-4">
+              <label
+                for="nombre"
+                class="block text-sm font-medium text-gray-700"
+                >NOMBRE</label
+              >
               <input
                 type="text"
-                class="form-control"
                 id="nombre"
                 name="nombre"
                 value="<%= user.nombre %>"
-                tabindex="1"
                 readonly
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
 
-            <div class="mb-3">
-              <label for="id" class="form-label">PESO</label>
+            <div class="mb-4">
+              <label for="peso" class="block text-sm font-medium text-gray-700"
+                >PESO</label
+              >
               <input
                 type="number"
-                class="form-control"
                 id="peso"
                 name="peso"
                 value="<%= user.peso %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
 
-            <div class="mb-3">
-              <label for="id" class="form-label">ALTURA</label>
+            <div class="mb-4">
+              <label
+                for="altura"
+                class="block text-sm font-medium text-gray-700"
+                >ALTURA</label
+              >
               <input
                 type="number"
-                class="form-control"
                 id="altura"
                 name="altura"
                 value="<%= user.altura %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
 
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label"
+            <div class="mb-4">
+              <label
+                for="medida_pecho"
+                class="block text-sm font-medium text-gray-700"
                 >MEDIDA DEL PECHO</label
               >
               <input
                 type="number"
-                class="form-control"
                 id="medida_pecho"
                 name="medida_pecho"
                 value="<%= user.medida_pecho %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label"
+
+            <div class="mb-4">
+              <label
+                for="medida_brazo"
+                class="block text-sm font-medium text-gray-700"
                 >MEDIDA DEL BRAZO</label
               >
               <input
                 type="number"
-                class="form-control"
                 id="medida_brazo"
                 name="medida_brazo"
                 value="<%= user.medida_brazo %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label"
+
+            <div class="mb-4">
+              <label
+                for="medida_cintura"
+                class="block text-sm font-medium text-gray-700"
                 >MEDIDA DE LA CINTURA</label
               >
               <input
                 type="number"
-                class="form-control"
                 id="medida_cintura"
                 name="medida_cintura"
                 value="<%= user.medida_cintura %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label"
+
+            <div class="mb-4">
+              <label
+                for="medida_abdomen"
+                class="block text-sm font-medium text-gray-700"
                 >MEDIDA DEL ABDOMEN</label
               >
               <input
                 type="number"
-                class="form-control"
                 id="medida_abdomen"
                 name="medida_abdomen"
                 value="<%= user.medida_abdomen %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label">MEDIDA CADERA</label>
+
+            <div class="mb-4">
+              <label
+                for="medida_cadera"
+                class="block text-sm font-medium text-gray-700"
+                >MEDIDA CADERA</label
+              >
               <input
                 type="number"
-                class="form-control"
                 id="medida_cadera"
                 name="medida_cadera"
                 value="<%= user.medida_cadera %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label"
+
+            <div class="mb-4">
+              <label
+                for="medida_pierna"
+                class="block text-sm font-medium text-gray-700"
                 >MEDIDA DE PIERNA</label
               >
               <input
                 type="number"
-                class="form-control"
                 id="medida_pierna"
                 name="medida_pierna"
                 value="<%= user.medida_pierna %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <div class="mb-3">
-              <label for="tipo_de_rol" class="form-label"
-                >MEDIDA DE PANTORRILLA</label
+
+            <div class="mb-4">
+              <label
+                for="medida_pierna"
+                class="block text-sm font-medium text-gray-700"
+                >MEDIDA DE PANTORRILlA</label
               >
               <input
                 type="number"
-                class="form-control"
                 id="medida_pantorrilla"
                 name="medida_pantorrilla"
                 value="<%= user.medida_pantorrilla %>"
-                tabindex="1"
                 required
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
               />
             </div>
-            <button type="submit" class="btn btn-primary" tabindex="5">
-              Guardar
-            </button>
-            <a href="/ver_talla" class="btn btn-secondary">Cancelar</a>
+
+            <div class="flex justify-between">
+              <button
+                type="submit"
+                class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              >
+                Guardar
+              </button>
+            </div>
           </form>
-          <!-- <form action="/crear_plan" method="post">
-            <input
-              type="hidden"
-              name="id"
-              value="<%= user.id_cliente %>"
-              id="id"
-            />
-            <button type="submit" class="btn btn-primary" tabindex="5">
-              Crear Plan
-            </button>
-          </form> -->
         </div>
       </div>
     </div>
+
     <% } %> <% if (typeof mensaje !== 'undefined') { %>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       Swal.fire({

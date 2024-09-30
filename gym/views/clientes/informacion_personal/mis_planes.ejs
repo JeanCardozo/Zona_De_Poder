@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS -->
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
@@ -33,54 +37,176 @@
   </head>
   <body class="bg-gray-100">
     <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
-    <div class="flex justify-right mt-4 p-5">
-      <a
-        href="#"
-        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        id="crearConvenioBtn"
-      >
-        <i class="bx bx-plus-circle"></i> Mis Planes
-      </a>
-      <a
-        href="/clientes/index_c"
-        class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Volver
-      </a>
-    </div>
+    <div class="flex bg-gray-100 min-h-screen py-8">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-800">Mis Planes</h1>
+          <div class="flex space-x-4">
+            <a
+              href="../../administrador/mensualidades/mensualidades"
+              class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out flex items-center"
+            >
+              <i class="bx bx-plus-circle mr-2"></i> Nuevo Plan
+            </a>
+            <a
+              href="/clientes/index_c"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+            >
+              Volver
+            </a>
+          </div>
+        </div>
 
-    <div class="bg-white max-w-7xl mx-auto p-4 text-center">
-      <% if (results.length > 0) { %> <% results.forEach(function(mensualidad) {
-      %>
-      <div class="bg-gray-200 shadow-md rounded-lg mb-3 p-3">
-        <h2 class="text-lg font-bold mb-1">
-          Mensualidad: <%= mensualidad.tipo_de_mensualidad %>
-        </h2>
-        <p class="p-2 mb-1">
-          <strong>Inicio:</strong> <%= new
-          Date(mensualidad.fecha_inicio).toLocaleDateString() %>
-        </p>
-        <p class="p-2 mb-1">
-          <strong>Fin:</strong> <%= new
-          Date(mensualidad.fecha_fin).toLocaleDateString() %>
-        </p>
-        <p class="p-2 mb-1">
-          <strong>Plan:</strong> <%= mensualidad.tiempo_plan %>
-        </p>
-        <p class="p-2 mb-1">
-          <strong>Total a Pagar:</strong> $<%= mensualidad.total_pagar %>
-        </p>
-        <p><strong>Estado:</strong> <%= mensualidad.estado %></p>
+        <div
+          class="justify-center bg-white rounded-lg shadow-md overflow-hidden"
+        >
+          <% if (results.length > 0) { %>
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Mensualidad
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Período
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Plan
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Total a Pagar
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Estado
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% results.forEach(function(mensualidad) { %>
+              <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                >
+                  <%= mensualidad.tipo_de_mensualidad %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= new Date(mensualidad.fecha_inicio).toLocaleDateString() %>
+                  - <%= new Date(mensualidad.fecha_fin).toLocaleDateString() %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= mensualidad.tiempo_plan %>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold"
+                >
+                  $<%= mensualidad.total_pagar %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= mensualidad.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>"
+                  >
+                    <%= mensualidad.estado %>
+                  </span>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+          <% } else { %>
+          <p class="text-center text-gray-600 py-8">
+            No se han encontrado mensualidades para este cliente.
+          </p>
+          <% } %>
+        </div>
       </div>
-      <% }); %> <% } else { %>
-      <p class="text-center text-gray-600 text-sm">
-        No se han encontrado mensualidades para este cliente.
-      </p>
-      <% } %>
     </div>
 
-    <footer class="bg-white h-max p-4 text-center">
-      <p>© 2024 Zona de poder</p>
+    <footer id="footer" class="bg-gray-800 text-white py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-3xl font-bold mb-4">
+              <a href="/logout">Zona de Poder<sup>&reg;</sup></a>
+            </h3>
+            <ul class="space-y-2">
+              <li>Teléfono: +57 123 456 7890</li>
+              <li>Dirección: Calle Principal #123, Ciudad</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-4">Enlaces útiles</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Política de privacidad</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Términos y condiciones</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Nuestros servicios</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Contacto</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
+            <ul class="space-y-4">
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

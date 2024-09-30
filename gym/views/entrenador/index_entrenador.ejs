@@ -131,7 +131,7 @@
     </style>
   </head>
   <body class="bg-fondo">
-    <%- include('./plantillas/navbar.ejs') %>
+    <%- include('./plantillas/navbarentre.ejs') %>
     <div
       id="overlay"
       class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"
@@ -139,16 +139,6 @@
 
     <div class="container mx-auto 1px-4 py-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
-        <!-- Fila 1 -->
-        <div class="bg-white p-4 rounded-lg shadow" id="mensajeErrorVentas">
-          <h2 class="text-lg font-bold mb-4 text-gray-700 text-center">
-            Resumen general de ventas
-          </h2>
-          <div class="h-64">
-            <canvas id="myChart"></canvas>
-          </div>
-        </div>
-
         <div class="bg-white p-4 rounded-lg shadow" id="mensajeErrorIngresos">
           <h2 class="text-lg font-bold mb-4 text-gray-700 text-center">
             Resumen de ingresos diarios
@@ -156,39 +146,6 @@
           <div class="h-64">
             <canvas id="myCharts"></canvas>
           </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-lg shadow">
-          <% if (ultimosClientes.length > 0) { %>
-          <h2 class="text-lg font-semibold mb-4 text-gray-800 text-center">
-            Movimientos de últimas compras
-          </h2>
-          <div class="overflow-x-auto">
-            <table class="min-w-full table-auto text-sm text-gray-500">
-              <thead class="bg-gray-200 text-gray-700">
-                <tr>
-                  <th class="py-2 px-3 text-left">Nombre</th>
-                  <th class="py-2 px-3">Plan Actual</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% ultimosClientes.forEach((roles) => { %>
-                <tr>
-                  <td class="py-4 px-3"><%= roles.nombre %></td>
-                  <td class="py-4 px-3 text-center">
-                    <%= roles.tiempo_plan %>
-                  </td>
-                </tr>
-                <% }); %>
-              </tbody>
-            </table>
-          </div>
-          <% } else { %>
-          <div class="py-10 text-center text-lg font-semibold text-gray-600">
-            <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
-            <div>No ha ingresado ningún cliente hoy</div>
-          </div>
-          <% } %>
         </div>
 
         <!-- Fila 2 -->
@@ -353,7 +310,7 @@
       <form
         id="formularioValidacion"
         class="relative bg-white p-8 rounded-lg shadow-lg max-w-sm w-full"
-        action="/registrarIngreso"
+        action="/registrarIngresoentre"
         method="POST"
       >
         <!-- Botón de escape -->
@@ -384,139 +341,60 @@
     </div>
 
     <script>
-      // Obtener elementos del DOM
-      const inputSearch = document.getElementById("inputSearch");
-      const tableBody = document.getElementById("tableBody");
+      document.addEventListener("DOMContentLoaded", function() {
+          // Obtener los datos del backend, asegurando que no sean undefined
+          const datosSumaPorMes = <%- typeof datosSumaPorMes !== 'undefined' ? JSON.stringify(datosSumaPorMes) : '[]' %>;
+          const dataIngresadosHoy = <%- typeof datosIngresosHoy !== 'undefined' ? JSON.stringify(datosIngresosHoy) : '0' %>;
 
-      // Función para filtrar la tabla
-      function filterTable() {
-        const filter = inputSearch.value.toUpperCase();
-        const rows = tableBody.getElementsByTagName("tr");
+          // Procesar los datos para el gráfico de ingresos
+          const labelsIngresos = ['Hoy']; // Label único para el día actual
+          const dataIngresos = dataIngresadosHoy; // Total de ingresos del día actual
+          const totalIngresosHoy = dataIngresos.length;
 
-        for (let i = 0; i < rows.length; i++) {
-          const cells = rows[i].getElementsByTagName("td");
-          let found = false;
-
-          for (let j = 0; j < cells.length; j++) {
-            if (cells[j].innerText.toUpperCase().indexOf(filter) > -1) {
-              found = true;
-              break;
-            }
+          if (dataIngresadosHoy == 0) {
+              document.getElementById("mensajeErrorIngresos").innerHTML = `
+                <tr>
+                  <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
+                    <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
+                    <div>Todavía no hay ingresos el día de hoy</div>
+                  </td>
+                </tr>`;
+          } else {
+              // Configuración del gráfico para Ingresos
+              const ctxIngresos = document.getElementById("myCharts").getContext("2d");
+              new Chart(ctxIngresos, {
+                  type: "doughnut",
+                  data: {
+                      labels: labelsIngresos,
+                      datasets: [
+                          {
+                              label: "Ingresos de Hoy",
+                              data: [totalIngresosHoy],
+                              backgroundColor: [
+                                  'rgb(255, 99, 132)',
+                                  'rgb(54, 162, 235)',
+                                  'rgb(255, 205, 86)'
+                              ],
+                              borderColor: 'rgba(255, 99, 132, 1)', // Color del borde
+                              borderWidth: 1,
+                          },
+                      ],
+                  },
+                  plugins: [plugin],
+              });
           }
+      });
 
-          rows[i].style.display = found ? "" : "none";
-        }
-      }
-
-      // Añadir evento al botón de búsqueda
-      document
-        .getElementById("searchButton")
-        .addEventListener("click", filterTable);
-
-      // Opcional: filtrar en tiempo real mientras se escribe
-      inputSearch.addEventListener("keyup", filterTable);
-    </script>
-
-    <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    // Obtener los datos del backend, asegurando que no sean undefined
-                    const datosVentas = <%- typeof datosVentas !== 'undefined' ? JSON.stringify(datosVentas) : '[]' %>;
-                    const datosSumaPorMes = <%- typeof datosSumaPorMes !== 'undefined' ? JSON.stringify(datosSumaPorMes) : '[]' %>;
-                    const dataIngresadosHoy = <%- typeof datosIngresosHoy !== 'undefined' ? JSON.stringify(datosIngresosHoy) : '0' %>;
-
-                    // Procesar los datos para el gráfico de ventas
-                    const labelsVentas = datosSumaPorMes.map(d => d.mes);
-                    const dataVentas = datosSumaPorMes.map(d => d.total);
-
-                    if (datosVentas == 0) {
-                        document.getElementById("mensajeErrorVentas").innerHTML = `<tr>
-                        <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
-
-                          <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
-                          <div>No hay ventas realizadas este mes</div>
-                        </td>
-                      </tr>`;
-                    } else {
-                    // Configuración del primer gráfico para Ventas
-                    const ctxVentas = document.getElementById("myChart").getContext("2d");
-                    new Chart(ctxVentas, {
-                        type: "bar",
-                        data: {
-                            labels: labelsVentas,
-                            datasets: [
-                                {
-                                    label: "Ventas",
-                                    data: dataVentas,
-                                    backgroundColor: [
-                'rgb(255, 99, 132)',
-                'rgb(54, 162, 235)',
-                'rgb(255, 205, 86)'
-              ],
-                                    borderColor: 'rgba(54, 162, 235, 1)', // Color del borde
-                                    borderWidth: 1,
-                                },
-                            ],
-                        },
-                        plugins: [plugin],
-                        options: {
-
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                  };
-
-                    // Procesar los datos para el gráfico de ingresos
-                    const labelsIngresos = ['Hoy']; // Label único para el día actual
-                    const dataIngresos = dataIngresadosHoy; // Total de ingresos del día actual
-                    const totalIngresosHoy = dataIngresos.length;
-                    if (dataIngresadosHoy == 0) {
-                        document.getElementById("mensajeErrorIngresos").innerHTML = `<tr>
-                        <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
-
-                          <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
-                          <div>Todavia no hay ingresos el dia de hoy</div>
-                        </td>
-                      </tr>`;
-                    } else {
-
-                    // Configuración del segundo gráfico para Ingresos
-                    const ctxIngresos = document.getElementById("myCharts").getContext("2d");
-                    new Chart(ctxIngresos, {
-                        type: "doughnut",
-                        data: {
-                            labels: labelsIngresos,
-                            datasets: [
-                                {
-                                    label: "Ingresos de Hoy",
-                                    data: [totalIngresosHoy],
-                                    backgroundColor: [
-              'rgb(255, 99, 132)',
-              'rgb(54, 162, 235)',
-              'rgb(255, 205, 86)'
-            ],
-                                    borderColor: 'rgba(255, 99, 132, 1)', // Color del borde
-                                    borderWidth: 1,
-                                },
-                            ],
-                        },
-                        plugins: [plugin],
-                    });
-                }});
-
-                const plugin = {
-        id: 'customCanvasBackgroundColor',
-        beforeDraw: (chart, args, options) => {
-          const {ctx} = chart;
-          ctx.save();
-          ctx.globalCompositeOperation = 'destination-over';
-          ctx.fillStyle = options.color || '#fff';
-          ctx.fillRect(0, 0, chart.width, chart.height);
-          ctx.restore();
-        }
+      const plugin = {
+          id: 'customCanvasBackgroundColor',
+          beforeDraw: (chart, args, options) => {
+              const {ctx} = chart;
+              ctx.save();
+              ctx.globalCompositeOperation = 'destination-over';
+              ctx.fillStyle = options.color || '#fff';
+              ctx.fillRect(0, 0, chart.width, chart.height);
+              ctx.restore();
+          }
       };
     </script>
 
@@ -608,21 +486,21 @@
                 Swal.fire({
                   title: "Agregar un evento",
                   html: `
-                                      <form id="crearEventoform" action="/crear_evento" method="post" class="space-y-4">
-                                          <div class="mb-4">
-                                              <label for="evento" class="block text-xl font-medium text-gray-700">Evento</label>
-                                              <input type="text" name="evento" id="evento" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-                                                  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-                                                  dark:placeholder-gray-400 dark:text-white" required />
+                                <form id="crearEventoform" action="/crear_evento" method="post" class="space-y-4">
+                                    <div class="mb-4">
+                                        <label for="evento" class="block text-xl font-medium text-gray-700">Evento</label>
+                                        <input type="text" name="evento" id="evento" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                                            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
+                                            dark:placeholder-gray-400 dark:text-white" required />
 
-                                              <label for="fecha" class="block text-xl font-medium text-gray-700">Fecha</label>
-      <input type="datetime-local" id="fecha" name="fecha" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-            dark:placeholder-gray-400 dark:text-white" required />
+                                        <label for="fecha" class="block text-xl font-medium text-gray-700">Fecha</label>
+<input type="datetime-local" id="fecha" name="fecha" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+      focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
+      dark:placeholder-gray-400 dark:text-white" required />
 
-                                          </div>
-                                      </form>
-                                  `,
+                                    </div>
+                                </form>
+                            `,
                   showCancelButton: true,
                   confirmButtonClass: "btn-confirmar",
                   cancelButtonClass: "btn-cancelar",
@@ -638,11 +516,9 @@
                   },
                 });
               },
-
               classNames: ["btn-agregar"], // Clases para los estilos
             },
           },
-          editable: true,
           locale: "es",
           events: function (fetchInfo, successCallback, failureCallback) {
             fetch("/events")
@@ -661,13 +537,12 @@
           var tooltip = document.createElement("div");
           tooltip.className = "event-tooltip";
           tooltip.innerHTML = `
-                      <strong>${info.event.title}</strong><br>
-                      Fecha: ${info.event.start.toLocaleString()}<br>
-                      Descripción: ${
-                        info.event.extendedProps.description ||
-                        "Sin descripción"
-                      }
-                  `;
+                <strong>${info.event.title}</strong><br>
+                Fecha: ${info.event.start.toLocaleString()}<br>
+                Descripción: ${
+                  info.event.extendedProps.description || "Sin descripción"
+                }
+            `;
           document.body.appendChild(tooltip);
 
           // Posicionar el tooltip

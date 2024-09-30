@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
     <!-- Tailwind CSS -->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
@@ -41,8 +45,9 @@
           >
             <thead class="text-xs bg-gray-500 text-white">
               <tr>
-                <% const headers = ["ID", "NOMBRE", "CORREO", "ROL", "ESTADO",
-                "ACCIONES"]; %> <% headers.forEach(header => { %>
+                <% const headers = ["ID", "NOMBRE", "APELLIDO", "TELÉFONO",
+                "CORREO", "CONTRASEÑA", "ROL", "ESTADO", "ACCIONES"]; %> <%
+                headers.forEach(header => { %>
                 <th scope="col" class="px-4 py-6 text-center"><%= header %></th>
                 <% }); %>
               </tr>
@@ -56,17 +61,23 @@
       </div>
     </div>
 
+    <script>
+      // Inyecta la variable loggedUserId en el script del frontend
+      const loggedUserId = "<%= loggedUserId %>";
+      console.log(loggedUserId);
+    </script>
+
     <script defer>
       const divPagination = document.getElementById("pagination");
+      const searchInput = document.getElementById("searchInput");
       let datos = [];
-      let tableRows = [];
+      let filteredData = [];
       const itemsPorPagina = 5;
+      let currentPage = 1;
 
       async function getData() {
         try {
-          const response = await fetch("/verUsuarios", {
-            method: "POST",
-          });
+          const response = await fetch("/verUsuarioss", { method: "POST" });
 
           if (!response.ok) {
             throw new Error(
@@ -83,126 +94,147 @@
 
       async function inicializar() {
         datos = await getData();
+        filteredData = datos;
+        actualizarTablaYPaginacion();
+      }
 
-        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+      function actualizarTablaYPaginacion() {
+        const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
         generatePagination(totalPages);
-        mostrarPagina(1);
+        mostrarPagina(currentPage);
       }
 
       function generatePagination(totalPages) {
-        divPagination.innerHTML = Array.from(
-          { length: totalPages },
-          (_, i) =>
-            `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${
-              i + 1
-            }">${i + 1}</button>`
-        ).join("");
+        let startPage = Math.max(currentPage - 1, 1);
+        let endPage = Math.min(startPage + 2, totalPages);
 
-        divPagination.addEventListener("click", (e) => {
-          if (e.target.tagName === "BUTTON") {
-            mostrarPagina(parseInt(e.target.dataset.page));
-          }
+        if (endPage - startPage < 2) {
+          startPage = Math.max(endPage - 2, 1);
+        }
+
+        let paginationHTML = "";
+
+        paginationHTML += `
+      <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-l hover:bg-gray-100" 
+      ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">
+        Anterior
+      </button>
+    `;
+
+        for (let i = startPage; i <= endPage; i++) {
+          paginationHTML += `
+        <button class="mt-4 px-4 py-2 font-bold ${
+          i === currentPage
+            ? "text-blue-500 bg-blue-100"
+            : "text-gray-700 bg-white"
+        } hover:bg-gray-100 ${
+            i === currentPage ? "active" : ""
+          }" data-page="${i}">${i}</button>
+      `;
+        }
+
+        paginationHTML += `
+      <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-r hover:bg-gray-100" 
+      ${currentPage === totalPages ? "disabled" : ""} data-page="${
+          currentPage + 1
+        }">
+        Siguiente
+      </button>
+    `;
+
+        divPagination.innerHTML = paginationHTML;
+
+        divPagination.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", (e) => {
+            if (!e.target.disabled) {
+              currentPage = parseInt(e.target.dataset.page);
+              actualizarTablaYPaginacion();
+            }
+          });
         });
       }
 
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
         const fin = inicio + itemsPorPagina;
-        const datosParaMostrar = datos.slice(inicio, fin);
+        const datosParaMostrar = filteredData.slice(inicio, fin);
 
         const tbody = document.querySelector("tbody");
         tbody.innerHTML = datosParaMostrar
-          .map(
-            (dato, index) => `
-        <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
-          index % 2 === 0 ? "bg-gray-100" : ""
-        }">
-          <td class="p-2">${dato.id}</td>
-          <td class="p-2">${dato.nombre}</td>
-          <td class="p-2">${dato.correo}</td>
-          <td class="p-2">${dato.rol}</td>
-          <td class="p-2">${dato.estado}</td>
-          <td class="py-4 text-center flex items-center justify-around gap-2">
-            <a href="/actualizar_usuarios/${
-              dato.id
-            }" class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
-            <button data-user-id="${
-              dato.id
-            }" class="px-2 py-1 bg-red-500 text-white rounded-md eliminar-usuario hover:bg-red-700">Eliminar</button>
-          </td>
-        </tr>
-      `
-          )
+          .map((dato, index) => {
+            const isCurrentUser = dato.id_usuarios == loggedUserId;
+            const desactivarButton = isCurrentUser
+              ? `<button type="button" class="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-700 cursor-not-allowed" data-self="true">Desactivar</button>`
+              : `<button type="submit" class="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-700">Desactivar</button>`;
+            return `
+  <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+    index % 2 == 0 ? "bg-gray-100" : ""
+  }">
+    <td class="p-2">${dato.id_usuarios}</td>
+    <td class="p-2">${dato.nombre}</td>
+    <td class="p-2">${dato.apellido}</td>
+    <td class="p-2">${dato.telefono}</td>
+    <td class="p-2">${dato.correo_electronico}</td>
+    <td class="p-2">xxxx</td>
+    <td class="p-2">${dato.rol}</td>
+    <td class="px-4 py-2 text-center ${
+      dato.estado === "Inactivo" ? "text-red-500" : "text-green-500"
+    }">
+      ${dato.estado}
+    </td>
+    <td class="py-4 text-center flex items-center justify-around gap-2">
+      <a href="/actualizar_usuarios/${
+        dato.id_usuarios
+      }" class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
+      ${
+        dato.estado === "Inactivo"
+          ? `
+          <form action="/activarusuario" method="post" class="inline-flex items-center justify-center">
+            <input type="hidden" name="id" value="${dato.id_usuarios}" />
+            <button type="submit" class="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700">Activar</button>
+          </form>`
+          : `
+          <form action="/desactivarusuario" method="post" class="inline-flex items-center justify-center">
+            <input type="hidden"  name="id" value="${dato.id_usuarios}" />
+            ${desactivarButton}
+          </form>`
+      }
+    </td>
+  </tr>`;
+          })
           .join("");
-
-        tableRows = Array.from(tbody.querySelectorAll("tr"));
+        document
+          .querySelectorAll("button[data-self='true']")
+          .forEach((button) => {
+            button.addEventListener("click", function (event) {
+              event.preventDefault();
+              Swal.fire({
+                title: "Acción no permitida",
+                text: "No puedes desactivarte a ti mismo",
+                icon: "warning",
+                confirmButtonText: "Entendido",
+              });
+            });
+          });
       }
 
+      function filtrarResultados() {
+        const input = searchInput.value.toLowerCase();
+        filteredData = datos.filter(
+          (dato) =>
+            dato.id_usuarios.toString().includes(input) ||
+            dato.nombre.toLowerCase().includes(input) ||
+            dato.apellido.toLowerCase().includes(input) ||
+            dato.correo_electronico.toLowerCase().includes(input) ||
+            dato.telefono.includes(input)
+        );
+        currentPage = 1;
+        actualizarTablaYPaginacion();
+      }
+
+      searchInput.addEventListener("input", filtrarResultados);
+
       inicializar();
-    </script>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.getElementById("searchInput");
-
-        searchInput.addEventListener("keyup", function () {
-          const query = searchInput.value.toLowerCase();
-
-          tableRows.forEach((row) => {
-            const cells = Array.from(row.cells);
-            const matchesQuery = cells.some((cell) =>
-              cell.textContent.toLowerCase().includes(query)
-            );
-            row.style.display = matchesQuery ? "" : "none";
-          });
-        });
-      });
-    </script>
-
-    <script>
-      document.body.addEventListener("click", function (event) {
-        if (event.target.classList.contains("eliminar-usuario")) {
-          const userId = event.target.dataset.userId;
-
-          Swal.fire({
-            title: "¿Estás seguro?",
-            text: "Esta acción no se puede deshacer.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Eliminar",
-            cancelButtonText: "Cancelar",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              fetch(`/eliminar_usuario/${userId}`, {
-                method: "DELETE",
-              })
-                .then((response) => {
-                  if (response.ok) {
-                    Swal.fire(
-                      "Eliminado",
-                      "El usuario ha sido eliminado correctamente.",
-                      "success"
-                    );
-                    inicializar();
-                  } else {
-                    Swal.fire(
-                      "Error",
-                      "Hubo un problema al eliminar el usuario.",
-                      "error"
-                    );
-                  }
-                })
-                .catch((error) => {
-                  Swal.fire(
-                    "Error",
-                    "Hubo un error al procesar la solicitud.",
-                    "error"
-                  );
-                });
-            }
-          });
-        }
-      });
     </script>
   </body>
 </html>

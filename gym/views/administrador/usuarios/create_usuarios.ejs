@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
@@ -44,7 +48,7 @@
           Crear nuevo Usuario
         </div>
         <div class="p-4">
-          <form action="/crearusu" method="post">
+          <form action="/crearusu" method="post" enctype="multipart/form-data">
             <div class="mb-4">
               <label for="id" class="py-2 capitalize block text-sm font-medium text-gray-700"
                 >ID</label
@@ -146,6 +150,11 @@
                 <option value="<%= rol.id %>"><%= rol.tipo_de_rol %></option>
                 <% }) %>
               </select>
+            </div>
+
+            <div class="mb-4">
+              <label for="imagen_perfil" class="py-2 capitalize block text-sm font-medium text-gray-700">Imagen de perfil</label>
+              <input type="file" id="imagen_perfil" name="imagen_perfil" accept="image/*" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
             </div>
 
             <div class="flex space-x-4">

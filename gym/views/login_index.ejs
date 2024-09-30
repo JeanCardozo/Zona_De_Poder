@@ -6,18 +6,79 @@
     <title>Iniciar Sesion</title>
     <!-- Asegúrate de incluir Tailwind CSS aquí -->
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
     />
+
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 flex justify-center items-center h-screen">
+  <body
+    class="bg-gray-100 flex flex-col justify-center items-center min-h-screen p-4"
+  >
+    <div class="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6 sm:p-8">
+        <img
+          src="https://raw.githubusercontent.com/JeanCardozo/audios/main/logo.png"
+          alt="Logo de la empresa"
+          class="h-12 mx-auto mb-6"
+        />
+        <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">
+          Iniciar sesión
+        </h2>
+        <form action="/login" method="post" class="space-y-4">
+          <div>
+            <input
+              type="number"
+              id="user"
+              name="user"
+              placeholder="Identificación"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              id="pass"
+              name="pass"
+              placeholder="Contraseña"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200"
+          >
+            Iniciar sesión
+          </button>
+        </form>
+        <div class="mt-4 text-center">
+          <a href="registrar" class="text-sm text-blue-600 hover:underline"
+            >¿No tienes una cuenta? Regístrate</a
+          >
+        </div>
+      </div>
+    </div>
     <a
-      href="/index_p"
-      class="inline-flex items-center justify-center py-4 px-6 text-blue-600 font-semibold rounded-lg shadow-sm transition-colors duration-200"
+      href="/"
+      class="mt-4 text-gray-600 hover:text-gray-800 transition duration-200"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6"
+        class="h-6 w-6 inline-block mr-1"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -26,56 +87,21 @@
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M15 19l-7-7 7-7"
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
         />
       </svg>
+      Volver al inicio
     </a>
-    <div
-      class="login-form bg-white p-5 rounded-lg shadow-lg text-center w-80 backdrop-filter backdrop-blur-lg bg-opacity-40"
-    >
-      <h1 class="mb-6 text-2xl text-gray-800">Bienvenidos a Zona de Poder</h1>
-      <form action="/login" method="post" class="space-y-4">
-        <input
-          type="number"
-          id="user"
-          name="user"
-          placeholder="INGRESE SU IDENTIFICACION"
-          autofocus
-          required
-          class="w-full p-2 mb-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:border-gray-400"
-        />
-        <input
-          type="password"
-          id="pass"
-          name="pass"
-          placeholder="INGRESE SU CONTRASEÑA"
-          required
-          class="w-full p-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:border-gray-400"
-        />
-        <input
-          type="submit"
-          class="btn-login w-full p-2 border-none rounded-lg bg-gray-800 text-white cursor-pointer hover:bg-gray-500"
-          value="Iniciar"
-        />
-      </form>
-      <a
-        href="registrar"
-        class="btn-register block mt-3 text-gray-600 hover:underline"
-        >Registrarse</a
-      >
-    </div>
-    <!-- SweetAlert2 Script -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-
-    <!-- Script para mostrar la alerta si hay una -->
     <% if (typeof alert !== "undefined") { %>
+
     <script>
       Swal.fire({
         title: "<%= alertTitle %>",
         text: "<%= alertMessage %>",
         icon: "<%= alertIcon %>",
-        showConfirmButton: "<%= showConfirmButton %>",
-        timer: "<%= timer %>",
+        showConfirmButton: <%= showConfirmButton %>,
+        timer: <%= timer %>
       }).then(() => {
         if ("<%= ruta %>") {
           window.location.href = "<%= ruta %>";

@@ -13,18 +13,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin4
-    restart: always
-    ports:
-      - 8080:80
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=123456
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-
   app:
     build: .
     container_name: zona_de_poder_app
@@ -42,8 +30,7 @@ services:
     volumes:
       - ./gym:/app
       - /app/node_modules
-    command: npx nodemon app.js
+    command: node app.js
 
 volumes:
   db_data:
-  pgadmin_data:

@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS -->
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
@@ -13,8 +17,35 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
+    <title>Ver Ventas</title>
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
 
-    <title>Ver ventas</title>
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('a[id^="pdf-"]').forEach((link) => {
+          link.addEventListener("click", function (event) {
+            event.preventDefault(); // Previene la acción por defecto
+            window.open(this.href, "_blank", "noopener,noreferrer"); // Abre en nueva pestaña
+          });
+        });
+      });
+    </script>
   </head>
   <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
@@ -25,168 +56,204 @@
           href="/index_admin"
           class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
         >
-          Volver</a
-        >
-    </div>
+          Volver
+        </a>
+      </div>
+
+      <!-- Botón para abrir el modal de rutina diaria -->
+      <div class="max-w-7xl mx-auto p-4">
+        <div class="flex justify-end mr-4">
+          <a
+            href="/ventasDiarias"
+            class="btn inline-flex items-center border-green-400 bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700"
+            id="rutinaDiariaBtn"
+          >
+            <i class="bx bx-plus-circle mr-2 br-md"></i>Rutina Diaria
+          </a>
+        </div>
 
       <div class="max-w-7xl mx-auto p-4">
         <div class="overflow-x-auto">
-            <table class="min-w-full table-auto text-xs
-             sm:text-sm lg:text-base text-left text-gray-500
-              dark:text-gray-400">        
+          <table
+            class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
+          >
             <thead class="text-center bg-gray-500 text-white">
-          <tr>
-            <th class="px-2 py-1">ID</th>
-            <th class="px-2 py-1">IDENTIFICACION CLIENTE</th>
-            <th class="px-2 py-1">NOMBRE</th>
-            <th class="px-2 py-1">FECHA INICIO</th>
-            <th class="px-2 py-1">FECHA FIN</th>
-            <th class="px-2 py-1">TOTAL A PAGAR</th>
-            <th class="px-2 py-1">TIPO MENSUALIDAD</th>
-            <th class="px-2 py-1">TIEMPLO PLAN</th>
-            <th class="px-2 py-1">ESTADO</th>
-            <th class="px-2 py-1">ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200 text-center">
-         
-        </tbody>
-      </table>
-      
-    </div>
-    <div id="pagination" class="w-full flex justify-center"></div>
-    <script defer>
-      const divPagination = document.getElementById('pagination');
-      let datos = [];
-      const itemsPorPagina = 5;
-    
-      async function getData() {
-        try {
-          const response = await fetch('/verVentass', {
-            method: 'POST',
-          });
-    
-          if (!response.ok) {
-            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
-          }
-    
-          return await response.json();
-        } catch (error) {
-          console.error('Error al obtener datos:', error);
-          return [];
-        }
-      }
-    
-      async function inicializar() {
-        datos = await getData();
-        console.log(datos);
-    
-        const totalPages = Math.ceil(datos.length / itemsPorPagina);
-        generatePagination(totalPages);
-        mostrarPagina(1);
-      }
-    
-      function generatePagination(totalPages) {
-        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
-          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>
-    `
-        ).join('');
-    
-        divPagination.addEventListener('click', (e) => {
-          if (e.target.tagName === 'BUTTON') {
-            mostrarPagina(parseInt(e.target.dataset.page));
-          }
-        });
-      }
-    
-      function mostrarPagina(numeroPagina) {
-        const inicio = (numeroPagina - 1) * itemsPorPagina;
-        const fin = inicio + itemsPorPagina;
-        const datosParaMostrar = datos.slice(inicio, fin);
-    
-        const tbody = document.querySelector('tbody');
-        tbody.innerHTML = datosParaMostrar.map((dato, index) => `
-          <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
-            <td class="p-6">${dato.id_mensu_cliente}</td>
-            <td class="p-6">${dato.id_cliente}</td>
-            <td class="p-6">${dato.nombre}</td>
-            <td class="p-6">${new Date(dato.fecha_inicio).toLocaleDateString()}</td>
-            <td class="p-6">${new Date(dato.fecha_fin).toLocaleDateString()}</td>
-            <td class="p-6">${dato.total_pagar}</td>
-            <td class="p-6">${dato.tipo_de_mensualidad}</td>
-            <td class="p-6">${dato.tiempo_plan}</td>
-            <td class="p-6">${dato.estado}</td>
-            <td class="p-6">
-              <a
-                id="estadoBtn-${dato.id_cliente}"
-                class="block w-full px-2 py-1 text-xs font-medium rounded-full text-center truncate hover:text-clip"
-                onclick="verificar('${dato.id_cliente}')"
-              >
-                Full
-              </a>
+              <tr>
+                <th class="px-2 py-1">ID</th>
+                <th class="px-2 py-1">IDENTIFICACION CLIENTE</th>
+                <th class="px-2 py-1">NOMBRE</th>
+                <th class="px-2 py-1">FECHA INICIO</th>
+                <th class="px-2 py-1">FECHA FIN</th>
+                <th class="px-2 py-1">TOTAL A PAGAR</th>
+                <th class="px-2 py-1">TIPO MENSUALIDAD</th>
+                <th class="px-2 py-1">TIEMPO PLAN</th>
+                <th class="px-2 py-1">ESTADO</th>
+                <th class="px-2 py-1">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody
+              class="bg-white divide-y divide-gray-200 text-center"
+            ></tbody>
+          </table>
+        </div>
+        <div id="pagination" class="w-full flex justify-center"></div>
 
-            </td>
-          </tr>
-        `).join('');
-    
-        datosParaMostrar.forEach(dato => {
-          const btn = document.getElementById(`estadoBtn-${dato.id_cliente}`);
-          if (dato.estado === "Espera") {
-            btn.classList.remove("bg-green-500");
-            btn.classList.add("bg-yellow-500");
-            btn.textContent = "Renovar";
-          } else {
-            btn.classList.add("bg-green-500");
-          }
-        });
-      }
-    
-      inicializar();
-    </script>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <script>
-      function verificar(id) {
-        const swalWithBootstrapButtons = Swal.mixin({
-          customClass: {
-            confirmButton: "btn bg-green-500 text-white rounded-md px-4 py-2",
-            cancelButton: "btn bg-red-500 text-white rounded-md px-4 py-2",
-          },
-          buttonsStyling: false,
-        });
+        <script defer>
+          const divPagination = document.getElementById("pagination");
+          const searchInput = document.getElementById("searchInput");
+          let datos = [];
+          let filteredData = [];
+          const itemsPorPagina = 5;
+          let currentPage = 1;
 
-        swalWithBootstrapButtons
-          .fire({
-            title: "¿Estás seguro?",
-            text: "¡No podrás revertir esto!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "¡Sí, elimínalo!",
-            cancelButtonText: "¡No, cancela!",
-            reverseButtons: true,
-          })
-          .then((result) => {
-            if (result.isConfirmed) {
-              window.location.href = `/eliminar/${id}`;
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-              swalWithBootstrapButtons.fire({
-                title: "Cancelado",
-                text: "Tus datos están a salvo :)",
-                icon: "error",
+          async function getData() {
+            try {
+              const response = await fetch("/verVentass", {
+                method: "POST",
               });
+
+              if (!response.ok) {
+                throw new Error(
+                  "La solicitud no fue exitosa: " + response.statusText
+                );
+              }
+
+              return await response.json();
+            } catch (error) {
+              console.error("Error al obtener datos:", error);
+              return [];
             }
-          });
-      }
-    </script>
+          }
+
+          async function inicializar() {
+            datos = await getData();
+            filteredData = datos;
+            actualizarPaginacion();
+          }
+
+          function actualizarPaginacion() {
+            const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
+            generatePagination(totalPages);
+            mostrarPagina(currentPage);
+          }
+
+          function generatePagination(totalPages) {
+            let startPage = Math.max(currentPage - 1, 1);
+            let endPage = Math.min(startPage + 2, totalPages);
+
+            if (endPage - startPage < 2) {
+              startPage = Math.max(endPage - 2, 1);
+            }
+
+            let paginationHTML = "";
+
+            // Botón "Anterior"
+            paginationHTML += `
+              <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-l hover:bg-gray-100" 
+              ${currentPage === 1 ? "disabled" : ""} data-page="${
+              currentPage - 1
+            }">
+                Anterior
+              </button>
+            `;
+
+            // Páginas visibles (solo 3)
+            for (let i = startPage; i <= endPage; i++) {
+              paginationHTML += `
+                <button class="mt-4 px-4 py-2 font-bold ${
+                  i === currentPage
+                    ? "text-blue-500 bg-blue-100"
+                    : "text-gray-700 bg-white"
+                } hover:bg-gray-100 ${
+                i === currentPage ? "active" : ""
+              }" data-page="${i}">${i}</button>
+              `;
+            }
+
+            // Botón "Siguiente"
+            paginationHTML += `
+              <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-r hover:bg-gray-100" 
+              ${currentPage === totalPages ? "disabled" : ""} data-page="${
+              currentPage + 1
+            }">
+                Siguiente
+              </button>
+            `;
+
+            divPagination.innerHTML = paginationHTML;
+
+            divPagination.querySelectorAll("button").forEach((button) => {
+              button.addEventListener("click", (e) => {
+                if (!e.target.disabled) {
+                  currentPage = parseInt(e.target.dataset.page);
+                  actualizarPaginacion();
+                }
+              });
+            });
+          }
+
+          function mostrarPagina(numeroPagina) {
+            const inicio = (numeroPagina - 1) * itemsPorPagina;
+            const fin = inicio + itemsPorPagina;
+            const datosParaMostrar = filteredData.slice(inicio, fin);
+
+            const tbody = document.querySelector("tbody");
+            tbody.innerHTML = datosParaMostrar
+              .map(
+                (dato, index) => `
+                <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+                  index % 2 === 0 ? "bg-gray-100" : ""
+                }">
+                  <td class="p-6">${dato.id_mensu_cliente}</td>
+                  <td class="p-6">${dato.id_cliente}</td>
+                  <td class="p-6">${dato.nombre}</td>
+                  <td class="p-6">${new Date(
+                    dato.fecha_inicio
+                  ).toLocaleDateString()}</td>
+                  <td class="p-6">${new Date(
+                    dato.fecha_fin
+                  ).toLocaleDateString()}</td>
+                  <td class="p-6">${dato.total_pagar}</td>
+                  <td class="p-6">${dato.tipo_de_mensualidad}</td>
+                  <td class="p-6">${dato.tiempo_plan}</td>
+                  <td class="p-6">${dato.estado}</td>
+                  <td class="p-6">
+                    <a
+                      id="pdf-${dato.id_cliente}"
+                      href="/clientes/pdf/${dato.id_cliente}"
+                      class="block w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 transition-colors duration-300 text-center truncate"
+                      target: "_blank"
+                    >
+                      Ver PDF
+                    </a>
+                  </td>
+                </tr>`
+              )
+              .join("");
+          }
+
+          function filtrarResultados() {
+            const input = searchInput.value.toLowerCase();
+            filteredData = datos.filter(
+              (dato) =>
+                dato.id_mensu_cliente.toString().includes(input) ||
+                dato.id_cliente.toString().includes(input) ||
+                dato.nombre.toLowerCase().includes(input) ||
+                new Date(dato.fecha_inicio)
+                  .toLocaleDateString()
+                  .includes(input) ||
+                new Date(dato.fecha_fin).toLocaleDateString().includes(input) ||
+                dato.tipo_de_mensualidad.toLowerCase().includes(input)
+            );
+            currentPage = 1;
+            actualizarPaginacion();
+          }
+
+          searchInput.addEventListener("input", filtrarResultados);
+
+          inicializar();
+        </script>
+      </div>
+    </div>
   </body>
 </html>

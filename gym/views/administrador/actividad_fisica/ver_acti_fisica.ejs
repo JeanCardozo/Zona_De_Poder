@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS -->
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
@@ -13,7 +17,7 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Ver Actividad Fisica</title>
 
     <style>
@@ -32,7 +36,7 @@
       .btn-cancelar:hover {
         background-color: #c53222c4; 
       }
-      </style>
+    </style>
   </head>
   <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %>
@@ -53,6 +57,7 @@
           Volver
         </a>
 
+        
 
         <div class="max-w-7xl mx-auto p-4">
           <div class="overflow-x-auto">
@@ -98,8 +103,11 @@
 
     <script defer>
       const divPagination = document.getElementById('pagination');
+      const searchInput = document.getElementById('searchInput');
       let datos = [];
+      let filteredData = [];
       const itemsPorPagina = 5;
+      let currentPage = 1;
     
       async function getData() {
         try {
@@ -120,29 +128,66 @@
     
       async function inicializar() {
         datos = await getData();
-        console.log(datos);
+        filteredData = datos;
+        actualizarPaginacion();
+      }
     
-        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+      function actualizarPaginacion() {
+        const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
         generatePagination(totalPages);
-        mostrarPagina(1);
+        mostrarPagina(currentPage);
       }
     
       function generatePagination(totalPages) {
-        divPagination.innerHTML = Array.from({ length: totalPages }, (_, i) => 
-          `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${i + 1}">${i + 1}</button>`
-        ).join('');
+        let startPage = Math.max(currentPage - 1, 1);
+        let endPage = Math.min(startPage + 2, totalPages);
     
-        divPagination.addEventListener('click', (e) => {
-          if (e.target.tagName === 'BUTTON') {
-            mostrarPagina(parseInt(e.target.dataset.page));
-          }
+        if (endPage - startPage < 2) {
+          startPage = Math.max(endPage - 2, 1);
+        }
+    
+        let paginationHTML = "";
+    
+        paginationHTML += `
+          <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-l hover:bg-gray-100" 
+          ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">
+            Anterior
+          </button>
+        `;
+    
+        for (let i = startPage; i <= endPage; i++) {
+          paginationHTML += `
+            <button class="mt-4 px-4 py-2 font-bold ${
+              i === currentPage ? "text-blue-500 bg-blue-100" : "text-gray-700 bg-white"
+            } hover:bg-gray-100 ${
+            i === currentPage ? "active" : ""
+          }" data-page="${i}">${i}</button>
+          `;
+        }
+    
+        paginationHTML += `
+          <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-r hover:bg-gray-100" 
+          ${currentPage === totalPages ? "disabled" : ""} data-page="${currentPage + 1}">
+            Siguiente
+          </button>
+        `;
+    
+        divPagination.innerHTML = paginationHTML;
+    
+        divPagination.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", (e) => {
+            if (!e.target.disabled) {
+              currentPage = parseInt(e.target.dataset.page);
+              actualizarPaginacion();
+            }
+          });
         });
       }
     
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
         const fin = inicio + itemsPorPagina;
-        const datosParaMostrar = datos.slice(inicio, fin);
+        const datosParaMostrar = filteredData.slice(inicio, fin);
     
         const tbody = document.querySelector('tbody');
         tbody.innerHTML = datosParaMostrar.map((dato, index) => `
@@ -157,18 +202,27 @@
             </td>
           </tr>
         `).join('');
-    
-        document.querySelectorAll(".updateActividadBtn").forEach(button => {
-          button.addEventListener("click", function(e) {
-          });
-        }); // vea gei, con esto llama bien al boton de actualizar / editar
       }
+    
+      function filtrarResultados() {
+        const input = searchInput.value.toLowerCase();
+        filteredData = datos.filter(
+          (dato) =>
+            dato.af_id.toString().toLowerCase().includes(input) ||
+            dato.af_nombre.toLowerCase().includes(input) ||
+            dato.gm_nombre.toLowerCase().includes(input)
+        );
+        currentPage = 1;
+        actualizarPaginacion();
+      }
+    
+      searchInput.addEventListener("input", filtrarResultados);
     
       inicializar();
     </script>
     
+    
 <!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
       // Obtener elementos del DOM
@@ -237,7 +291,7 @@ document
               <label for="nombre_ejercicio" class="block text-sm font-medium text-gray-700">Nombre del ejercicio</label>
               <input type="text" class="mt-1 block w-full rounded-md
                border border-gray-300 shadow-sm focus:border-indigo-300
-                focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="nombre_ejercicio" required>
+                focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="nombre_ejercicio" id="nombre_ejercicio"required>
             </div>
         </form>
           `,
@@ -251,12 +305,35 @@ document
           confirmButtonText: "Guardar",
           cancelButtonText: "Cancelar",
           preConfirm: () => {
-            document.getElementById("ActividadForm").submit();
+        
+            const seccionInput = document.getElementById("seccion");
+            const ejercicioInput = document.getElementById("nombre_ejercicio");
+            
+              if (!seccionInput.value) {
+                Swal.showValidationMessage(
+                  "Por favor, ingrese el grupo muscular"
+                );
+                return false;
+              } else {
+                if (!ejercicioInput.value) {
+                  Swal.showValidationMessage(
+                    "Por favor, ingrese el nombre del ejercicio"
+                  );
+                  return false;
+                } else {
+                  document.getElementById("ActividadForm").requestSubmit();
+                  const form =
+                    Swal.getPopup().querySelector("#ActividadForm");
+                  form.requestSubmit();
+                
+              }
+            }
           },
-        });
-      })
-      .catch(error => console.error('Error al cargar los grupos musculares:', error));
-  });
+        }).catch((error) =>
+          console.error("Error al obtener los convenios:", error)
+        );
+      });
+    });
   </script>
   <script>
     document.querySelector("tbody").addEventListener("click", function (e) {
@@ -308,52 +385,122 @@ document
             confirmButtonText: "Guardar",
             cancelButtonText: "Cancelar",
             preConfirm: () => {
-              document.getElementById("updateActividadForm").submit();
-            },
-          });
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        Swal.fire("Error", "Ocurrió un error al obtener los datos del grupo muscular", "error");
-      });
+        
+        const seccionInput = document.getElementById("gm");
+        const ejercicioInput = document.getElementById("actividad");
+        
+          if (!seccionInput.value) {
+            Swal.showValidationMessage(
+              "Por favor, ingrese el grupo muscular"
+            );
+            return false;
+          } else {
+            if (!ejercicioInput.value) {
+              Swal.showValidationMessage(
+                "Por favor, ingrese el nombre del ejercicio"
+              );
+              return false;
+            } else {
+              document.getElementById("updateActividadForm").requestSubmit();
+              const form =
+                Swal.getPopup().querySelector("#updateActividadForm");
+              form.requestSubmit();
+            
+            }
+          }
+        },
+      }).catch((error) =>
+        console.error("Error al obtener las actvidades fisicas:", error)
+      );
+    }});
   }});
-
-
-
-  </script>
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  const Toast = Swal.mixin({
-    toast: true,
-    position: 'bottom-end', // Mostrar en la esquina inferior derecha
-    showConfirmButton: false,
-    timer: 2000, // Duración de la alerta en milisegundos (2 segundos)
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.onmouseenter = Swal.stopTimer; // Detener el temporizador al pasar el ratón
-      toast.onmouseleave = Swal.resumeTimer; // Reanudar el temporizador al quitar el ratón
-    },
-  });
-
-  // Verificar si el parámetro create=success está en la URL
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get("create") === "success") {
-    Toast.fire({
-      icon: 'success',
-      title: '¡Éxito! Actividad física creada exitosamente.',
-    });
-  }
-
-  // Verificar si el parámetro update=success está en la URL
-  if (urlParams.get("update") === "success") {
-    Toast.fire({
-      icon: 'success',
-      title: '¡Éxito! Actividad física actualizada exitosamente.',
-    });
-  }
 </script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const inputSearch = document.getElementById("searchInput");
+    const tableBody = document.querySelector("tbody");
+
+    // Función para filtrar la tabla
+    function filterTable() {
+      const filter = inputSearch.value.toUpperCase();
+      const rows = tableBody.getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName("td");
+        let found = false;
+
+        for (let j = 0; j < cells.length; j++) {
+          if (cells[j].innerText.toUpperCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+
+        rows[i].style.display = found ? "" : "none";
+      }
+    }
+
+    // Añadir evento al input de búsqueda
+    inputSearch.addEventListener("keyup", filterTable);
+
+    // Inicializar tabla
+    async function inicializar() {
+      datos = await getData();
+      console.log(datos);
+
+      const totalPages = Math.ceil(datos.length / itemsPorPagina);
+      generatePagination(totalPages);
+      mostrarPagina(1);
+    }
+
+    // Función para mostrar página
+    function mostrarPagina(numeroPagina) {
+      const inicio = (numeroPagina - 1) * itemsPorPagina;
+      const fin = inicio + itemsPorPagina;
+      const datosParaMostrar = datos.slice(inicio, fin);
+
+      const tbody = document.querySelector('tbody');
+      tbody.innerHTML = datosParaMostrar.map((dato, index) => `
+        <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${index % 2 === 0 ? 'bg-gray-100' : ''}">
+          <td class="p-2">${dato.af_id || ''}</td>
+          <td class="p-2">${dato.af_nombre}</td>
+          <td class="p-2">${dato.gm_nombre}</td>
+          <td class="flex justify-center py-4 whitespace-nowrap text-right text-sm font-medium">
+            <a href="#" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded updateActividadBtn" data-id="${dato.af_id || ''}">
+              Editar
+            </a>
+          </td>
+        </tr>
+      `).join('');
+      
+      filterTable(); // Aplicar filtro inicial
+    }
+
+    inicializar();
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Verificar si hay un mensaje de alerta en la respuesta
+    `<% if (typeof alertMessage !== 'undefined' && alertMessage) { %>`;
+    Swal.fire({
+      title: "Éxito",
+      text: "<%= alertMessage.text %>",
+      icon: "<%= alertMessage.type %>",
+      confirmButtonText: "OK",
+      timer: 2000,
+    }).then(() => {
+      // Remover el parámetro de la URL después de mostrar la alerta
+      const url = new URL(window.location);
+      url.searchParams.delete("message");
+      window.history.replaceState({}, "", url);
+    });
+    `<% } %>`;
+  });
+</script>
+
   </body>
 </html>

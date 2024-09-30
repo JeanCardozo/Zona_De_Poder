@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zona de Poder</title>
+    <title>Datos del cliente</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
@@ -15,6 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <!-- Verificación de datos para cambiar el color de fondo -->
+
   <body
     class="<%= (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente || !tallaReciente.peso) ? 'bg-black' : 'bg-gray-100' %>"
     id="bodyElement"
@@ -26,151 +27,336 @@
       }
     </script>
 
-    <%- include('../administrador/plantillas/navbar_clientes.ejs') %>
+    <% if (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente
+    || !tallaReciente.peso) { %>
+    <div
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 flex flex-col items-center justify-center z-50"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-24 w-24 text-white mb-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+        />
+      </svg>
+      <p class="text-white text-center px-4 max-w-md">
+        Dirígete a nuestro local Zona de poder o consulta con el administrador
+        para que puedas usar la página web
+      </p>
+    </div>
+    <% } %> <%- include('../administrador/plantillas/navbar_clientes.ejs') %>
 
     <div class="container mx-auto p-4">
       <!-- Canvas 1 -->
-      <div class="mb-6">
-        <div class="h-80 w-full">
-          <canvas id="myChart1"></canvas>
+      <div class="w-full mb-6">
+        <div class="w-full bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">
+            Seguimiento de Peso
+          </h2>
+          <div class="h-80 w-full">
+            <canvas id="myChart1"></canvas>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 gap-6">
-        <!-- Tabla de medidas recientes -->
-        <div class="bg-white shadow-md rounded-lg p-4">
-          <h2 class="text-xl font-semibold mb-4">Medidas Recientes</h2>
-          <table class="min-w-full bg-white border border-gray-200 rounded-lg">
-            <thead class="bg-gray-200 text-gray-600">
-              <tr>
-                <th class="px-4 py-2">MEDIDA DEL PECHO</th>
-                <th class="px-4 py-2">MEDIDA DEL BRAZO</th>
-                <th class="px-4 py-2">MEDIDA CINTURA</th>
-                <th class="px-4 py-2">MEDIDA ABDOMEN</th>
-                <th class="px-4 py-2">MEDIDA CADERA</th>
-                <th class="px-4 py-2">MEDIDA PIERNA</th>
-                <th class="px-4 py-2">MEDIDA PANTORRILLA</th>
-              </tr>
-            </thead>
-            <tbody class="text-gray-700">
-              <% if (tallaReciente) { %>
-              <tr class="border-b">
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_pecho %>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_brazo %>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_cintura %>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_abdomen %>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_cadera %>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_pierna %>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.medida_pantorrilla %>
-                </td>
-              </tr>
-              <% } else { %>
-              <tr>
-                <td colspan="7" class="px-4 py-2 text-center">
-                  No se encontraron tallas recientes.
-                </td>
-              </tr>
-              <% } %>
-            </tbody>
-          </table>
-        </div>
+      <script>
+        const ctx1 = document.getElementById("myChart1");
 
+        const fechasData = "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
+        const pesos = <%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>;
+        const fechas = fechasData.split(',');
+
+        const data = {
+          labels: fechas,
+          datasets: [{
+            label: 'Peso (kg)',
+            data: pesos,
+            fill: false,
+            borderColor: '#3B82F6',
+            backgroundColor: '#93C5FD',
+            tension: 0.1,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        };
+
+        const config = {
+          type: 'line',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: false,
+                title: {
+                  display: true,
+                  text: 'Peso (kg)'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Fecha'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                bodyFont: {
+                  size: 14
+                }
+              }
+            }
+          }
+        };
+
+        new Chart(ctx1, config);
+      </script>
+
+      <div class="grid grid-cols-2 gap-6 h-full">
+        <!-- Tabla de medidas recientes -->
+        <div class="bg-white shadow-lg rounded-lg p-4 flex flex-col h-full">
+          <h2 class="text-2xl font-bold mb-2 text-gray-800 border-b pb-2">
+            Medidas Recientes
+          </h2>
+          <div class="flex-grow overflow-auto">
+            <table class="w-full bg-white">
+              <thead class="bg-gray-100 sticky top-0">
+                <tr>
+                  <th
+                    class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Medida
+                  </th>
+                  <th
+                    class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Valor (cm)
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="text-sm">
+                <% if (tallaReciente) { %>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Pecho</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_pecho %>
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Brazo</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_brazo %>
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Cintura</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_cintura %>
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Abdomen</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_abdomen %>
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Cadera</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_cadera %>
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Pierna</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_pierna %>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Pantorrilla</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.medida_pantorrilla %>
+                  </td>
+                </tr>
+                <% } else { %>
+                <tr>
+                  <td colspan="2" class="px-3 py-2 text-center text-gray-500">
+                    No se encontraron tallas recientes.
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <!-- Tabla de peso, altura y IMC -->
-        <div class="bg-white shadow-md rounded-lg p-4">
-          <h2 class="text-xl font-semibold mb-4">Datos de IMC</h2>
-          <table class="min-w-full bg-white border border-gray-200 rounded-lg">
-            <thead class="bg-gray-200 text-gray-600">
-              <tr>
-                <th class="px-4 py-2">PESO</th>
-                <th class="px-4 py-2">ALTURA</th>
-                <th class="px-4 py-2">IMC</th>
-                <th class="px-4 py-2">Resultado</th>
-              </tr>
-            </thead>
-            <tbody class="text-gray-700">
-              <% if (tallaReciente) { %>
-              <tr class="border-b">
-                <td class="px-4 py-2 text-center"><%= tallaReciente.peso %></td>
-                <td class="px-4 py-2 text-center">
-                  <%= tallaReciente.altura %>
-                </td>
-                <td class="px-4 py-2 text-center"><%= imc %></td>
-                <td class="px-4 py-2 text-center"><%= resultadoIMC %></td>
-              </tr>
-              <% } else { %>
-              <tr>
-                <td colspan="4" class="px-4 py-2 text-center">
-                  No se encontraron tallas recientes.
-                </td>
-              </tr>
-              <% } %>
-            </tbody>
-          </table>
+        <div class="bg-white shadow-lg rounded-lg p-4 flex flex-col h-full">
+          <h2 class="text-2xl font-bold mb-2 text-gray-800 border-b pb-2">
+            Datos de IMC
+          </h2>
+          <div class="flex-grow overflow-auto">
+            <table class="w-full bg-white">
+              <thead class="bg-gray-100 sticky top-0">
+                <tr>
+                  <th
+                    class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Parámetro
+                  </th>
+                  <th
+                    class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Valor
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="text-sm">
+                <% if (tallaReciente) { %>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Peso</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.peso %> kg
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Altura</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= tallaReciente.altura %> cm
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">IMC</td>
+                  <td class="px-3 py-2 text-right font-medium text-gray-700">
+                    <%= imc %>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">Resultado</td>
+                  <td
+                    class="px-3 py-2 text-right font-medium <%= resultadoIMC === 'Peso normal' ? 'text-green-600' : resultadoIMC === 'Sobrepeso' ? 'text-yellow-600' : resultadoIMC === 'Obesidad' ? 'text-red-600' : 'text-blue-600' %>"
+                  >
+                    <%= resultadoIMC %>
+                  </td>
+                </tr>
+                <% } else { %>
+                <tr>
+                  <td colspan="2" class="px-3 py-2 text-center text-gray-500">
+                    No se encontraron datos de IMC.
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+            <div
+              class="mt-4 p-4 rounded-lg <%= resultadoIMC === 'Peso normal' ? 'bg-green-100' : resultadoIMC === 'Sobrepeso' ? 'bg-yellow-100' : resultadoIMC === 'Obesidad' ? 'bg-red-100' : 'bg-blue-100' %>"
+            >
+              <p class="text-center font-medium">
+                <% if (resultadoIMC === 'Peso normal') { %> ¡Felicidades! Estás
+                en un peso saludable. Sigue manteniendo tus buenos hábitos. <% }
+                else if (resultadoIMC === 'Sobrepeso') { %> Pequeños cambios en
+                tu estilo de vida pueden hacer una gran diferencia. ¡Tú puedes
+                lograrlo! <% } else if (resultadoIMC === 'Obesidad') { %> Tu
+                salud es importante. Considera consultar a un profesional para
+                obtener un plan personalizado. <% } else { %> Cada paso hacia
+                una vida más saludable cuenta. ¡Sigue adelante! <% } %>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <script>
-      const ctx1 = document.getElementById("myChart1");
+    <!-- Script para clientes -->
 
-      // Verifica y usa las variables que se pasan desde el servidor
-      const fechasData = "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
-      const pesos = <%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>;
-      const fechas = fechasData.split(',');
-      console.log(fechas);
-      console.log(pesos);
-
-      const labels = fechas;
-
-      const data = {
-        labels: labels,
-        datasets: [{
-          label: 'Mi peso',
-          data: pesos,
-          fill: false,
-          borderColor: 'rgb(75, 192, 192)', // Color base de la línea
-          tension: 0.1,
-          segment: {
-            borderColor: (ctx) => {
-              const index = ctx.p1DataIndex;
-              const prevValue = ctx.chart.data.datasets[0].data[index - 1];
-              const currValue = ctx.chart.data.datasets[0].data[index];
-
-              // Si no hay valor anterior, usa el color base
-              if (index === 0) return 'rgb(75, 192, 192)';
-
-              // Si el valor actual es mayor, usa verde; si es menor, usa rojo; si es igual, usa azul
-              if (currValue > prevValue) {
-                return 'green';
-              } else if (currValue < prevValue) {
-                return 'red';
-              } else {
-                return 'blue'; // Si el peso se mantiene igual, usa azul
-              }
-            }
-          }
-        }]
-      };
-
-      const config = {
-        type: 'line',
-        data: data,
-      };
-
-      new Chart(ctx1, config);
-    </script>
+    <footer id="footer" class="bg-gray-800 text-white py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-3xl font-bold mb-4">
+              Zona de Poder<sup>&reg;</sup>
+            </h3>
+            <ul class="space-y-2">
+              <li>Teléfono: +57 123 456 7890</li>
+              <li>Dirección: Calle Principal #123, Ciudad</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-4">Enlaces útiles</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Política de privacidad</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Términos y condiciones</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Nuestros servicios</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Contacto</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
+            <ul class="space-y-4">
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

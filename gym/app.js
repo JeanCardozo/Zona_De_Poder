@@ -6,30 +6,48 @@ const cron = require("node-cron");
 const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const bodyParser = require("body-parser");
 dotenv.config();
 
 // Configuración de la sesión global
+app.use(cookieParser());
 app.use(
   session({
-    secret: "negrosdemierda", // Cambia esta cadena secreta a algo más seguro en producción
+    secret: "tu_secreto_aqui",
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }, // Asegúrate de que sea `true` si usas HTTPS en producción
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // true en producción
+      httpOnly: true,
+      maxAge: 2 * 60 * 60 * 1000, // 2 horas
+    },
   })
 );
 
-app.use(cookieParser());
+app.use((req, res, next) => {
+  if (req.session.user) {
+    // Renovar la sesión
+    req.session.touch();
+
+    // Asegurarse de que userData esté disponible para todas las vistas
+    res.locals.userData = req.session.user;
+  } else {
+    res.locals.userData = null;
+  }
+  next();
+});
+
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Importa y usa las rutas desde el Router
 app.use("/", require("./Router"));
 
 // Programar la tarea para que se ejecute todos los días a la medianoche
-cron.schedule("0 0 * * *", () => {
+cron.schedule("* * * * *", () => {
   console.log("Ejecutando actualización de estados de mensualidades...");
   actualizarEstadosMensualidades();
 });

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tailwind CSS -->
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../../src/output.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
+    </style>
+
+    <title>Ver roles</title>
+  </head>
+  <body class="bg-fondo">
+    <%- include('../plantillas/navbar.ejs') %>
+
+    <div class="px-10 mx-auto mt-4 p-5">
+      <div class="flex justify-start gap-2 mb-4">
+        <a
+          href="/index_admin"
+          class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
+        >
+          Volver
+        </a>
+      </div>
+
+      <div class="max-w-7xl mx-auto p-4">
+        <!-- Barra de búsqueda -->
+
+        <div class="overflow-x-auto">
+          <table
+            class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-left text-gray-500 dark:text-gray-400"
+          >
+            <thead class="bg-gray-400 text-white text-center">
+              <tr>
+                <th
+                  class="text-left py-3 px-6 uppercase font-semibold text-sm text-center"
+                >
+                  Id
+                </th>
+                <th class="py-4 px-6 uppercase font-semibold text-sm">
+                  Nombre
+                </th>
+                <th class="py-4 px-6 uppercase font-semibold text-sm">
+                  Correo
+                </th>
+                <th class="py-4 px-6 uppercase font-semibold text-sm">
+                  Sugerencia
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 text-center">
+              <% results.forEach((mensaje) => { %>
+              <tr class="text-center hover:bg-gray-100">
+                <td class="text-left py-3 px-4 text-center">
+                  <%= mensaje.id %>
+                </td>
+                <td class="text-left py-3 px-4 text-center">
+                  <%= mensaje.nombre %>
+                </td>
+                <td class="text-left py-3 px-4 text-center">
+                  <%= mensaje.correo_electronico %>
+                </td>
+                <td class="py-3 px-4 text-center"><%= mensaje.mensaje %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- JavaScript para la búsqueda -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+        const tableRows = document.querySelectorAll("tbody tr");
+
+        searchInput.addEventListener("keyup", function () {
+          const query = searchInput.value.toLowerCase();
+
+          tableRows.forEach((row) => {
+            const cellText = row.cells[1].textContent.toLowerCase();
+
+            if (cellText.includes(query)) {
+              row.style.display = "";
+            } else {
+              row.style.display = "none";
+            }
+          });
+        });
+      });
+    </script>
+
+    <!-- Modal para actualizar roles -->
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Verificar si hay un mensaje de alerta en la respuesta
+        `<% if (typeof alertMessage !== 'undefined' && alertMessage) { %>`;
+        Swal.fire({
+          title: "Éxito",
+          text: "<%= alertMessage.text %>",
+          icon: "<%= alertMessage.type %>",
+          confirmButtonText: "OK",
+        }).then(() => {
+          // Remover el parámetro de la URL después de mostrar la alerta
+          const url = new URL(window.location);
+          url.searchParams.delete("message");
+          window.history.replaceState({}, "", url);
+        });
+        `<% } %>`;
+      });
+    </script>
+  </body>
+</html>

@@ -3,139 +3,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/logotipo.jpg"
+    />
     <title>Selecciona tu Plan de Mensualidad</title>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css"
       rel="stylesheet"
     />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-      /* Estilos del carrusel */
-      .carrusel {
-        display: flex;
-        overflow-x: hidden;
-        scroll-behavior: smooth;
-        transition: transform 0.5s ease-in-out;
-      }
 
-      .carrusel-item {
-        min-width: 100%;
-        flex: 0 0 100%;
-        padding: 2rem;
-        box-sizing: border-box;
-      }
-
-      /* Estilos de las tarjetas de mensualidades */
-      .tarjeta {
-        background: linear-gradient(135deg, #1e3a8a, #6d28d9);
-        border-radius: 1rem;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        color: white;
-        padding: 2rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        height: 400px;
-        max-width: 300px;
-        margin: auto;
-        text-align: center;
-      }
-
-      .tarjeta h2 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-      }
-
-      .tarjeta p {
-        font-size: 1.5rem;
-        font-weight: 400;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-      }
-
-      .tarjeta button {
-        background-color: #00a650;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        text-align: center;
-        font-weight: 600;
-        color: white;
-        transition: background-color 0.3s ease-in-out;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-
-      .tarjeta button:hover {
-        background-color: #008f3e;
-      }
-
-      /* Tipografía legible y centrada */
-      body {
-        font-family: "Poppins", sans-serif;
-      }
-    </style>
+    <!-- SDK MercadoPago.js -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
   </head>
-  <body class="bg-gray-900 text-white">
-    <!-- Logo del gimnasio -->
-    <div
-      class="w-full bg-gradient-to-r from-blue-700 to-purple-900 p-4 flex items-center justify-between"
-    >
-      <img
-        src="https://raw.githubusercontent.com/JeanCardozo/audios/main/logo.png"
-        alt="Logo del Gimnasio"
-        class="h-16"
-      />
+  <body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="container mx-auto px-4 py-6 max-w-3xl">
       <a
         href="/cancelar?tempRegistroId=<%= tempRegistroId %>"
-        class="text-white font-bold hover:text-red-400"
+        class="text-sm text-gray-500 hover:text-red-600 transition duration-300"
+        >Cancelar</a
       >
-        Cancelar
-      </a>
-    </div>
-
-    <div class="container mx-auto mt-10">
-      <h1 class="text-5xl font-bold text-center mb-8">
+      <h1 class="text-3xl font-bold text-center my-6 text-gray-800">
         Selecciona tu Plan de Mensualidad
       </h1>
-
-      <!-- Carrusel -->
       <div class="relative">
-        <div class="carrusel" id="carrusel">
-          <% mensualidades.forEach(function(mensualidad) { %>
-          <div class="carrusel-item flex justify-center items-center">
-            <div class="tarjeta">
-              <h2><%= mensualidad.tiempo_plan %></h2>
-              <p>Precio: $<%= mensualidad.total_pagar %></p>
-              <form action="/create-order" method="POST">
-                <input
-                  type="hidden"
-                  name="title"
-                  value="<%= mensualidad.tiempo_plan %>"
-                />
-                <input
-                  type="hidden"
-                  name="unit_price"
-                  value="<%= mensualidad.total_pagar %>"
-                />
-                <input
-                  type="hidden"
-                  name="tempRegistroId"
-                  value="<%= tempRegistroId %>"
-                />
-                <button type="submit">Pagar con Mercado Pago</button>
-              </form>
+        <div class="overflow-hidden" id="carrusel">
+          <div class="flex transition-transform duration-300 ease-in-out">
+            <% mensualidades.forEach(function(mensualidad) { %>
+            <div class="w-full flex-shrink-0 px-2">
+              <div
+                class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-between h-80"
+              >
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                  <%= mensualidad.tiempo_plan %>
+                </h2>
+                <p class="text-xl text-gray-600 mb-4">
+                  $<%= mensualidad.total_pagar %>
+                </p>
+                <form action="/create-preference" method="POST" class="w-full">
+                  <input
+                    type="hidden"
+                    class="tiempo"
+                    name="title"
+                    value="<%= mensualidad.tiempo_plan %>"
+                  />
+                  <input
+                    type="hidden"
+                    class="total"
+                    name="unit_price"
+                    value="<%= mensualidad.total_pagar %>"
+                  />
+                  <input
+                    type="hidden"
+                    name="tempRegistroId"
+                    value="<%= tempRegistroId %>"
+                  />
+                  <button
+                    type="submit"
+                    id="check-btn"
+                    class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out text-sm"
+                  >
+                    Seleccionar y pagar
+                  </button>
+                  <div id="wallet_container"></div>
+                </form>
+              </div>
             </div>
+            <% }) %>
           </div>
-          <% }) %>
         </div>
-
-        <!-- Botones de navegación manual -->
         <button
-          class="absolute left-0 top-0 bottom-0 px-4 text-gray-400 hover:text-gray-200 focus:outline-none"
+          class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white p-1 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 focus:outline-none"
           onclick="moverCarrusel(-1)"
         >
           <svg
-            class="w-10 h-10"
+            class="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -149,13 +91,12 @@
             ></path>
           </svg>
         </button>
-
         <button
-          class="absolute right-0 top-0 bottom-0 px-4 text-gray-400 hover:text-gray-200 focus:outline-none"
+          class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-1 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 focus:outline-none"
           onclick="moverCarrusel(1)"
         >
           <svg
-            class="w-10 h-10"
+            class="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -174,32 +115,85 @@
 
     <script>
       const carrusel = document.getElementById("carrusel");
-      let scrollPosition = 0;
+      const items = carrusel.querySelector(".flex");
+      let currentIndex = 0;
 
-      function moverCarrusel(direction) {
-        const width = carrusel.clientWidth;
-        scrollPosition += direction * width;
-        if (scrollPosition < 0) scrollPosition = 0;
-        if (scrollPosition > carrusel.scrollWidth - width) scrollPosition = 0;
-        carrusel.scrollTo({
-          left: scrollPosition,
-          behavior: "smooth",
-        });
+      function moverCarrusel(direccion) {
+        const itemCount = items.children.length;
+        currentIndex = (currentIndex + direccion + itemCount) % itemCount;
+        items.style.transform = `translateX(-${currentIndex * 100}%)`;
       }
 
-      // Transición automática cada 5 segundos
       setInterval(() => {
         moverCarrusel(1);
-      }, 5000);
-      // Mostrar alertas si están disponibles
-      `<% if (typeof alertTitle !== "undefined") { %>`;
-      Swal.fire({
-        title: "<%= alertTitle %>",
-        text: "<%= alertMessage %>",
-        icon: "<%= alertIcon %>",
-        showConfirmButton: "<%= showConfirmButton %>",
+      }, 10000);
+
+      // Configuración de MercadoPago
+      const mp = new MercadoPago(
+        "APP_USR-4f711762-fd0f-4dd6-ae28-02c99c6090d6",
+        { locale: "es-CO" }
+      );
+    </script>
+
+    <script>
+      // Al hacer clic en el botón, se crea la preferencia de pago y se redirige
+      document.querySelectorAll("#check-btn").forEach((button) => {
+        button.addEventListener("click", async (event) => {
+          event.preventDefault(); // Prevenir el envío automático del formulario
+
+          // Capturar el formulario y extraer los datos
+          const form = button.closest("form");
+          const title = form.querySelector('input[name="title"]').value;
+          const unit_price = form.querySelector(
+            'input[name="unit_price"]'
+          ).value;
+          const tempRegistroId = form.querySelector(
+            'input[name="tempRegistroId"]'
+          ).value;
+
+          console.log("Enviando datos a /create-preference:", {
+            title,
+            unit_price,
+            tempRegistroId,
+          }); // Verifica que los datos se envían correctamente
+
+          try {
+            // Hacer la solicitud para crear la preferencia
+            const response = await fetch("/create-preference", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ title, unit_price, tempRegistroId }),
+            });
+
+            const preference = await response.json();
+            console.log("Respuesta de /create-preference:", preference); // Verifica la respuesta del servidor
+
+            // Verificar si se ha creado correctamente la preferencia
+            if (preference.id) {
+              console.log(
+                "Preferencia creada correctamente con ID:",
+                preference.id
+              );
+              const bricksBuilder = mp.bricks();
+              const renderComponent = async () => {
+                await bricksBuilder.create("wallet", "wallet_container", {
+                  initialization: {
+                    preferenceId: preference.id,
+                  },
+                });
+              };
+              renderComponent();
+            } else {
+              alert("Error al crear la preferencia de pago");
+              console.error("Error en la preferencia:", preference); // Mostrar en consola el error
+            }
+          } catch (error) {
+            console.error("Error al crear la preferencia:", error);
+          }
+        });
       });
-      `<% } %>`;
     </script>
   </body>
 </html>

@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Información de Clientes</title>
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
     <!-- Tailwind CSS -->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
@@ -33,97 +37,226 @@
   </head>
   <body class="bg-gray-100">
     <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
+    <div class="bg-gradient-to-r min-h-screen py-12">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">
+          Mi Información
+        </h1>
 
-    <!-- Botones de acción -->
-    <div class="flex justify-right mt-4 p-5">
-      <a
-        href="/clientes/index_c"
-        class="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Volver
-      </a>
-    </div>
+        <% results.forEach(function(cliente) { %>
 
-    <!-- Contenedor principal -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
+          <div class="p-6">
+            <form
+              id="ayuda_mensaje"
+              action="/mensaje_ayuda"
+              method="post"
+              class="mt-8"
+            >
+              <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h2
+                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
+                  >
+                    Identificación
+                  </h2>
+                  <input
+                    class="text-lg font-medium text-gray-900 "
+                    id="id"
+                    name="id"
+                    value="<%= cliente.id %>"
+                  >
+                    
+                </input>
+                </div>
+                <div>
+                  <h2
+                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
+                  >
+                    Nombre
+                  </h2>
+                  <input
+                    class="text-lg font-medium text-gray-900"
+                    id="nombre"
+                    name="nombre"
+                    value=" <%= cliente.nombre %>"
+                  >
+                   
+                </input>
+                </div>
+                <div>
+                  <h2
+                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
+                  >
+                    Apellido
+                  </h2>
+                  <p class="text-lg font-medium text-gray-900">
+                    <%= cliente.apellido %>
+                  </p>
+                </div>
+                <div>
+                  <h2
+                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
+                  >
+                    Correo electrónico
+                  </h2>
+                  <input
+                    class="text-lg font-medium text-gray-900 readonly"
+                    id="correo"
+                    name="correo"
+                    value="<%= cliente.correo_electronico %>"
+                  >
+                    
+                  </input>
+                </div>
+              </div>
 
-    <div class="max-w-7xl mx-auto p-6">
-      <h1 class="text-2xl font-bold mb-4 text-center">Mi Información</h1>
+              <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                  Detalles adicionales
+                </h3>
+              </div>
 
-      <!-- Tarjetas de información del cliente -->
-      <% results.forEach(function(cliente) { %>
-      <form
-        id="ayuda_mensaje"
-        action="/mensaje_ayuda"
-        method="post"
-        class="mt-2"
-      >
-        <div class="bg-white shadow-md rounded-lg mb-4 p-4">
-          <!-- Identificación -->
-          <div class="mb-2">
-            <label for="id" class="font-bold">Identificación:</label>
-            <input
-              type="text"
-              id="id"
-              name="id"
-              value="<%= cliente.id %>"
-              class="w-full p-2 border border-gray-300 rounded"
-              readonly
-            />
+              <div class="mb-4">
+                <label
+                  for="mensaje_ayuda"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                  >Mensaje de ayuda</label
+                >
+                <textarea
+                  id="mensaje_ayuda"
+                  name="mensaje_ayuda"
+                  rows="3"
+                  class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md required"
+                  placeholder="Escribe tu mensaje de ayuda aquí"
+                ></textarea>
+              </div>
+              <input
+                    class="text-lg font-medium text-gray-900 "
+                    type="hidden"
+                    id="message"
+                    name="message"
+                    value="success"
+                  >
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Enviar mensaje
+                </button>
+              </div>
+            </form>
           </div>
-
-          <!-- Nombre -->
-          <div class="mb-2">
-            <label for="nombre" class="font-bold">Nombre:</label>
-            <input
-              type="text"
-              id="nombre"
-              name="nombre"
-              value="<%= cliente.nombre %>"
-              class="w-full p-2 border border-gray-300 rounded"
-              readonly
-            />
-          </div>
-
-          <!-- Correo -->
-          <div class="mb-2">
-            <label for="correo" class="font-bold">Correo:</label>
-            <input
-              type="text"
-              id="correo"
-              name="correo"
-              value="<%= cliente.correo_electronico %>"
-              class="w-full p-2 border border-gray-300 rounded"
-              readonly
-            />
-          </div>
-
-          <!-- Mensaje de ayuda -->
-          <div class="mb-2">
-            <label for="mensaje_ayuda" class="font-bold">Mensaje Ayuda:</label>
-            <input
-              type="text"
-              id="mensaje_ayuda"
-              name="mensaje_ayuda"
-              class="w-full p-2 border border-gray-300 rounded"
-              placeholder="Escribe tu mensaje de ayuda aquí"
-            />
-          </div>
-
-          <!-- Botón de envío -->
-          <button
-            type="submit"
-            class="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Enviar
-          </button>
         </div>
-      </form>
-      <% }); %>
+        <% }); %>
+
+        <div class="flex justify-end mt-6">
+          <a
+            href="/clientes/index_c"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Volver
+          </a>
+        </div>
+      </div>
     </div>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Verificar si hay un mensaje de alerta en la respuesta
+        `<% if (typeof alertMessage !== 'undefined' && alertMessage) { %>`;
+        Swal.fire({
+          title: "Éxito",
+          text: "<%= alertMessage.text %>",
+          icon: "<%= alertMessage.type %>",
+          confirmButtonText: "OK",
+        }).then(() => {
+          // Remover el parámetro de la URL después de mostrar la alerta
+          const url = new URL(window.location);
+          url.searchParams.delete("message");
+          window.history.replaceState({}, "", url);
+        });
+        `<% } %>`;
+      });
+    </script>
     <!-- Pie de página -->
-    <footer class="bg-white h-max p-4 text-center mt-4">
-      <p>© 2024 Zona de poder</p>
+    <footer id="footer" class="bg-gray-800 text-white py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-3xl font-bold mb-4">
+              <a href="/logout">Zona de Poder<sup>&reg;</sup></a>
+            </h3>
+            <ul class="space-y-2">
+              <li>Teléfono: +57 123 456 7890</li>
+              <li>Dirección: Calle Principal #123, Ciudad</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-4">Enlaces útiles</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Política de privacidad</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Términos y condiciones</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Nuestros servicios</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Contacto</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
+            <ul class="space-y-4">
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

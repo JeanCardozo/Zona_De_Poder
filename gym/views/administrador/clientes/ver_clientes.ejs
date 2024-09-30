@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS -->
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
@@ -35,15 +39,17 @@
         </a>
       </div>
       <div class="max-w-7xl mx-auto p-4">
+        <!-- Search Input -->
+
         <div class="overflow-x-auto">
           <table
             class="min-w-full table-auto table-fixed sm:text-sm text-left text-gray-500 dark:text-gray-400"
           >
             <thead class="text-xs bg-gray-500 text-white">
               <tr>
-                <% const headers = ["ID", "NOMBRE", "APELLIDO", "EDAD", "SEXO",
-                "INSCRIPCIÓN", "CORREO", "TELÉFONO", "PLAN", "TOTAL", "ESTADO",
-                "TALLAS", "ACCIONES"]; %> <% headers.forEach(header => { %>
+                <% const headers = ["ID", "NOMBRE", "APELLIDO", "INSCRIPCIÓN",
+                "TELÉFONO","ESTADO","VER MAS","TALLAS", "ACCIONES"]; %> <%
+                headers.forEach(header => { %>
                 <th scope="col" class="px-4 py-6 text-center"><%= header %></th>
                 <% }); %>
               </tr>
@@ -59,9 +65,11 @@
 
     <script defer>
       const divPagination = document.getElementById("pagination");
+      const searchInput = document.getElementById("searchInput");
       let datos = [];
-      let tableRows = [];
+      let filteredData = [];
       const itemsPorPagina = 5;
+      let currentPage = 1;
 
       async function getData() {
         try {
@@ -84,94 +92,194 @@
 
       async function inicializar() {
         datos = await getData();
+        filteredData = datos;
+        actualizarTablaYPaginacion();
+      }
 
-        const totalPages = Math.ceil(datos.length / itemsPorPagina);
+      function actualizarTablaYPaginacion() {
+        const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
         generatePagination(totalPages);
-        mostrarPagina(1);
+        mostrarPagina(currentPage);
       }
 
       function generatePagination(totalPages) {
-        divPagination.innerHTML = Array.from(
-          { length: totalPages },
-          (_, i) =>
-            `<button class="border border-gray-300 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md px-3 py-1.5 m-1 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-md" data-page="${
-              i + 1
-            }">${i + 1}</button>`
-        ).join("");
+        let startPage = Math.max(currentPage - 1, 1);
+        let endPage = Math.min(startPage + 2, totalPages);
 
-        divPagination.addEventListener("click", (e) => {
-          if (e.target.tagName === "BUTTON") {
-            mostrarPagina(parseInt(e.target.dataset.page));
-          }
+        if (endPage - startPage < 2) {
+          startPage = Math.max(endPage - 2, 1);
+        }
+
+        let paginationHTML = "";
+
+        paginationHTML += `
+          <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-l hover:bg-gray-100" 
+          ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">
+            Anterior
+          </button>
+        `;
+
+        for (let i = startPage; i <= endPage; i++) {
+          paginationHTML += `
+            <button class="mt-4 px-4 py-2 font-bold ${
+              i === currentPage
+                ? "text-blue-500 bg-blue-100"
+                : "text-gray-700 bg-white"
+            } hover:bg-gray-100 ${
+            i === currentPage ? "active" : ""
+          }" data-page="${i}">${i}</button>
+          `;
+        }
+
+        paginationHTML += `
+          <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-r hover:bg-gray-100" 
+          ${currentPage === totalPages ? "disabled" : ""} data-page="${
+          currentPage + 1
+        }">
+            Siguiente
+          </button>
+        `;
+
+        divPagination.innerHTML = paginationHTML;
+
+        divPagination.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", (e) => {
+            if (!e.target.disabled) {
+              currentPage = parseInt(e.target.dataset.page);
+              actualizarTablaYPaginacion();
+            }
+          });
         });
       }
 
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
         const fin = inicio + itemsPorPagina;
-        const datosParaMostrar = datos.slice(inicio, fin);
+        const datosParaMostrar = filteredData.slice(inicio, fin);
 
         const tbody = document.querySelector("tbody");
         tbody.innerHTML = datosParaMostrar
           .map(
             (dato, index) => `
-        <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
-          index % 2 === 0 ? "bg-gray-100" : ""
-        }">
-          <td class="p-2">${dato.id}</td>
-          <td class="p-2">${dato.nombre}</td>
-          <td class="p-2">${dato.apellido}</td>
-          <td class="p-2">${dato.edad}</td>
-          <td class="p-2">${dato.sexo}</td>
-          <td class="p-2">${new Date(
-            dato.fecha_de_inscripcion
-          ).toLocaleDateString()}</td>
-          <td class="p-2">${dato.correo_electronico}</td>
-          <td class="p-2">${dato.numero_telefono}</td>
-          <td class="p-2">${dato.tiempo_plan}</td>
-          <td class="p-2">${dato.total_pagar}</td>
-          <td class="p-2">${dato.estado}</td>
-          <td class="p-2">
-            <button data-client-id="${
-              dato.id
-            }" class="px-2 py-1 bg-blue-500 text-white rounded-md inline-flex items-center justify-center hover:bg-blue-700 ver-tallas">Ver</button>
-          </td>
-          <td class="py-4 text-center flex items-center justify-around gap-2">
-            <a href="/actualizar_clientes/${
-              dato.id
-            }" class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
-          </td>
-        </tr>
-      `
+            <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+              index % 2 === 0 ? "bg-gray-100" : ""
+            }">
+              <td class="p-2">${dato.id}</td>
+              <td class="p-2">${dato.nombre}</td>
+              <td class="p-2">${dato.apellido}</td>
+              <td class="p-2">${new Date(
+                dato.fecha_de_inscripcion
+              ).toLocaleDateString()}</td>
+              <td class="p-2">${dato.numero_telefono}</td>
+              <td class="p-2">${dato.estado}</td>
+              
+              <td class="p-2">
+                <button data-client-id="${
+                  dato.id
+                }" class="px-2 py-1 bg-blue-500 text-white rounded-md inline-flex items-center justify-center hover:bg-blue-700 ver-mas">Ver Mas</button>
+              </td>
+              <td class="p-2">
+                <button data-client-id="${
+                  dato.id
+                }" class="px-2 py-1 bg-blue-500 text-white rounded-md inline-flex items-center justify-center hover:bg-blue-700 ver-tallas">Ver</button>
+              </td>
+              <td class="py-4 text-center flex items-center justify-around gap-2">
+                <a href="/actualizar_clientes/${
+                  dato.id
+                }" class="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700">Editar</a>
+              </td>
+            </tr>`
           )
           .join("");
-
-        // Actualiza las filas de la tabla después de mostrar la página
-        tableRows = Array.from(tbody.querySelectorAll("tr"));
       }
 
-      // Llama a la función de inicialización al cargar la página
+      function filtrarResultados() {
+        const input = searchInput.value.toLowerCase();
+        filteredData = datos.filter(
+          (dato) =>
+            dato.id.toString().includes(input) ||
+            dato.nombre.toLowerCase().includes(input) ||
+            dato.apellido.toLowerCase().includes(input) ||
+            dato.correo_electronico.toLowerCase().includes(input) ||
+            dato.numero_telefono.includes(input)
+        );
+        currentPage = 1;
+        actualizarTablaYPaginacion();
+      }
+
+      searchInput.addEventListener("input", filtrarResultados);
+
       inicializar();
     </script>
-
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.getElementById("searchInput");
+      document.body.addEventListener("click", function (event) {
+        if (event.target.classList.contains("ver-mas")) {
+          const clientId = event.target.dataset.clientId;
+          fetch(`/ver_mas_cliente/${clientId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              const clientName = data.datosCliente[0].nombre;
 
-        searchInput.addEventListener("keyup", function () {
-          const query = searchInput.value.toLowerCase();
+              let informacionContent = `
+          <table class="min-w-full bg-white mb-4">
+            <thead class="bg-gray-800 text-white">
+              <tr>
+                <th class="py-2 px-4">Id</th>
+                <th class="py-2 px-4">Nombre</th>
+                <th class="py-2 px-4">Apellido</th>
+                <th class="py-2 px-4">Edad</th>
+                <th class="py-2 px-4">Sexo</th>
+                <th class="py-2 px-4">Inscripcion</th>
+                <th class="py-2 px-4">Telefono</th>
+                <th class="py-2 px-4">Correo</th>
+                <th class="py-2 px-4">Mensualidad</th>
+                <th class="py-2 px-4">Estado</th>
 
-          tableRows.forEach((row) => {
-            const cells = Array.from(row.cells);
-            const matchesQuery = cells.some((cell) =>
-              cell.textContent.toLowerCase().includes(query)
-            );
-            row.style.display = matchesQuery ? "" : "none";
-          });
-        });
+              </tr>
+            </thead>
+            <tbody class="text-gray-700">
+        `;
+
+              data.datosCliente.forEach((datos) => {
+                informacionContent += `
+            <tr class="text-sm">
+              <td class="py-2 px-4 border">${datos.id}</td>
+              <td class="py-2 px-4 border">${datos.nombre}</td>
+              <td class="py-2 px-4 border">${datos.apellido}</td>
+              <td class="py-2 px-4 border">${datos.edad}</td>
+              <td class="py-2 px-4 border">${datos.sexo}</td>
+              <td class="py-2 px-4 border">${new Date(
+                datos.fecha_de_inscripcion
+              ).toLocaleDateString()}</td>
+              <td class="py-2 px-4 border">${datos.numero_telefono}</td>
+              <td class="py-2 px-4 border">${datos.correo_electronico}</td>
+              <td class="py-2 px-4 border">${datos.total_pagar}</td>
+              <td class="py-2 px-4 border">${datos.estado}</td>
+            </tr>
+          `;
+              });
+
+              informacionContent += `</tbody></table>`;
+
+              Swal.fire({
+                title: `Informacion del cliente: ${clientName}`,
+                html: informacionContent,
+                width: "1300px",
+                icon: "info",
+                confirmButtonText: "Cerrar",
+              });
+            })
+            .catch((error) => {
+              Swal.fire({
+                title: "Error",
+                text: "Hubo un error al cargar la informacion del cliente.",
+                icon: "error",
+                confirmButtonText: "Cerrar",
+              });
+            });
+        }
       });
     </script>
-
     <script>
       document.body.addEventListener("click", function (event) {
         if (event.target.classList.contains("ver-tallas")) {
@@ -190,94 +298,79 @@
               }
 
               const clientName = data.clientName;
-              let tallasContent = "";
 
-              data.sizes.forEach((talla, index) => {
+              // Obtener el año de la primera talla
+              const primeraFecha = new Date(data.sizes[0].fecha_modificacion); // Asumimos que hay al menos una talla
+              const añoPrimeraTalla = primeraFecha.getFullYear(); // Obtener el año
+
+              // Función para obtener el nombre del mes en español
+              function getMonthName(fecha) {
+                const meses = [
+                  "Enero",
+                  "Febrero",
+                  "Marzo",
+                  "Abril",
+                  "Mayo",
+                  "Junio",
+                  "Julio",
+                  "Agosto",
+                  "Septiembre",
+                  "Octubre",
+                  "Noviembre",
+                  "Diciembre",
+                ];
+                const mesIndex = new Date(fecha).getMonth();
+                return meses[mesIndex];
+              }
+
+              let tallasContent = ` 
+              <table class="min-w-full bg-white mb-4">
+                <thead class="bg-gray-800 text-white">
+                  <tr>
+                    <th class="py-2 px-4">Fecha medida (Mes y Año)</th>
+                    <th class="py-2 px-4">Pecho</th>
+                    <th class="py-2 px-4">Brazo</th>
+                    <th class="py-2 px-4">Cintura</th>
+                    <th class="py-2 px-4">Abdomen</th>
+                    <th class="py-2 px-4">Cadera</th>
+                    <th class="py-2 px-4">Pierna</th>
+                    <th class="py-2 px-4">Pantorrilla</th>
+                    <th class="py-2 px-4">Peso</th>
+                    <th class="py-2 px-4">Altura</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-700">
+            `;
+
+              data.sizes.forEach((talla) => {
+                const fechaMedicion = new Date(talla.fecha_modificacion);
+                const nombreMes = getMonthName(fechaMedicion); // Obtener nombre del mes
+                const año = fechaMedicion.getFullYear(); // Obtener el año
+
                 tallasContent += `
-                <div class="mb-6">
-                  <h3 class="text-lg font-semibold mb-2">Conjunto de tallas ${
-                    index + 1
-                  }</h3>
-                  <table class="min-w-full bg-white mb-4">
-                    <thead class="bg-gray-800 text-white">
-                      <tr>
-                        <th class="py-2 px-4">Medida</th>
-                        <th class="py-2 px-4">Valor</th>
-                      </tr>
-                    </thead>
-                    <tbody class="text-gray-700">
-                      <tr>
-                        <td class="py-2 px-4 border">Pecho</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_pecho
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Brazo</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_brazo
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Cintura</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_cintura
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Abdomen</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_abdomen
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Cadera</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_cadera
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Pierna</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_pierna
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Pantorrilla</td>
-                        <td class="py-2 px-4 border">${
-                          talla.medida_pantorrilla
-                        } cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Peso</td>
-                        <td class="py-2 px-4 border">${talla.peso} kg</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Altura</td>
-                        <td class="py-2 px-4 border">${talla.altura} cm</td>
-                      </tr>
-                      <tr>
-                        <td class="py-2 px-4 border">Fecha medida</td>
-                        <td class="py-2 px-4 border">${new Date(
-                          talla.fecha_modificacion
-                        ).toLocaleDateString()}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <tr class="text-sm">
+                  <td class="py-2 px-4 border ">${nombreMes} ${año}</td>
+                  <td class="py-2 px-4 border">${talla.medida_pecho} cm</td>
+                  <td class="py-2 px-4 border">${talla.medida_brazo} cm</td>
+                  <td class="py-2 px-4 border">${talla.medida_cintura} cm</td>
+                  <td class="py-2 px-4 border">${talla.medida_abdomen} cm</td>
+                  <td class="py-2 px-4 border">${talla.medida_cadera} cm</td>
+                  <td class="py-2 px-4 border">${talla.medida_pierna} cm</td>
+                  <td class="py-2 px-4 border">${talla.medida_pantorrilla} cm</td>
+                  <td class="py-2 px-4 border">${talla.peso} kg</td>
+                  <td class="py-2 px-4 border">${talla.altura} cm</td>
+                </tr>
               `;
               });
 
+              tallasContent += `</tbody></table>`;
+
               Swal.fire({
-                title: `Tallas del Cliente: ${clientName}`,
-                html:
-                  tallasContent ||
-                  "<p>No se encontraron tallas para este cliente.</p>",
+                title: `Tallas del Cliente: ${clientName} (${añoPrimeraTalla})`, // Mostrar el nombre del cliente y el año de la primera talla
+                html: tallasContent,
+                width: "1300px", // Asegúrate de que "width" esté bien escrito
                 icon: "info",
                 confirmButtonText: "Cerrar",
-                customClass: {
-                  popup: "w-full max-w-3xl",
-                },
               });
             })
             .catch((error) => {

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS -->
     <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
     />
@@ -17,7 +21,7 @@
   </head>
   <body class="bg-fondo">
     <%- include('../plantillas/navbar.ejs') %> <% if (typeof alert !==
-    "undefined") { %>
+    "undefined" && alert) { %>
     <script>
       Swal.fire({
         title: "<%= alertTitle %>",
@@ -26,9 +30,8 @@
         showConfirmButton: "<%= showConfirmButton %>",
         timer: "<%= timer %>",
       }).then(() => {
-        if ("<%= ruta %>") {
-          window.location.href = "<%= ruta %>";
-        }
+        // Redirigir a la ruta especificada una vez se cierre la alerta
+        window.location.href = "<%= ruta %>";
       });
     </script>
     <% } %>
@@ -59,7 +62,12 @@
           Nuevo Registro
         </div>
         <div class="p-4">
-          <form id="crearClienteForm" action="/crearclienteS" method="post">
+          <form
+            id="crearClienteForm"
+            action="/crearclienteS"
+            method="post"
+            enctype="multipart/form-data"
+          >
             <div class="mb-4">
               <label for="id" class="block text-sm font-medium text-gray-700"
                 >IDENTIFICACION</label
@@ -183,8 +191,24 @@
               </select>
             </div>
 
+            <!-- Campo para subir la imagen -->
+            <div class="mb-4">
+              <label
+                for="imagen_perfil"
+                class="block text-sm font-medium text-gray-700"
+                >Imagen de Perfil</label
+              >
+              <input
+                type="file"
+                id="imagen_perfil"
+                name="imagen_perfil"
+                accept="image/*"
+              />
+            </div>
+
             <button
               type="submit"
+              id="guardarClienteBtn"
               class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             >
               Guardar

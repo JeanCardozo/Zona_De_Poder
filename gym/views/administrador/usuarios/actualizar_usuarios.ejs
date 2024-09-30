@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
 
     <!-- para llamar a Tailwind Css -->
     <link rel="stylesheet" href="../../src/output.css" />
@@ -45,7 +49,7 @@
           Editar usuarios
         </div>
         <div class="p-4">
-          <form action="/update_usuarios" method="post">
+          <form action="/update_usuarios" method="post" enctype="multipart/form-data">
             <div class="mb-4">
               <label for="id" class="block text-sm font-medium text-gray-700"
                 >IDENTIFICACION</label
@@ -120,6 +124,24 @@
               />
             </div>
             <div class="mb-4">
+              <label for="roles" class="block text-sm font-medium text-gray-700">Rol</label>
+              <select
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                id="roles"
+                name="roles"
+                required
+              >
+                <% roles.forEach(function(role) { %>
+                  <option value="<%= role.id %>" <%= role.id === user.id_rol ? 'selected' : '' %>>
+                    <%= role.tipo_de_rol %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+            
+            
+
+            <div class="mb-4">
               <label
                 for="contra"
                 class="block text-sm font-medium text-gray-700"
@@ -133,6 +155,25 @@
                 placeholder="Dejar vacío para mantener la contraseña actual"
               />
             </div>
+
+            <!-- Campo para la imagen de perfil -->
+          <div class="mb-4">
+            <label for="imagen_perfil" class="block text-sm font-medium text-gray-700">Imagen de Perfil</label>
+            <input
+              type="file"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              id="imagen_perfil"
+              name="imagen_perfil"
+              accept="image/*"
+            />
+            <!-- Mostrar la imagen actual si existe -->
+            <% if (user.imagen_perfil) { %>
+              <img src="/profile-image/<%= user.id %>" alt="Imagen de perfil" class="h-20 w-20 rounded-full mt-2" />
+            <% } else { %>
+              <p class="text-gray-500">No se ha subido una imagen de perfil.</p>
+            <% } %>
+          </div>
+
             <div class="flex justify-between">
               <button
                 type="submit"

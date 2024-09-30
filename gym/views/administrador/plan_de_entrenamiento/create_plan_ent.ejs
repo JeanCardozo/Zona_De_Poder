@@ -1,345 +1,524 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tailwind CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <title>Crud Roles</title>
+
+    <title>Crear plan de entrenamiento</title>
   </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link disabled"
-                href="#"
-                tabindex="-1"
-                aria-disabled="true"
-                >Disabled</a
-              >
-            </li>
-          </ul>
-          <form class="d-flex">
+  <body class="bg-fondo">
+    <%- include('../plantillas/navbar.ejs') %>
+    <a
+      href="/ver_plan_ent"
+      class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    </a>
+
+    <div class="flex justify-center items-center">
+      <div class="w-full max-w-3xl mx-auto p-8 bg-gray-50 rounded-lg shadow-md">
+        <div class="mb-8">
+          <h2 class="text-center p-4 text-2xl font-semibold text-gray-800">
+            Planificador de Entrenamiento
+          </h2>
+        </div>
+        <form id="entrenamientoForm" class="space-y-6">
+          <div>
+            <label
+              for="day"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Día de entrenamiento</label
+            >
+            <select
+              id="day"
+              name="day"
+              onchange="mostrarTipoEntrenamiento()"
+              class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+            >
+              <option value="">Selecciona un día</option>
+              <option value="Lunes">Lunes</option>
+              <option value="Martes">Martes</option>
+              <option value="Miercoles">Miércoles</option>
+              <option value="Jueves">Jueves</option>
+              <option value="Viernes">Viernes</option>
+              <option value="Sabado">Sábado</option>
+            </select>
+          </div>
+          <div>
+            <label
+              for="id_cliente"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >ID Cliente</label
+            >
             <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
+              type="number"
+              id="id_cliente"
+              name="id_cliente"
+              required
+              class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
             />
-            <button class="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-    </nav>
+          </div>
 
-    <% if (id_cliente !== null) { %>
-    <div class="container mt-4">
-      <div class="card border-secondary">
-        <div class="card-header">Nuevo Plan de Entrenamiento</div>
-        <div class="card-body">
-          <form action="/crearPlanEntrenamiento" method="post">
-            <!-- Selección de Cliente -->
-            <div class="mb-3">
-              <label for="id_cliente" class="form-label"
-                >IDENTIFICACIÓN CLIENTE</label
-              >
-              <input
-                type="number"
-                id="id_cliente"
-                name="id_cliente"
-                class="form-control"
-                value="<%= id_cliente %>"
-                tabindex="1"
-                readonly
-              />
-            </div>
-
-            <!-- Detalles del Cliente -->
-            <div class="mb-3">
-              <label for="diaSemana" class="form-label">DIA DE LA SEMANA</label>
-              <select class="form-control" id="dia" name="dia" required>
-                <option value="" disabled selected>Selecciona un día</option>
-                <% const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves',
-                'Viernes', 'Sábado', 'Domingo']; %> <%
-                diasSemana.forEach(function(dia) { %>
-                <option value="<%= dia %>"><%= dia %></option>
-                <% }); %>
-              </select>
-            </div>
-
-            <!-- Selección de Actividad Física -->
-            <div class="mb-3">
-              <label for="actividad" class="form-label">ACTIVIDAD FISICA</label>
-              <select
-                id="actividad"
-                name="id_actividad_fisica"
-                class="form-select"
-                required
-              >
-                <option value="" disabled selected>
-                  Seleccione una actividad física
-                </option>
-                <% actividades.forEach(function(actividad) { %>
-                <option value="<%= actividad.id %>">
-                  <%= actividad.nombre_ejercicio %>
-                </option>
-                <% }) %>
-              </select>
-            </div>
-
-            <!-- Detalles de la Actividad Física -->
-            <div class="mb-3">
-              <label for="series" class="form-label">NUMERO DE SERIES</label>
-              <input
-                type="number"
-                class="form-control"
-                id="series"
-                name="series"
-                required
-              />
-            </div>
-            <div class="mb-3">
-              <label for="repeticiones" class="form-label"
-                >NUMERO DE REPETICIONES</label
-              >
-              <input
-                type="number"
-                class="form-control"
-                id="repeticiones"
-                name="repeticiones"
-                required
-              />
-            </div>
-
-            <button type="submit" class="btn btn-primary" tabindex="5">
-              Guardar
-            </button>
-            <a href="/ver_plan_ent" class="btn btn-secondary">Cancelar</a>
-          </form>
-        </div>
-      </div>
-    </div>
-    <% } else { %>
-    <div class="container mt-4">
-      <div class="card border-secondary">
-        <div class="card-header">Nuevo Plan de Entrenamiento</div>
-        <div class="card-body">
-          <form action="/guardarPlanentrenamiento" method="post">
-            <div class="mb-3">
-              <label for="id_cliente" class="form-label"
-                >IDENTIFICACIÓN CLIENTE</label
-              >
-              <input
-                type="number"
-                id="id_cliente"
-                name="id_cliente"
-                class="form-control"
-                tabindex="1"
-                required
-              />
-            </div>
-
-            <!-- Detalles del Cliente -->
-            <div class="mb-3">
-              <label for="diasSemana" class="form-label"
-                >DÍAS DE LA SEMANA</label
-              >
-             
-                <div id="dia">
-                  <label><input type="checkbox" name="dias" value="Lunes" /> Lunes</label>
-                  <label><input type="checkbox" name="dias" value="Martes" /> Martes</label>
-                  <label><input type="checkbox" name="dias" value="Miércoles" /> Miércoles</label>
-                  <label><input type="checkbox" name="dias" value="Jueves" /> Jueves</label>
-                  <label><input type="checkbox" name="dias" value="Viernes" /> Viernes</label>
-                  <label><input type="checkbox" name="dias" value="Sábado" /> Sábado</label>
-                </div>
-            
-
-            <!-- Selección de Grupos Musculares -->
-            <div class="mb-3">
-              <label for="grupoMuscular" class="form-label"
-                >GRUPOS MUSCULARES</label
-              >
-              <div id="gruposMusculares">
-                <!-- Checkboxes para todos los grupos musculares -->
-                <% gruposMusculares.forEach(function(grupoMuscular) { %>
-                <div class="form-check">
+          <div id="tipoEntrenamiento" class="hidden">
+            <fieldset>
+              <legend class="text-sm font-medium text-gray-700 mb-2">
+                Tipo de entrenamiento
+              </legend>
+              <div class="space-y-2">
+                <div class="flex items-center">
                   <input
                     type="checkbox"
-                    name="grupos"
-                    value="<%= grupoMuscular.nombre %>"
-                    id="grupos"
-                    class="form-check-input"
+                    id="superior"
+                    name="type"
+                    value="superior"
+                    onchange="mostrarMusculos()"
+                    class="h-5 w-5 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
                   />
-                  <label class="form-check-label" for="grupos">
-                    <%= grupoMuscular.nombre %>
-                  </label>
+                  <label for="superior" class="ml-3 text-sm text-gray-700"
+                    >Tren superior</label
+                  >
+                </div>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="inferior"
+                    name="type"
+                    value="inferior"
+                    onchange="mostrarMusculos()"
+                    class="h-5 w-5 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
+                  />
+                  <label for="inferior" class="ml-3 text-sm text-gray-700"
+                    >Tren inferior</label
+                  >
+                </div>
+              </div>
+            </fieldset>
+          </div>
+
+          <div id="musculos" class="hidden">
+            <fieldset>
+              <legend class="text-sm font-medium text-gray-700 mb-2">
+                Grupos musculares
+              </legend>
+              <div id="muscleList" class="grid grid-cols-2 gap-3">
+                <% gruposMusculares.forEach(grupo => { %>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="<%= grupo.id %>"
+                    value="<%= grupo.nombre %>"
+                    name="muscles"
+                    onchange="mostrarEjercicios()"
+                    class="h-5 w-5 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
+                  />
+                  <label
+                    for="<%= grupo.id %>"
+                    class="ml-3 text-sm text-gray-700"
+                    ><%= grupo.nombre %></label
+                  >
                 </div>
                 <% }) %>
               </div>
-            </div>
-            <label for="actividad" class="form-label"
-              >ACTIVIDADES FISICAS</label
-            >
-            <!-- Selección de Actividad Física -->
-            <div class="mb-3" id="actividadesContainer">
-              <!-- Checkboxes de actividades físicas se llenarán con JavaScript -->
-            </div>
+            </fieldset>
+          </div>
 
-            <button
-              type="submit"
-              class="btn btn-primary"
-              id="crearPlanForm"
-              tabindex="5"
-            >
-              Guardar
-            </button>
-            <a href="/ver_plan_ent" class="btn btn-secondary">Cancelar</a>
-          </form>
-        </div>
+          <div id="ejercicios" class="hidden">
+            <fieldset>
+              <legend class="text-sm font-medium text-gray-700 mb-2">
+                Ejercicios
+              </legend>
+              <div id="exerciseList" class="space-y-3">
+                <% actividades.forEach(actividad => { %>
+                <div
+                  class="exercise-group hidden"
+                  data-muscle="<%= actividad.gm_nombre %>"
+                >
+                  <div class="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="<%= actividad.af_id %>"
+                      value="<%= actividad.af_nombre %>"
+                      name="exercises"
+                      onchange="mostrarSeriesReps()"
+                      class="h-5 w-5 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
+                    />
+                    <label
+                      for="<%= actividad.af_id %>"
+                      class="ml-3 text-sm text-gray-700"
+                      ><%= actividad.af_nombre %></label
+                    >
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+            </fieldset>
+          </div>
+
+          <div id="seriesReps" class="hidden space-y-5">
+            <!-- Se llenará dinámicamente con detalles para cada ejercicio seleccionado -->
+          </div>
+
+          <button
+            type="button"
+            onclick="guardarRutina()"
+            class="w-full py-3 px-4 bg-gray-800 text-white text-lg font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-300"
+          >
+            Guardar Rutina
+          </button>
+        </form>
       </div>
     </div>
-    <% } %>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
     <script>
-                          document.addEventListener("DOMContentLoaded", function() {
-        const actividades = <%- JSON.stringify(actividades) %>;
-        const gruposMusculares = <%- JSON.stringify(gruposMusculares) %>;
-
-        const actividadesContainer = document.getElementById("actividadesContainer");
-        const gruposContainer = document.getElementById("gruposMusculares");
-
-        function actualizarActividades() {
-          // Obtener los grupos musculares seleccionados
-          const gruposSeleccionados = Array.from(document.querySelectorAll("input[name='gruposMusculares']:checked"))
-            .map(grupo => grupo.value);
-
-          // Limpiar contenedor de actividades
-          actividadesContainer.innerHTML = '';
-
-          // Filtrar actividades basadas en grupos musculares seleccionados
-          const actividadesFiltradas = actividades.filter(actividad => gruposSeleccionados.includes(actividad.gm_nombre));
-
-          // Obtener actividades únicas
-          const actividadesUnicas = [...new Set(actividadesFiltradas.map(actividad => actividad.af_nombre))];
-
-          actividadesUnicas.forEach(nombreActividad => {
-            // Crear un contenedor para cada actividad
-            const div = document.createElement('div');
-            div.className = 'mb-3';
-            div.innerHTML = `
-              <div class="form-check" input[id="actividad_${nombreActividad}"]>
-                <input class="form-check-input" type="checkbox" name="actividades" value="${nombreActividad}" id="actividad_${nombreActividad}" />
-                <label class="form-check-label" for="actividad_${nombreActividad}">
-                  ${nombreActividad}
-                </label>
-              </div>
-              <div class="input-group mt-2" id="inputs_${nombreActividad}" style="display: none;">
-                <span class="input-group-text">Series</span>
-                <input type="text" class="form-control series-input" name="series_${nombreActividad}" placeholder="Series" min="1" />
-                <span class="input-group-text">Repeticiones</span>
-                <input type="text" class="form-control repeticiones-input" name="repeticiones_${nombreActividad}" placeholder="Repeticiones" min="1" />
-              </div>
-            `;
-            actividadesContainer.appendChild(div);
 
 
-            const actividadCheckbox = div.querySelector(`input[id="actividad_${nombreActividad}"]`);
-            actividadCheckbox.addEventListener('change', function() {
-              const inputsDiv = document.getElementById(`inputs_${nombreActividad}`);
-              if (actividadCheckbox.checked) {
-                inputsDiv.style.display = 'flex';
-                inputsDiv.querySelector('.series-input').setAttribute('required', 'required');
-                inputsDiv.querySelector('.repeticiones-input').setAttribute('required', 'required');
-              } else {
-                inputsDiv.style.display = 'none';
-                inputsDiv.querySelector('.series-input').removeAttribute('required');
-                inputsDiv.querySelector('.repeticiones-input').removeAttribute('required');
+
+
+
+
+                                       // Datos provenientes del servidor
+                                       const gruposMusculares = <%- JSON.stringify(gruposMusculares) %>;
+                                       const actividades = <%- JSON.stringify(actividades) %>;
+                                       function mostrarTipoEntrenamiento() {
+                                         const day = document.getElementById("day").value;
+                                         if (day) {
+                                           document.getElementById("tipoEntrenamiento").classList.remove("hidden");
+                                         } else {
+                                           document.getElementById("tipoEntrenamiento").classList.add("hidden");
+                                           document.getElementById("musculos").classList.add("hidden");
+                                           document.getElementById("ejercicios").classList.add("hidden");
+                                           document.getElementById("seriesReps").classList.add("hidden");
+                                         }
+                                       }
+                                       function mostrarMusculos() {
+                                         const types = Array.from(
+                                           document.querySelectorAll('input[name="type"]:checked')
+                                         ).map((checkbox) => checkbox.value);
+                                         const muscleList = document.getElementById("muscleList");
+                                         muscleList.innerHTML = ""; // Limpia los músculos previos
+                                         let muscles = [];
+                                         if (types.includes("superior")) {
+                                           muscles = [
+                                             ...muscles,
+                                             ...gruposMusculares.filter(gm => gm.seccion === "Tren Superior")
+                                           ];
+                                         }
+                                         if (types.includes("inferior")) {
+                                           muscles = [
+                                             ...muscles,
+                                             ...gruposMusculares.filter(gm => gm.seccion === "Tren Inferior")
+                                           ];
+                                         }
+                                         muscles.forEach((muscle) => {
+                                           const checkbox = document.createElement("input");
+                                           checkbox.type = "checkbox";
+                                           checkbox.id = muscle.id;
+                                           checkbox.value = muscle.nombre;
+                                           checkbox.name = "muscles";
+                                           checkbox.onchange = mostrarEjercicios;
+                                           const label = document.createElement("label");
+                                           label.htmlFor = muscle.id;
+                                           label.textContent = muscle.nombre;
+                                           const div = document.createElement("div");
+                                           div.classList.add("muscle-group");
+                                           div.appendChild(checkbox);
+                                           div.appendChild(label);
+                                           muscleList.appendChild(div);
+                                         });
+                                         if (muscles.length > 0) {
+                                           document.getElementById("musculos").classList.remove("hidden");
+                                         } else {
+                                           document.getElementById("musculos").classList.add("hidden");
+                                           document.getElementById("ejercicios").classList.add("hidden");
+                                           document.getElementById("seriesReps").classList.add("hidden");
+                                         }
+                                       }
+                                       function mostrarEjercicios() {
+                                         const selectedMuscles = Array.from(
+                                           document.querySelectorAll('input[name="muscles"]:checked')
+                                         ).map((checkbox) => checkbox.value);
+                                         const exerciseList = document.getElementById("exerciseList");
+                                         exerciseList.innerHTML = ""; // Limpia los ejercicios previos
+                                         let hasExercises = false;
+                                         selectedMuscles.forEach((muscle) => {
+                                           const muscleDiv = document.createElement("div");
+                                           muscleDiv.classList.add("muscle-group");
+                                           const muscleLabel = document.createElement("h4");
+                                           muscleLabel.textContent = `Ejercicios para ${muscle}`;
+                                           muscleDiv.appendChild(muscleLabel);
+                                           const muscleActivities = actividades.filter(
+                                             (actividad) => actividad.gm_nombre === muscle
+                                           );
+                                           muscleActivities.forEach((actividad) => {
+                                             const checkbox = document.createElement("input");
+                                             checkbox.type = "checkbox";
+                                             checkbox.id = actividad.af_id;
+                                             checkbox.value = actividad.af_nombre;
+                                             checkbox.name = "exercises";
+                                             checkbox.onchange = mostrarSeriesReps;
+                                             const label = document.createElement("label");
+                                             label.htmlFor = actividad.af_id;
+                                             label.textContent = actividad.af_nombre;
+                                             const div = document.createElement("div");
+                                             div.classList.add("exercise-group");
+                                             div.appendChild(checkbox);
+                                             div.appendChild(label);
+                                             muscleDiv.appendChild(div);
+                                           });
+                                           exerciseList.appendChild(muscleDiv);
+                                           hasExercises = true;
+                                         });
+                                         if (hasExercises) {
+                                           document.getElementById("ejercicios").classList.remove("hidden");
+                                         } else {
+                                           document.getElementById("ejercicios").classList.add("hidden");
+                                           document.getElementById("seriesReps").classList.add("hidden");
+                                         }
+                                       }
+                                       function mostrarSeriesReps() {
+                                         const selectedExercises = Array.from(
+                                           document.querySelectorAll('input[name="exercises"]:checked')
+                                         ).map((checkbox) => checkbox.value);
+                                         const seriesReps = document.getElementById("seriesReps");
+                                         seriesReps.innerHTML = ""; // Limpia las series y repeticiones previas
+                                         selectedExercises.forEach((exercise) => {
+                                           const exerciseDiv = document.createElement("div");
+                                           exerciseDiv.classList.add("exercise-details");
+                                           const exerciseLabel = document.createElement("label");
+                                           exerciseLabel.textContent = `Series y repeticiones para ${exercise.replace(/_/g, " ").toUpperCase()}:`;
+                                           exerciseDiv.appendChild(exerciseLabel);
+                                           const seriesInput = document.createElement("input");
+                                           seriesInput.type = "number";
+                                           seriesInput.id = `${exercise}_series`;
+                                           seriesInput.placeholder = "Series";
+                                           seriesInput.min = "1";
+                                           seriesInput.name = `${exercise}_series`;
+                                           const repsInput = document.createElement("input");
+                                           repsInput.type = "number";
+                                           repsInput.id = `${exercise}_reps`;
+                                           repsInput.placeholder = "Repeticiones";
+                                           repsInput.min = "1";
+                                           repsInput.name = `${exercise}_reps`;
+                                           const div = document.createElement("div");
+                                           div.appendChild(seriesInput);
+                                           div.appendChild(repsInput);
+                                           exerciseDiv.appendChild(div);
+                                           seriesReps.appendChild(exerciseDiv);
+                                         });
+                                         if (selectedExercises.length > 0) {
+                                           document.getElementById("seriesReps").classList.remove("hidden");
+                                         } else {
+                                           document.getElementById("seriesReps").classList.add("hidden");
+                                         }
+                                       }
+
+                                        function guardarRutina() {
+          const id_cliente = parseInt(document.getElementById("id_cliente").value, 10) || 0;
+          const dia = document.getElementById("day").value;
+
+          const tipo_tren = Array.from(document.querySelectorAll('input[name="type"]:checked'))
+              .map(cb => cb.value);
+
+          const musculo = Array.from(document.querySelectorAll('input[name="muscles"]:checked'))
+              .map(cb => cb.value);
+
+          const ejercicio = Array.from(document.querySelectorAll('input[name="exercises"]:checked'))
+              .map(cb => cb.value);
+
+          let series = [];
+          let repeticiones = [];
+
+          document.querySelectorAll('.exercise-details').forEach(detail => {
+              const seriesInput = detail.querySelector('input[name$="_series"]');
+              const repsInput = detail.querySelector('input[name$="_reps"]');
+
+              if (seriesInput && repsInput) {
+                  series.push(parseInt(seriesInput.value, 10) || 0);
+                  repeticiones.push(parseInt(repsInput.value, 10) || 0);
               }
-            });
-          });
-        }
-
-        function mostrarGruposMusculares() {
-          gruposContainer.innerHTML = '';
-          gruposMusculares.forEach(grupo => {
-            const div = document.createElement('div');
-            div.className = 'form-check';
-            div.innerHTML = `
-              <input class="form-check-input" type="checkbox" name="gruposMusculares" value="${grupo.nombre}" id="grupo_${grupo.id}" />
-              <label class="form-check-label" for="grupo_${grupo.id}">
-                ${grupo.nombre}
-              </label>
-            `;
-            gruposContainer.appendChild(div);
           });
 
-          document.querySelectorAll("input[name='gruposMusculares']").forEach(grupo => {
-            grupo.addEventListener("change", actualizarActividades);
+          const data = {
+              id_cliente,
+              dia,
+              tipo_tren,
+              musculo,
+              ejercicio,
+              series,
+              repeticiones
+          };
+
+          // const datos = {
+          // id_cliente,
+          // dia,
+          // data:
+          //    { tren: [
+            // {
+            //   tipo_tren: "superior",
+            //   musculos: [
+            //     {
+            //       nombre_musculo: "Hombro",
+            //       ejercicios: [
+            //         {
+            //           nombre: "Press militar",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "Press Banca",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "Manca",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //       ]
+            //     },
+            //     {
+            //       nombre: "Nalga Derecha",
+            //       ejercicios: [
+            //         {
+            //           nombre: "Culo",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //       ]
+            //     },
+            //     {
+            //       nombre: "Piernas",
+            //       ejercicios: [
+            //         {
+            //           nombre: "Prensa",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "Press Pussio",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "We",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //       ]
+            //     }
+            //   ]
+            //   },
+            //     {
+            //     tipo_tren: "inferior",
+            //     musculos: [
+            //     {
+            //       nombre_musculo: "Hombro",
+            //       ejercicios: [
+            //         {
+            //           nombre: "Press militar",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "Press Banca",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "Manca",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //       ]
+            //     },
+            //     {
+            //       nombre: "Nalga Derecha",
+            //       ejercicios: [
+            //         {
+            //           nombre: "Culo",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //       ]
+            //     },
+            //     {
+            //       nombre: "Piernas",
+            //       ejercicios: [
+            //         {
+            //           nombre: "Prensa",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "Press Pussio",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //         {
+            //           nombre: "We",
+            //           series: 22,
+            //           repeticiones: 22,
+            //         },
+            //       ]
+            //     }
+            //   ]
+            //   }
+            // ]
+
+          // }
+
+
+
+
+
+
+          console.log('Datos enviados:', data);
+
+          fetch('/entrenamiento/guardar', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(data)
+          })
+          .then(response => response.text())
+          .then(result => {
+              console.log('Respuesta del servidor:', result);
+              alert(result);
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('Error al guardar la rutina');
           });
-        }
-
-        mostrarGruposMusculares();
-        actualizarActividades();
-      });
-
-      document.getElementById('crearPlanForm').addEventListener('submit', function(event) {
-        // Selecciona todos los inputs que corresponden a series y repeticiones
-        const seriesInputs = document.querySelectorAll('.series-input');
-        const repeticionesInputs = document.querySelectorAll('.repeticiones-input');
-
-        seriesInputs.forEach(input => {
-          if (input.closest('.input-group').style.display === 'none') {
-            input.removeAttribute('required');
-          } else {
-            input.setAttribute('required', 'required');
-          }
-        });
-
-        repeticionesInputs.forEach(input => {
-          if (input.closest('.input-group').style.display === 'none') {
-            input.removeAttribute('required');
-          } else {
-            input.setAttribute('required', 'required');
-          }
-        });
-      });
+      }
     </script>
   </body>
 </html>

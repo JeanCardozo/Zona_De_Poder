@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/output.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <title>Mis planes</title>
+  </head>
+  <body class="bg-gray-100">
+    <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
+
+    <div class="flex bg-gray-100 min-h-screen py-8">
+      <% if (planesDeEntrenamiento) { %>
+
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-800">
+            Mis planes <%= nombreCliente %>
+          </h1>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% planesDeEntrenamiento.forEach(function(plan) { %>
+          <div
+            class="bg-white shadow-md rounded-lg p-4 transition-transform transform hover:scale-105 hover:bg-blue-100"
+          >
+            <h2 class="text-xl font-bold mb-2"></h2>
+            <p><strong>Día:</strong> <%= plan.dia %></p>
+            <p><strong>Músculo:</strong> <%= plan.musculo %></p>
+            <p><strong>Ejercicio:</strong> <%= plan.ejercicio %></p>
+            <p><strong>Series:</strong> <%= plan.series %></p>
+            <p><strong>Repeticiones:</strong> <%= plan.repeticiones %></p>
+          </div>
+          <% }); %>
+        </div>
+        <% } else { %>
+        <p>No hay planes de entrenamiento disponibles.</p>
+        <% } %>
+      </div>
+    </div>
+
+    <footer id="footer" class="bg-gray-800 text-white py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 class="text-3xl font-bold mb-4">
+              <a href="/logout">Zona de Poder<sup>&reg;</sup></a>
+            </h3>
+            <ul class="space-y-2">
+              <li>Teléfono: +57 123 456 7890</li>
+              <li>Dirección: Calle Principal #123, Ciudad</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-4">Enlaces útiles</h4>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Política de privacidad</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Términos y condiciones</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Nuestros servicios</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-yellow-400 transition duration-300"
+                  >Contacto</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
+            <ul class="space-y-4">
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

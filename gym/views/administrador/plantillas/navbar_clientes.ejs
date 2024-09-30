@@ -1,4 +1,8 @@
 <head>
+  <link
+    rel="shortcut icon"
+    href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+  />
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap");
     * {
@@ -18,67 +22,90 @@
   </style>
 </head>
 
-<nav class="bg-white-600 shadow-md">
-  <div class="px-4 sm:px-6 lg:px-8">
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       <div class="flex-shrink-0 flex items-center">
         <img
           src="https://raw.githubusercontent.com/JeanCardozo/audios/main/logo.png"
           alt="Logo"
-          class="w-auto h-16 max-w-[150px] my-2 ml-2"
+          class="h-12 w-auto"
         />
       </div>
 
       <div class="hidden sm:flex sm:space-x-8">
         <a
+          href="/clientes/index_c"
+          class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+          >Inicio</a
+        >
+        <a
           href="/mis_planes"
-          class="hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+          class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
           >Mis Planes</a
         >
         <a
           href="/info_personal"
-          class="hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
-          >Informacion</a
+          class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+          >Información</a
         >
         <a
           href="/ayuda"
-          class="hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
-          >Ayuda
-        </a>
+          class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+          >Ayuda</a
+        >
+        <a
+          href="/mi_plan"
+          class="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
+          >Mi plan de Entrenamiento</a
+        >
       </div>
 
       <div class="flex items-center space-x-4">
-        <div class="relative">
+        <div class="relative ml-4">
           <button
             id="profileButton"
             class="flex items-center focus:outline-none"
+            onclick="toggleProfileDropdown()"
           >
             <img
-              src="https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png"
-              alt="Perfil"
-              class="h-10 w-10 rounded-full border-2 border-white"
+              src="/profile-image/client/<%= userData.id %>"
+              alt="Imagen de perfil del cliente"
+              class="h-10 w-10 rounded-full object-cover"
+              onerror="this.src='https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png';"
             />
           </button>
           <div
             id="profileDropdown"
-            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden text-gray-700"
+            class="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-md hidden text-sm"
           >
             <% if (userData) { %>
-            <div class="p-4 border-b">
+            <div class="p-2 border-b">
               <p class="font-semibold">Hola, <%= userData.nombre_usuario %></p>
-              <p class="text-sm text-gray-600"><%= userData.rol %></p>
+              <p class="text-gray-600"><%= userData.rol %></p>
             </div>
             <% } else { %>
-            <p class="p-4 text-gray-600">Sin información</p>
+            <p class="p-2 text-gray-600">Sin información</p>
             <% } %>
+            <a
+              href="/logout"
+              class="block p-2 text-gray-700 hover:bg-gray-100 transition-colors"
+              >Cerrar sesión</a
+            >
           </div>
-          <a
-            href="/logout"
-            class="block px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
-            >Cerrar sesión</a
-          >
         </div>
       </div>
     </div>
   </div>
 </nav>
+<script>
+  function toggleProfileDropdown() {
+    console.log("Función toggleProfileDropdown llamada");
+    const dropdown = document.getElementById("profileDropdown");
+    if (dropdown) {
+      dropdown.classList.toggle("hidden");
+    } else {
+      console.error("Elemento profileDropdown no encontrado");
+    }
+  }
+</script>

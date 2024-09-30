@@ -3,13 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="shortcut icon"
+      href="https://raw.githubusercontent.com/JeanCardozo/audios/main/z.png"
+    />
 
     <!-- para llamar a Tailwind Css -->
     <link rel="stylesheet" href="../../src/output.css" />
     <link
-    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-    rel="stylesheet"
-  />
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
@@ -20,91 +24,104 @@
     <%- include('../plantillas/navbar.ejs') %>
 
     <a
-    href="/ver_clientes"
-    class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
+      href="/ver_clientes"
+      class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
     >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M15 19l-7-7 7-7"
-      />
-    </svg>
-  </a>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    </a>
 
-
-    <% if (user) { %>
+    <% if (cliente) { %>
       <div class="max-w-7xl mx-auto p-4 rounded-md">
         <div class="bg-gray-200 border border-gray-300">
           <div class="text-center p-4 bg-gray-400 font-semibold text-white">
             Editar Registro
           </div>
           <div class="p-4">
-            <form action="/update_cliente" method="post">
-              <input type="hidden" id="id" name="id" value="<%= user.id_cliente %>" />
+            <form id="updateForm" action="/update_cliente" method="post" enctype="multipart/form-data">
+              <input type="hidden" id="id" name="id" value="<%= cliente.id_cliente %>" />
       
               <div class="mb-4">
                 <label for="nombre" class="block text-sm font-medium text-gray-700">NOMBRE</label>
-                <input type="text" id="nombre" name="nombre" value="<%= user.nombre %>" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                <input type="text" id="nombre" name="nombre" value="<%= cliente.nombre %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
               </div>
       
               <div class="mb-4">
                 <label for="apellido" class="block text-sm font-medium text-gray-700">APELLIDO</label>
-                <input type="text" id="apellido" name="apellido" value="<%= user.apellido %>" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                <input type="text" id="apellido" name="apellido" value="<%= cliente.apellido %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
               </div>
       
               <div class="mb-4">
                 <label for="edad" class="block text-sm font-medium text-gray-700">EDAD</label>
-                <input type="number" id="edad" name="edad" max="100" min="1" value="<%= user.edad %>" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                <input type="number" id="edad" name="edad" max="100" min="1" value="<%= cliente.edad %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
               </div>
       
               <div class="mb-4">
                 <label for="sexo" class="block text-sm font-medium text-gray-700">SEXO</label>
                 <select name="sexo" id="sexo" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-                  <option value="" disabled <%= !user.sexo ? 'selected' : '' %>>Seleccione el Sexo</option>
-                  <option value="Masculino" <%= user.sexo === "Masculino" ? 'selected' : '' %>>Masculino</option>
-                  <option value="Femenino" <%= user.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                  <option value="" disabled <%= !cliente.sexo ? 'selected' : '' %>>Seleccione el Sexo</option>
+                  <option value="Masculino" <%= cliente.sexo === "Masculino" ? 'selected' : '' %>>Masculino</option>
+                  <option value="Femenino" <%= cliente.sexo === "Femenino" ? 'selected' : '' %>>Femenino</option>
                 </select>
               </div>
       
               <div class="mb-4">
                 <label for="correo_electronico" class="block text-sm font-medium text-gray-700">CORREO</label>
-                <input type="email" id="correo_electronico" name="correo_electronico" value="<%= user.correo_electronico %>" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                <input type="email" id="correo_electronico" name="correo_electronico" value="<%= cliente.correo_electronico %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
               </div>
       
               <div class="mb-4">
                 <label for="numero_telefono" class="block text-sm font-medium text-gray-700">TELÉFONO</label>
-                <input type="number" id="numero_telefono" name="numero_telefono" value="<%= user.numero_telefono %>" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                <input type="number" id="numero_telefono" name="numero_telefono" value="<%= cliente.numero_telefono %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
               </div>
       
               <div class="mb-6">
                 <label for="id_mensualidad" class="block text-sm font-medium text-gray-700">MENSUALIDADES</label>
-                <select name="id_mensualidad" id="id_mensualidad" required
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-                  <option value="" disabled required>Seleccione una mensualidad</option>
+                <select name="id_mensualidad" id="id_mensualidad"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                  <option value="">Seleccione una mensualidad (opcional)</option>
                   <% mensualidades.forEach(function(mensual) { %>
-                    <option value="<%= mensual.id_mensu %>" <%= mensual.id_mensu === user.id_mensualidad ? 'selected' : '' %>>
-                      <%= mensual.tiempo_plan %> - <%= mensual.total_pagar %>
-                    </option>
+                  <option value="<%= mensual.id_mensu %>" <%= mensual.id_mensu === cliente.id_mensualidad ? 'selected' : '' %>>
+                    <%= mensual.tiempo_plan %> - <%= mensual.total_pagar %>
+                  </option>
                   <% }) %>
                 </select>
               </div>
       
+              <!-- Imagen de perfil -->
+              <div class="mb-4">
+                <label for="imagen_perfil" class="block text-sm font-medium text-gray-700">Imagen de Perfil</label>
+                <input type="file" id="imagen_perfil" name="imagen_perfil"
+                  class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" accept="image/*" />
+                <% if (cliente.imagen_perfil) { %>
+                <img src="<%= cliente.imagen_perfil %>" alt="Imagen de perfil del cliente" class="h-20 w-20 rounded-full mt-2" />
+                <% } else { %>
+                <p class="text-gray-500">No se ha subido una imagen de perfil.</p>
+                <% } %>
+              </div>
+      
+              <!-- Botón de guardar -->
               <div class="flex justify-between">
-                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800">
                   Guardar
                 </button>
               </div>
@@ -112,30 +129,50 @@
           </div>
         </div>
       </div>
-      
-      
-    <% } %>
+      <% } %>
 
-    <% if (typeof alert !=="undefined") { %>
-    <script>
-      Swal.fire({
-        title: "<%= alertTitle %>",
-        text: "<%= alertMessage %>",
-        icon: "<%= alertIcon %>",
-        showConfirmButton: "<%= showConfirmButton %>",
-        timer: "<%= timer %>",
-      }).then(() => {
-        if ("<%= ruta %>") {
-          window.location.href = "<%= ruta %>";
-        }
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script>
+      document.getElementById('updateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        fetch('/update_cliente', {
+          method: 'POST',
+          body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.alert) {
+            Swal.fire({
+              title: data.alertTitle,
+              text: data.alertMessage,
+              icon: data.alertIcon,
+              showConfirmButton: data.showConfirmButton,
+              timer: data.timer
+            }).then(() => {
+              if (data.ruta) {
+                window.location.href = data.ruta;
+              }
+            });
+          } else if (data.error) {
+            Swal.fire({
+              title: 'Error',
+              text: data.error,
+              icon: 'error',
+              confirmButtonText: 'Ok'
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Hubo un problema al procesar tu solicitud',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          });
+        });
       });
-    </script>
-    <% } %>
-
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
+      </script>
   </body>
 </html>

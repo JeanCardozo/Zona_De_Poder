@@ -3,14 +3,43 @@ const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "negrosdemierda"; // Asegúrate de mantener esto en secreto
-const mercadopago = require("mercadopago");
-const {
-  MercadoPagoConfig,
-  Preference,
-  configurations,
-} = require("mercadopago");
-const { token } = require("morgan");
+require("dotenv").config();
+const PDFDocument = require("pdfkit"); // Asegúrate de tener pdfkit instalado
+const path = require("path");
+const multer = require("multer");
+const { promisify } = require("util");
 
+// CALENDARIO----------------------------------------------------
+
+exports.crear_evento = (req, res) => {
+  const evento = req.body.evento;
+  const fecha = req.body.fecha;
+
+  const query = "INSERT INTO eventos (nombre,fecha,estado) VALUES ($1,$2,$3)";
+  const values = [evento, fecha, "Activo"];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).sendFile(__dirname + "/500.html");
+    } else {
+      res.redirect("/index_admin");
+    }
+  });
+};
+////////////////////////////////////////////////////////////////// ver pqrs/////////////////////////////////////////////////////////////////////
+exports.verPqrss = (req, res) => {
+  const query = `
+    SELECT * FROM pqrs ORDER BY id`;
+
+  conexion.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).sendFile(__dirname + "/500.html");
+    }
+
+    return res.status(200).json(results.rows);
+  });
+};
 //ROLES--------------------------------------------------------------
 
 //llamado desde create_rol para hacer la insercion a la base de datos en la tabla roles
@@ -23,9 +52,9 @@ exports.crearRoles = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_roles?create=success");
+      res.redirect("/ver_roles?message=success");
     }
   });
 };
@@ -35,44 +64,62 @@ exports.updateRoles = (req, res) => {
   const id = parseInt(req.body.id, 10);
   const tipo_de_rol = req.body.tipo_de_rol;
 
-  // Verifica que el ID sea un número válido
-  if (isNaN(id)) {
-    console.log("Invalid ID:", req.body.id);
-    return res.status(400).json({ error: "Invalid ID" });
+  if (id) {
+    console.log("Invalid ID:", id);
   }
-
-  const query = "UPDATE roles SET tipo_de_rol = $1 WHERE id = $2";
+  const query = "UPDATE roles SET tipo_de_rol=$1 WHERE id = $2";
   const values = [tipo_de_rol, id];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_roles?update=success");
+      res.redirect("/ver_roles?message=success");
     }
   });
 };
 
 //CLIENTES-------------------------------------------------------------------
+// Configuración de multer para manejar la carga de archivos en memoria
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2 MB
+  },
+}).single("imagen_perfil");
+
+const uploadAsync = promisify(upload);
 
 exports.crearclienteS = async (req, res) => {
-  const id = req.body.id;
-  const nom = req.body.nombre;
-  const ape = req.body.apellido;
-  const edad = req.body.edad;
-  const sexo = req.body.sexo;
-  const correo = req.body.correo;
-  const numero = req.body.numero;
-  const mensu = req.body.mensualidad;
-  const usu = req.body.usuario;
-
   try {
-    // Paso 1: Consultar los valores de meses y días desde la tabla mensualidades
+    // Procesar la subida de la imagen
+    await uploadAsync(req, res);
+
+    const {
+      id,
+      nombre,
+      apellido,
+      edad,
+      sexo,
+      correo,
+      numero,
+      mensualidad,
+      usuario,
+    } = req.body;
+
+    // Procesar los datos de la imagen
+    let imagenBuffer = null;
+    let imagenContentType = null;
+    if (req.file) {
+      imagenBuffer = req.file.buffer;
+      imagenContentType = req.file.mimetype;
+    }
+
     const queryMensualidades =
       "SELECT mes, dias FROM mensualidades WHERE id = $1";
     const resultsMensualidades = await conexion.query(queryMensualidades, [
-      mensu,
+      mensualidad,
     ]);
 
     if (resultsMensualidades.rows.length === 0) {
@@ -81,221 +128,199 @@ exports.crearclienteS = async (req, res) => {
 
     const { mes: meses, dias } = resultsMensualidades.rows[0];
 
-    // Validar los valores de meses y días
-    if (isNaN(meses) || isNaN(dias)) {
-      return res.status(400).json({ error: "Datos de mensualidad inválidos" });
-    }
-
-    // Paso 2: Calcular la fecha final
+    // Calcular la fecha final
     let fechaInicio = new Date();
-    fechaInicio.setTime(
-      fechaInicio.getTime() + new Date().getTimezoneOffset() * 60000
-    );
-
-    if (isNaN(fechaInicio.getTime())) {
-      return res.status(400).json({ error: "Fecha de inscripción inválida" });
-    }
-
     fechaInicio.setMonth(fechaInicio.getMonth() + parseInt(meses, 10));
     fechaInicio.setDate(fechaInicio.getDate() + parseInt(dias, 10));
-    const fechaFinal = fechaInicio.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+    const fechaFinal = fechaInicio.toISOString().split("T")[0];
 
-    // Encriptar la contraseña de forma asíncrona
+    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(id, saltRounds);
 
-    // Paso 3: Realizar las inserciones en la base de datos con transacción
+    // Iniciar transacción
     await conexion.query("BEGIN");
 
-    const queryClientes =
-      "INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado, contraseña) VALUES ($1, $2, $3, $4, $5, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $6, $7, $8, $9, $10, $11) RETURNING id";
+    const queryClientes = `
+      INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado, contraseña, imagen_perfil, imagen_content_type)
+       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota', $6, $7, $8, $9, 'Activo', $10, $11, $12) RETURNING id
+    `;
     const valuesClientes = [
       id,
-      nom,
-      ape,
+      nombre,
+      apellido,
       edad,
       sexo,
       correo,
       numero,
-      mensu,
-      usu,
-      "Activo",
+      mensualidad,
+      usuario,
       hashedPassword,
+      imagenBuffer,
+      imagenContentType,
     ];
 
     const resultClientes = await conexion.query(queryClientes, valuesClientes);
-    const ide = resultClientes.rows[0].id; // Capturar el ID recién creado
 
-    const queryTallas =
-      "INSERT INTO tallas (id_cliente, nombre, fecha) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'))";
-    const valuesTallas = [ide, nom];
-    await conexion.query(queryTallas, valuesTallas);
+    const ide = resultClientes.rows[0].id;
 
-    const queryMensualidad =
-      "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $3, $4, $5)";
-    const valuesMensualidad = [ide, nom, fechaFinal, mensu, "Activo"];
-    await conexion.query(queryMensualidad, valuesMensualidad);
+    // Insertar datos en otras tablas
+    const queryTallas = `
+      INSERT INTO tallas (id_cliente, nombre, fecha)
+       VALUES ($1, $2, CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota')
+    `;
+    await conexion.query(queryTallas, [ide, nombre]);
 
-    // Nueva inserción a la tabla usuarios
-    const queryUsuarios =
-      "INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
-    const valuesUsuarios = [
-      id, // id del cliente como id del usuario
-      nom, // nombre
-      ape, // apellido
-      numero, // telefono
-      correo, // correo electronico
-      hashedPassword, // contraseña encriptada
-      3, // id_rol = 3
-      "Activo", // estado = "Activo"
-    ];
-    await conexion.query(queryUsuarios, valuesUsuarios);
+    const queryMensualidad = `
+      INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado)
+       VALUES ($1, $2, CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota', $3, $4, 'Activo')
+    `;
+    await conexion.query(queryMensualidad, [
+      ide,
+      nombre,
+      fechaFinal,
+      mensualidad,
+    ]);
+
+    const queryUsuarios = `
+      INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado)
+       VALUES ($1, $2, $3, $4, $5, $6, 3, 'Activo')
+    `;
+    await conexion.query(queryUsuarios, [
+      id,
+      nombre,
+      apellido,
+      numero,
+      correo,
+      hashedPassword,
+    ]);
 
     // Confirmar la transacción
     await conexion.query("COMMIT");
 
-    res.status(200);
-    res.render("administrador/clientes/create_clientes", {
-      alert: true,
-      alertTitle: "Registro Exitoso",
-      alertMessage: "Usuario registrado con éxito, Redirigiendo...",
-      alertIcon: "success",
-      showConfirmButton: false,
-      timer: 2500,
-      ruta: `/actualizar_tallas/${ide}`,
-      mensualidades: resultsMensualidades.rows, // Pasar la lista de mensualidades
-    });
+    // Redirigir a la vista de actualización de tallas con éxito
+    res.redirect(`/actualizar_tallas/${ide}?pdf=true`);
   } catch (error) {
-    // Si hay un error, revertir la transacción
     await conexion.query("ROLLBACK");
     console.error("Error en la creación del cliente:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).sendFile(__dirname + "/500.html");
   }
 };
 
-exports.update_cliente = (req, res) => {
-  const id = req.body.id;
-  const nombre = req.body.nombre;
-  const apellido = req.body.apellido;
-  const edad = req.body.edad;
-  const sexo = req.body.sexo;
-  const correo_electronico = req.body.correo_electronico;
-  const numero_telefono = req.body.numero_telefono;
-  const id_mensualidad = parseInt(req.body.id_mensualidad);
+// Mover la generación del PDF a una ruta separada
 
-  const queryUpdateCliente = `
-    UPDATE clientes 
-    SET nombre = $1, apellido = $2, edad = $3, sexo = $4, 
-        correo_electronico = $5, numero_telefono = $6, 
-        id_mensualidad = $7
-    WHERE id = $8
-  `;
-  const valuesUpdateCliente = [
-    nombre,
-    apellido,
-    edad,
-    sexo,
-    correo_electronico,
-    numero_telefono,
-    id_mensualidad,
-    id,
-  ];
+// Controlador para renderizar el formulario de actualización (GET)
 
-  conexion.query("BEGIN", (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ error: err.message });
+// Controlador para manejar la actualización de un cliente (POST)
+exports.update_cliente = async (req, res) => {
+  try {
+    await uploadAsync(req, res);
+    console.log("Archivo subido correctamente o no se subió ningún archivo.");
+
+    let {
+      id,
+      nombre,
+      apellido,
+      edad,
+      sexo,
+      correo_electronico,
+      numero_telefono,
+      id_mensualidad,
+    } = req.body;
+
+    console.log("Datos recibidos:", req.body);
+
+    // Convertir y validar tipos de datos
+    id = parseInt(id, 10);
+    edad = parseInt(edad, 10);
+    id_mensualidad = id_mensualidad ? parseInt(id_mensualidad, 10) : null;
+    numero_telefono = parseInt(numero_telefono, 10);
+
+    console.log("Datos convertidos:", {
+      id,
+      edad,
+      id_mensualidad,
+      numero_telefono,
+    });
+
+    if (
+      [id, edad, numero_telefono].includes(NaN) ||
+      (id_mensualidad !== null && isNaN(id_mensualidad))
+    ) {
+      console.error("Validación fallida: Datos numéricos inválidos.");
+      return res.status(400).json({
+        error: "Datos inválidos proporcionados. Verifica los campos numéricos.",
+      });
     }
 
-    conexion.query(
-      queryUpdateCliente,
-      valuesUpdateCliente,
-      (error, results) => {
-        if (error) {
-          return conexion.query("ROLLBACK", (rollbackErr) => {
-            if (rollbackErr) {
-              console.log(rollbackErr);
-              return res.status(500).json({ error: rollbackErr.message });
-            }
-            console.log(error);
-            return res.status(500).json({ error: error.message });
-          });
-        }
+    // Iniciar la transacción
+    await conexion.query("BEGIN");
+    console.log("Transacción iniciada.");
 
-        // Actualizar la tabla tallas con los nuevos datos
-        const queryUpdateTallas = `
-        UPDATE tallas 
-        SET nombre = $1
-        WHERE id_cliente = $2
+    const queryUpdateCliente = `
+      UPDATE clientes 
+      SET nombre = $1, apellido = $2, edad = $3, sexo = $4, 
+          correo_electronico = $5, numero_telefono = $6, id_mensualidad = $7
+      WHERE id = $8
+    `;
+
+    const valuesUpdateCliente = [
+      nombre,
+      apellido,
+      edad,
+      sexo,
+      correo_electronico,
+      numero_telefono,
+      id_mensualidad,
+      id,
+    ];
+
+    // Actualizar los datos principales del cliente
+    await conexion.query(queryUpdateCliente, valuesUpdateCliente);
+    console.log("Datos del cliente actualizados.");
+
+    // Actualizar la imagen solo si se ha subido una nueva
+    if (req.file) {
+      const imagenBuffer = req.file.buffer;
+      const imagenContentType = req.file.mimetype;
+
+      const queryUpdateImagen = `
+        UPDATE clientes 
+        SET imagen_perfil = $1, imagen_content_type = $2
+        WHERE id = $3
       `;
-        const valuesUpdateTallas = [nombre, id];
 
-        conexion.query(
-          queryUpdateTallas,
-          valuesUpdateTallas,
-          (errorTallas, resultsTallas) => {
-            if (errorTallas) {
-              return conexion.query("ROLLBACK", (rollbackErr) => {
-                if (rollbackErr) {
-                  console.log(rollbackErr);
-                  return res.status(500).json({ error: rollbackErr.message });
-                }
-                console.log(errorTallas);
-                return res.status(500).json({ error: errorTallas.message });
-              });
-            }
+      const valuesUpdateImagen = [imagenBuffer, imagenContentType, id];
+      await conexion.query(queryUpdateImagen, valuesUpdateImagen);
+      console.log("Imagen del cliente actualizada.");
+    }
 
-            // Actualizar la tabla mensualidad_clientes con los nuevos datos
-            const queryUpdateMensualidad = `
-          UPDATE mensualidad_clientes 
-          SET nombre = $1, id_mensualidad = $2
-          WHERE id_cliente = $3
-        `;
-            const valuesUpdateMensualidad = [nombre, id_mensualidad, id];
+    // Confirmar la transacción
+    await conexion.query("COMMIT");
+    console.log("Transacción confirmada.");
 
-            conexion.query(
-              queryUpdateMensualidad,
-              valuesUpdateMensualidad,
-              (errorMensualidad, resultsMensualidad) => {
-                if (errorMensualidad) {
-                  return conexion.query("ROLLBACK", (rollbackErr) => {
-                    if (rollbackErr) {
-                      console.log(rollbackErr);
-                      return res
-                        .status(500)
-                        .json({ error: rollbackErr.message });
-                    }
-                    console.log(errorMensualidad);
-                    return res
-                      .status(500)
-                      .json({ error: errorMensualidad.message });
-                  });
-                }
+    // Enviar respuesta de éxito
+    res.status(200).json({
+      alert: true,
+      alertTitle: "Actualización Exitosa",
+      alertMessage: "Cliente actualizado correctamente.",
+      alertIcon: "success",
+      showConfirmButton: false,
+      timer: 2500,
+      ruta: "/ver_clientes",
+    });
+  } catch (error) {
+    console.error("Error en la actualización del cliente:", error);
 
-                conexion.query("COMMIT", (commitErr) => {
-                  if (commitErr) {
-                    console.log(commitErr);
-                    return res.status(500).json({ error: commitErr.message });
-                  }
-                  res.status(200);
-                  res.render("administrador/clientes/create_clientes", {
-                    alert: true,
-                    alertTitle: "Registro Exitoso",
-                    alertMessage:
-                      "Usuario Actualizado con éxito, Redirigiendo...",
-                    alertIcon: "success",
-                    showConfirmButton: false,
-                    timer: 2500,
-                    ruta: `/ver_clientes`,
-                    mensualidades: resultsMensualidad.rows, // Pasar la lista de mensualidades
-                  });
-                });
-              }
-            );
-          }
-        );
-      }
-    );
-  });
+    // Si ocurre un error, revertir la transacción
+    try {
+      await conexion.query("ROLLBACK");
+      console.log("Transacción revertida.");
+    } catch (rollbackError) {
+      console.error("Error al hacer ROLLBACK:", rollbackError);
+    }
+
+    res.status(500).sendFile(__dirname + "/500.html");
+  }
 };
 
 exports.renovar_cliente = (req, res) => {
@@ -311,7 +336,7 @@ exports.renovar_cliente = (req, res) => {
     (errorMensualidades, resultsMensualidades) => {
       if (errorMensualidades) {
         console.log(errorMensualidades);
-        return res.status(500).json({ error: errorMensualidades.message });
+        return res.status(500).sendFile(__dirname + "/500.html");
       }
 
       if (resultsMensualidades.rows.length === 0) {
@@ -347,7 +372,7 @@ exports.renovar_cliente = (req, res) => {
       conexion.query("BEGIN", (err) => {
         if (err) {
           console.log(err);
-          return res.status(500).json({ error: err.message });
+          return res.status(500).sendFile(__dirname + "/500.html");
         }
 
         conexion.query(queryVentas, valuesVentas, (error, resultsVentas) => {
@@ -355,10 +380,10 @@ exports.renovar_cliente = (req, res) => {
             return conexion.query("ROLLBACK", (rollbackErr) => {
               if (rollbackErr) {
                 console.log(rollbackErr);
-                return res.status(500).json({ error: rollbackErr.message });
+                return res.status(500).sendFile(__dirname + "/500.html");
               }
               console.log(error);
-              return res.status(500).json({ error: error.message });
+              return res.status(500).sendFile(__dirname + "/500.html");
             });
           }
 
@@ -385,11 +410,10 @@ exports.renovar_cliente = (req, res) => {
               if (errorInsert) {
                 return conexion.query("ROLLBACK", (rollbackErr) => {
                   if (rollbackErr) {
-                    console.log(rollbackErr);
-                    return res.status(500).json({ error: rollbackErr.message });
+                    return res.status(500).sendFile(__dirname + "/500.html");
                   }
                   console.log(errorInsert);
-                  return res.status(500).json({ error: errorInsert.message });
+                  return res.status(500).sendFile(__dirname + "/500.html");
                 });
               }
 
@@ -404,15 +428,12 @@ exports.renovar_cliente = (req, res) => {
                   if (errorUpdate) {
                     return conexion.query("ROLLBACK", (rollbackErr) => {
                       if (rollbackErr) {
-                        console.log(rollbackErr);
                         return res
                           .status(500)
-                          .json({ error: rollbackErr.message });
+                          .sendFile(__dirname + "/500.html");
                       }
                       console.log(errorUpdate);
-                      return res
-                        .status(500)
-                        .json({ error: errorUpdate.message });
+                      return res.status(500).sendFile(__dirname + "/500.html");
                     });
                   }
 
@@ -427,15 +448,14 @@ exports.renovar_cliente = (req, res) => {
                       if (errorUpdate) {
                         return conexion.query("ROLLBACK", (rollbackErr) => {
                           if (rollbackErr) {
-                            console.log(rollbackErr);
                             return res
                               .status(500)
-                              .json({ error: rollbackErr.message });
+                              .sendFile(__dirname + "/500.html");
                           }
                           console.log(errorUpdate);
                           return res
                             .status(500)
-                            .json({ error: errorUpdate.message });
+                            .sendFile(__dirname + "/500.html");
                         });
                       }
 
@@ -445,7 +465,7 @@ exports.renovar_cliente = (req, res) => {
                           console.log(errCommit);
                           return res
                             .status(500)
-                            .json({ error: errCommit.message });
+                            .sendFile(__dirname + "/500.html");
                         }
 
                         // Redireccionar a otra página después de realizar las operaciones
@@ -466,140 +486,182 @@ exports.renovar_cliente = (req, res) => {
 // USUARIOS -----------------------------------------------------------------
 
 exports.crearusu = async (req, res) => {
-  const ide = req.body.id;
-  const nom = req.body.nombre;
-  const ape = req.body.ape;
-  const tele = parseInt(req.body.telefono);
-  const correo = req.body.correo;
-  const contra = req.body.contra;
-  const rol = req.body.roles;
-
   try {
+    // Procesar la carga de archivos
+    await uploadAsync(req, res);
+
+    console.log(req.file);
+
+    const { id, nombre, ape, telefono, correo, contra, roles } = req.body;
+    const tele = parseInt(telefono);
+
     // Encriptar la contraseña
     const hashedPassword = await bcrypt.hash(contra, saltRounds);
 
-    // Preparar la consulta con la contraseña encriptada
+    // Preparar los datos de la imagen
+    let imagenBuffer = null;
+    let imagenContentType = null;
+    if (req.file) {
+      imagenBuffer = req.file.buffer;
+      imagenContentType = req.file.mimetype;
+    }
+
+    // Preparar la consulta con la contraseña encriptada y la imagen
     const query =
-      "INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
-    const values = [ide, nom, ape, tele, correo, hashedPassword, rol, "Activo"];
+      "INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado, imagen_perfil, imagen_content_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
+    const values = [
+      id,
+      nombre,
+      ape,
+      tele,
+      correo,
+      hashedPassword,
+      roles,
+      "Activo",
+      imagenBuffer,
+      imagenContentType,
+    ];
+
+    // Ejecutar la consulta
+    await conexion.query(query, values);
 
     // Obtener la lista de roles para mostrar en el formulario
     const rolesQuery = "SELECT * FROM roles";
     const rolesResults = await conexion.query(rolesQuery);
 
-    // Ejecutar la consulta
-    conexion.query(query, values, (error, results) => {
-      if (error) {
-        console.log(error);
-
-        return res.render("administrador/usuarios/create_usuarios", {
-          alert: true,
-          alertTitle: "Error",
-          alertMessage: "Error al Crear el usuario.",
-          alertIcon: "error",
-          showConfirmButton: true,
-          roles: rolesResults.rows, // Enviar roles a la vista
-        });
-      } else {
-        return res.render("administrador/usuarios/create_usuarios", {
-          alert: true,
-          alertTitle: "Éxito",
-          alertMessage: "Usuario Creado correctamente.",
-          alertIcon: "success",
-          showConfirmButton: true,
-          ruta: "/ver_usuarios",
-          roles: rolesResults.rows, // Enviar roles a la vista
-        });
-      }
+    return res.render("administrador/usuarios/create_usuarios", {
+      alert: true,
+      alertTitle: "Éxito",
+      alertMessage: "Usuario Creado correctamente.",
+      alertIcon: "success",
+      showConfirmButton: true,
+      ruta: "/ver_usuarios",
+      roles: rolesResults.rows,
     });
   } catch (error) {
-    console.error("Error al encriptar la contraseña:", error);
+    console.error("Error al crear el usuario:", error);
+
+    // Obtener la lista de roles para mostrar en el formulario en caso de error
+    const rolesQuery = "SELECT * FROM roles";
+    const rolesResults = await conexion.query(rolesQuery);
+
+    let errorMessage = "Error al crear el usuario.";
+    if (error instanceof multer.MulterError) {
+      if (error.code === "LIMIT_FILE_SIZE") {
+        errorMessage =
+          "El archivo es demasiado grande. El tamaño máximo es de 2 MB.";
+      }
+    }
+
     return res.render("administrador/usuarios/create_usuarios", {
       alert: true,
       alertTitle: "Error",
-      alertMessage: "Error en la encriptación de la contraseña.",
+      alertMessage: errorMessage,
       alertIcon: "error",
       showConfirmButton: true,
-      roles: rolesResults.rows, // Enviar roles a la vista
+      roles: rolesResults.rows,
     });
   }
 };
 
 exports.update_usuarios = async (req, res) => {
-  const id = parseInt(req.body.id, 10);
-  const nombre = req.body.nombre;
-  const ape = req.body.apellido;
-  const telefono = req.body.telefono;
-  const correo = req.body.correo_electronico;
-  const contraseña = req.body.contra;
-
-  if (isNaN(id)) {
-    console.log("Invalid ID:", req.body.id);
-    return res.render("administrador/usuarios/actualizar_usuarios", {
-      user: { id, nombre, ape, telefono, correo },
-      alert: true,
-      alertTitle: "Error",
-      alertMessage: "ID inválido.",
-      alertIcon: "error",
-      showConfirmButton: true,
-    });
-  }
-
-  let query;
-  let values;
-
   try {
+    // Procesar la subida de la imagen
+    await uploadAsync(req, res);
+
+    // Verificar que los datos llegan correctamente
+    console.log("req.body:", req.body); // Verifica que los datos del formulario están aquí
+    console.log("req.file:", req.file); // Verifica que la imagen ha sido subida
+
+    const id = parseInt(req.body.id, 10); // Aquí debería venir el ID
+    if (isNaN(id)) {
+      throw new Error("ID no válido.");
+    }
+
+    const nombre = req.body.nombre;
+    const ape = req.body.apellido;
+    const telefono = req.body.telefono;
+    const correo = req.body.correo_electronico;
+    const contraseña = req.body.contra;
+    const rol = req.body.roles;
+
+    const queryRoles = "SELECT id, tipo_de_rol FROM roles";
+    const rolesResult = await conexion.query(queryRoles);
+    const roles = rolesResult.rows;
+
+    let query;
+    let values;
+
     if (contraseña) {
-      console.log("Contraseña original:", contraseña);
       const hashedPassword = await bcrypt.hash(contraseña, 10);
-      console.log("Contraseña hasheada:", hashedPassword);
       query = `
         UPDATE usuarios 
-        SET nombre = $1, apellido = $2, telefono = $3, correo_electronico = $4, contraseña = $5 
-        WHERE id = $6
+        SET nombre = $1, apellido = $2, telefono = $3, correo_electronico = $4, contraseña = $5, id_rol = $6
+        WHERE id = $7
       `;
-      values = [nombre, ape, telefono, correo, hashedPassword, id];
+      values = [nombre, ape, telefono, correo, hashedPassword, rol, id];
     } else {
       query = `
         UPDATE usuarios 
-        SET nombre = $1, apellido = $2, telefono = $3, correo_electronico = $4 
-        WHERE id = $5
+        SET nombre = $1, apellido = $2, telefono = $3, correo_electronico = $4, id_rol = $5
+        WHERE id = $6
       `;
-      values = [nombre, ape, telefono, correo, id];
+      values = [nombre, ape, telefono, correo, rol, id];
     }
 
-    conexion.query(query, values, (error, results) => {
-      if (error) {
-        console.log(error);
-        return res.render("administrador/usuarios/actualizar_usuarios", {
-          user: { id, nombre, ape, telefono, correo },
-          alert: true,
-          alertTitle: "Error",
-          alertMessage: "Error al actualizar el usuario.",
-          alertIcon: "error",
-          showConfirmButton: true,
-        });
-      } else {
-        return res.render("administrador/usuarios/actualizar_usuarios", {
-          user: { id, nombre, ape, telefono, correo },
-          alert: true,
-          alertTitle: "Éxito",
-          alertMessage: "Usuario actualizado correctamente.",
-          alertIcon: "success",
-          showConfirmButton: true,
-          ruta: "/ver_usuarios",
-        });
-      }
-    });
-  } catch (error) {
-    console.log("Error encriptando la contraseña:", error);
+    // Si se ha subido una imagen, actualizamos la imagen en la base de datos
+    if (req.file) {
+      const imagenBuffer = req.file.buffer;
+      const imagenContentType = req.file.mimetype;
+
+      query = `
+        UPDATE usuarios 
+        SET nombre = $1, apellido = $2, telefono = $3, correo_electronico = $4, id_rol = $5, imagen_perfil = $6, imagen_content_type = $7
+        WHERE id = $8
+      `;
+      values = [
+        nombre,
+        ape,
+        telefono,
+        correo,
+        rol,
+        imagenBuffer,
+        imagenContentType,
+        id,
+      ];
+    }
+
+    // Ejecutar la consulta
+    await conexion.query(query, values);
+
     return res.render("administrador/usuarios/actualizar_usuarios", {
       user: { id, nombre, ape, telefono, correo },
+      roles,
+      alert: true,
+      alertTitle: "Éxito",
+      alertMessage: "Usuario actualizado correctamente.",
+      alertIcon: "success",
+      showConfirmButton: true,
+      ruta: "/ver_usuarios",
+    });
+  } catch (error) {
+    console.error("Error al actualizar el usuario:", error);
+
+    return res.render("administrador/usuarios/actualizar_usuarios", {
+      user: {
+        id: req.body.id,
+        nombre: req.body.nombre,
+        ape: req.body.apellido,
+        telefono: req.body.telefono,
+        correo: req.body.correo_electronico,
+      },
+      roles: [],
       alert: true,
       alertTitle: "Error",
-      alertMessage: "Error en la encriptación de la contraseña.",
+      alertMessage: "Error en la operación.",
       alertIcon: "error",
       showConfirmButton: true,
+      ruta: `/actualizar_usuarios/${req.body.id}`,
     });
   }
 };
@@ -617,7 +679,7 @@ exports.desactivarusuario = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
     res.redirect("/ver_usuarios");
   });
@@ -636,7 +698,7 @@ exports.activarusuario = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
     res.redirect("/ver_usuarios");
   });
@@ -650,7 +712,7 @@ exports.update_tallas = (req, res) => {
   const id = parseInt(req.body.id, 10);
   const peso = parseFloat(req.body.peso);
   const altura = parseFloat(req.body.altura);
-  const id_cliente = parseFloat(req.body.id_cliente);
+  const id_cliente = parseFloat(req.body.id_cliente); // Asumiendo que esta es la columna correcta del formulario
   const medida_pecho = parseFloat(req.body.medida_pecho);
   const medida_brazo = parseFloat(req.body.medida_brazo);
   const medida_cintura = parseFloat(req.body.medida_cintura);
@@ -683,26 +745,41 @@ exports.update_tallas = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
       // Buscar los datos del usuario en la base de datos
       const queryUser = "SELECT * FROM tallas WHERE id = $1";
       conexion.query(queryUser, [id], (errorUser, resultsUser) => {
         if (errorUser) {
           console.log(errorUser);
-          return res.status(500).json({ error: errorUser.message });
+          return res.status(500).sendFile(__dirname + "/500.html");
         }
 
-        // Pasar los datos del usuario al objeto de datos
-        res.render("administrador/tallas/actualizar_tallas", {
-          mensaje: "Tallas actualizadas con éxito.",
-          id_cliente: id_cliente,
-          user: resultsUser.rows[0],
-        });
+        // Cambia la consulta para que coincida con el nombre de la columna correcta en la tabla 'clientes'
+        const queryCliente = "SELECT * FROM clientes WHERE id = $1"; // Asegúrate de que la columna sea 'id' o el nombre correcto
+        conexion.query(
+          queryCliente,
+          [id_cliente],
+          (errorCliente, resultsCliente) => {
+            if (errorCliente) {
+              console.log(errorCliente);
+              return res.status(500).sendFile(__dirname + "/500.html");
+            }
+
+            // Renderizar la vista con los datos del cliente y del usuario (tallas)
+            res.render("administrador/tallas/actualizar_tallas", {
+              mensaje: "Tallas actualizadas con éxito.",
+              id_cliente: id_cliente,
+              user: resultsUser.rows[0], // Datos de las tallas
+              cliente: resultsCliente.rows[0], // Datos del cliente (para WhatsApp)
+            });
+          }
+        );
       });
     }
   });
 };
+
 // Crear convenio
 exports.crearConvenio = (req, res) => {
   const tipo = req.body.tipo;
@@ -714,9 +791,9 @@ exports.crearConvenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_convenio?create=success");
+      res.redirect("/ver_convenio?message=success");
     }
   });
 };
@@ -739,9 +816,9 @@ exports.update_convenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_convenio?update=success");
+      res.redirect("/ver_convenio?message=success");
     }
   });
 };
@@ -760,7 +837,7 @@ exports.desactivarconvenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
     res.redirect("/ver_convenio");
   });
@@ -780,7 +857,7 @@ exports.activarconvenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).json({ error: "Error al procesar la solicitud" });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
     res.redirect("/ver_convenio");
   });
@@ -788,7 +865,6 @@ exports.activarconvenio = (req, res) => {
 
 // crear mensualidad fija
 exports.crearMensu = (req, res) => {
-  const id = req.body.id;
   const tipo = req.body.con;
   const tiempo = req.body.tiempo;
   const pagar = req.body.pagar;
@@ -797,15 +873,15 @@ exports.crearMensu = (req, res) => {
   const dia = req.body.dias;
 
   const query =
-    "INSERT INTO mensualidades (id,total_pagar,id_mensualidad_convencional,tiempo_plan, mes, dias) VALUES ($1,$2,$3,$4,$5,$6)";
-  const values = [id, pagar, tipo, tiempo, mes, dia];
+    "INSERT INTO mensualidades (total_pagar,id_mensualidad_convencional,tiempo_plan, mes, dias) VALUES ($1,$2,$3,$4,$5)";
+  const values = [pagar, tipo, tiempo, mes, dia];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_mensualidad?create=success");
+      res.redirect("/ver_mensualidad?message=success");
     }
   });
 };
@@ -823,9 +899,9 @@ exports.update_mensualidad = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_mensualidad?update=success");
+      res.redirect("/ver_mensualidad?message=success");
     }
   });
 };
@@ -848,7 +924,7 @@ exports.register = async (req, res) => {
     const query = `
       INSERT INTO temp_registro (id_usuario, nombre, apellido, correo, telefono, contraseña)
       VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id;
+      RETURNING id_usuario;
     `;
     const values = [id, nombre, apellido, correo, telefono, hashedPassword];
 
@@ -861,7 +937,7 @@ exports.register = async (req, res) => {
         });
       }
 
-      const tempRegistroId = result.rows[0].id;
+      const tempRegistroId = result.rows[0].id_usuario;
 
       // Mostrar una alerta de redirección y redirigir a la selección de mensualidades
       res.render("administrador/mensualidades/registro_exito", {
@@ -873,111 +949,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ success: false, message: "Error al registrar" });
   }
 };
-
-// LOGICA PARA USAR MERCADO PAGO-----------------------------------------------
-
-let TOKEN = process.env.MP_ACCESS_TOKEN_V;
-console.log(TOKEN);
-
-mercadopago.configure({
-  access_token: TOKEN,
-  sandbox: true, // Habilitar modo sandbox
-});
-
-exports.createOrder = async (req, res) => {
-  const { title, unit_price, tempRegistroId } = req.body;
-
-  if (!title || !unit_price || !tempRegistroId) {
-    return renderMensualidadesPage(res, {
-      alertTitle: "Advertencia",
-      alertMessage: "¡Faltan datos necesarios para crear la orden!",
-      alertIcon: "warning",
-      showConfirmButton: true,
-      tempRegistroId: req.body.tempRegistroId,
-      mensualidades: [], // Manejar adecuadamente el resultado de las mensualidades
-    });
-  }
-
-  try {
-    const preference1 = {
-      items: [
-        {
-          title: title,
-          unit_price: parseFloat(unit_price),
-          currency_id: "COP", // Cambia la moneda según tu caso
-          quantity: 1,
-        },
-      ],
-      back_urls: {
-        success: `http://localhost:5000/success?tempRegistroId=${tempRegistroId}`,
-        failure: `http://localhost:5000/failure?tempRegistroId=${tempRegistroId}`,
-        pending: `http://localhost:5000/pending?tempRegistroId=${tempRegistroId}`,
-      },
-      notification_url: "http://localhost:5000/webhook",
-      auto_return: "approved",
-    };
-
-    console.log(preference1);
-
-    const result = await mercadopago.preferences.create(preference1);
-
-    // Renderizar la vista de redirección con la URL de Mercado Pago
-    return res.render("administrador/mensualidades/redirect-to-mercadopago", {
-      init_point: result.body.init_point,
-    });
-  } catch (error) {
-    console.error("Error al crear la orden de pago:", error);
-    return renderMensualidadesPage(res, {
-      alertTitle: "Error",
-      alertMessage: "Hubo un problema al crear la orden de pago.",
-      alertIcon: "error",
-      showConfirmButton: true,
-      tempRegistroId: null,
-      mensualidades: [],
-    });
-  }
-};
-
-exports.receiveWebhook = async (req, res) => {
-  try {
-    const payment = req.query;
-
-    if (payment.type === "payment") {
-      const data = await mercadopago.payment.findById(payment["data.id"]);
-      console.log(data);
-    }
-
-    res.sendStatus(204);
-  } catch (error) {
-    console.error("Error en el webhook:", error);
-    // No es necesario renderizar una página de error aquí ya que los webhooks no devuelven una vista
-    res.sendStatus(500);
-  }
-};
-
-// Función para renderizar la página de mensualidades con alertas
-function renderMensualidadesPage(
-  res,
-  {
-    alertTitle,
-    alertMessage,
-    alertIcon,
-    showConfirmButton,
-    tempRegistroId,
-    mensualidades,
-  }
-) {
-  if (!res.headersSent) {
-    res.render("administrador/mensualidades/mensualidades", {
-      alertTitle,
-      alertMessage,
-      alertIcon,
-      showConfirmButton,
-      tempRegistroId,
-      mensualidades,
-    });
-  }
-}
 
 // INICIO DE SESION --------------------------------------------------------------------------------------------------
 exports.login = async (req, res) => {
@@ -994,8 +965,9 @@ exports.login = async (req, res) => {
 
   try {
     const results = await conexion.query(
-      `SELECT u.id, u.contraseña, u.estado, u.id_rol, r.tipo_de_rol, u.nombre FROM usuarios as u
-        INNER JOIN roles as r ON u.id_rol = r.id 
+      `SELECT u.id, u.contraseña, u.estado, u.id_rol, r.tipo_de_rol, u.nombre, u.imagen_perfil, u.imagen_content_type
+       FROM usuarios as u
+       INNER JOIN roles as r ON u.id_rol = r.id 
        WHERE u.id = $1`,
       [user]
     );
@@ -1010,6 +982,7 @@ exports.login = async (req, res) => {
 
     const userData = results.rows[0];
 
+    // Verificación de la contraseña
     if (!(await bcrypt.compare(pass, userData.contraseña))) {
       return renderLoginPage(res, {
         alertTitle: "Error",
@@ -1026,21 +999,30 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Genera el token
-    const token = generateToken(userData);
-    setTokenCookie(res, token);
-
-    // Guarda los datos del usuario en la sesión
+    // Guardar la información del usuario, incluyendo la imagen, en la sesión
     req.session.userData = {
       id: userData.id,
       nombre_usuario: userData.nombre,
       rol: userData.tipo_de_rol,
+      imagen_perfil: userData.imagen_perfil
+        ? `/profile-image/${userData.id}`
+        : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png",
     };
+
+    console.log(
+      "Datos del usuario guardados en la sesión:",
+      req.session.userData
+    );
+
+    req.session.userData;
+    // Genera el token
+    const token = generateToken(userData);
+    setTokenCookie(res, token);
 
     const routeByRole = {
       1: "index_admin",
+      2: "index_entrenador",
       3: "clientes/index_c",
-      // Agregar más roles según sea necesario
     };
 
     const ruta = routeByRole[userData.id_rol] || "login_index";
@@ -1079,7 +1061,7 @@ function generateToken(userData) {
     id: userData.id,
     role: userData.id_rol,
   };
-  return jwt.sign(userPayload, SECRET_KEY, { expiresIn: "1h" });
+  return jwt.sign(userPayload, SECRET_KEY, { expiresIn: "2h" });
 }
 
 function setTokenCookie(res, token) {
@@ -1087,6 +1069,7 @@ function setTokenCookie(res, token) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
+    maxAge: 2 * 60 * 60 * 1000, // 2 horas
   });
 }
 
@@ -1094,20 +1077,18 @@ function setTokenCookie(res, token) {
 
 //CREAR
 exports.crear_gm = (req, res) => {
-  const id = req.body.id;
   const nombre = req.body.musculo;
   const seccion = req.body.seccion;
 
-  const query =
-    "INSERT INTO grupos_musculares (id,nombre,seccion) VALUES ($1,$2,$3)";
-  const values = [id, nombre, seccion];
+  const query = "INSERT INTO grupos_musculares (nombre,seccion) VALUES ($1,$2)";
+  const values = [nombre, seccion];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_grupo_muscular?create=success");
+      res.redirect("/ver_grupo_muscular?message=success");
     }
   });
 };
@@ -1129,9 +1110,9 @@ exports.update_gm = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_grupo_muscular?update=success");
+      res.redirect("/ver_grupo_muscular?message=success");
     }
   });
 };
@@ -1150,9 +1131,9 @@ exports.crear_af = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_acti_fisica?create=success");
+      res.redirect("/ver_acti_fisica?message=success");
     }
   });
 };
@@ -1173,9 +1154,9 @@ exports.update_af = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ver_acti_fisica?update=success");
+      res.redirect("/ver_acti_fisica?message=success");
     }
   });
 };
@@ -1183,20 +1164,118 @@ exports.update_af = (req, res) => {
 // PLAN DE ENTRENAMIENTO --------------------------------------------------------------------------------------------------------------
 
 //CREAR PLAN DE ENTRENAMIENTO CON FORMULARIOS DIFERENTES(DEJARLO TAL CUAL ESTA A MENOS QUE SE QUIERA MODIFICAR LA LOGICA)
+exports.verPlanEntrenamiento = (req, res) => {
+  // Primera consulta: Obtener los planes de entrenamiento
+  const planEntrenamientoQuery = `
+    SELECT pe.id AS id_plan_entrenamiento, pe.id_cliente, pe.dia, pe.tipo_tren, pe.musculo, pe.ejercicio, pe.series, pe.repeticiones
+    FROM plan_entrenamiento AS pe
+    ORDER BY pe.id ASC
+  `;
 
+  conexion.query(planEntrenamientoQuery, (error, planResults) => {
+    if (error) {
+      return res.status(500).sendFile(__dirname + "/500.html");
+    }
+
+    // Si no hay resultados en el plan de entrenamiento
+    if (planResults.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No se encontraron planes de entrenamiento" });
+    }
+
+    // Obtener los IDs de todos los clientes de los planes de entrenamiento
+    const clienteIds = planResults.rows.map((plan) => plan.id_cliente);
+
+    // Segunda consulta: Obtener los nombres de los clientes
+    const clienteQuery = `
+      SELECT id, nombre FROM clientes WHERE id = ANY($1::int[])
+    `;
+    conexion.query(
+      clienteQuery,
+      [clienteIds],
+      (clienteError, clienteResults) => {
+        if (clienteError) {
+          return res.status(500).sendFile(__dirname + "/500.html");
+        }
+
+        // Crear un diccionario para acceder a los nombres de los clientes fácilmente
+        const clientes = {};
+        clienteResults.rows.forEach((cliente) => {
+          clientes[cliente.id] = cliente.nombre;
+        });
+
+        // Agregar los nombres de los clientes a los resultados del plan de entrenamiento
+        const planesConNombreCliente = planResults.rows.map((plan) => {
+          return {
+            ...plan,
+            nombreCliente: clientes[plan.id_cliente] || "Nombre no encontrado",
+          };
+        });
+
+        // Retornar la información combinada
+        return res.status(200).json(planesConNombreCliente);
+      }
+    );
+  });
+};
+
+exports.guardarPlanentrenamiento = async (req, res) => {
+  try {
+    const { id_cliente, dias, actividades, seriesRepeticiones } = req.body;
+
+    console.log("Datos del formulario recibidos:", req.body);
+
+    console.log("Días recibidos:", dias);
+
+    if (!Array.isArray(dias) || dias.length === 0) {
+      throw new Error("Los días no son válidos.");
+    }
+    if (!Array.isArray(actividades)) {
+      throw new Error("Las actividades no son válidas.");
+    }
+    if (typeof seriesRepeticiones !== "object") {
+      throw new Error("La estructura de series y repeticiones no es válida.");
+    }
+
+    for (const dia of dias) {
+      for (const actividad of actividades) {
+        const series = `seriesRepeticiones[series_${actividad}]`;
+        const repeticiones = `seriesRepeticiones[repeticiones_${actividad}]`;
+
+        if (series === undefined || repeticiones === undefined) {
+          throw new Error(`Faltan datos para la actividad ${actividad}.`);
+        }
+
+        await pool.query(
+          `
+          INSERT INTO plan_entrenamiento (dia, id_cliente, id_actividad_fisica, series, repeticiones)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [dia, id_cliente, actividad, series, repeticiones]
+        );
+      }
+    }
+
+    res.redirect("/ver_plan_ent");
+  } catch (error) {
+    console.error("Error al guardar el plan de entrenamiento:", error.message);
+    res.status(500).sendFile(__dirname + "/500.html");
+  }
+};
 exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
   conexion.query(
     "SELECT * FROM clientes WHERE id = $1",
     [id_cliente],
     (error, results) => {
       if (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).sendFile(__dirname + "/500.html");
       }
 
       if (results.rowCount > 0) {
         // Obtener las actividades físicas
         conexion.query(
-          `SELECT 
+          `
+          SELECT
               af.id AS af_id, 
               af.nombre_ejercicio AS af_nombre, 
             
@@ -1212,7 +1291,7 @@ exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
               af.id`,
           (error, actividadesResults) => {
             if (error) {
-              return res.status(500).json({ error: error.message });
+              return res.status(500).sendFile(__dirname + "/500.html");
             }
 
             conexion.query(
@@ -1220,7 +1299,7 @@ exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
 
               (error, results) => {
                 if (error) {
-                  return res.status(500).json({ error: error.message }); // Manejo de error
+                  return res.status(500).sendFile(__dirname + "/500.html"); // Manejo de error
                 }
               }
             );
@@ -1240,15 +1319,17 @@ exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
   );
 };
 
+//fa
+
 exports.mostrarFormularioVacio = (req, res) => {
-  // Obtener las actividades físicas
   conexion.query(
-    `SELECT 
+    `SELECT
       af.id AS af_id, 
       af.nombre_ejercicio AS af_nombre, 
-     
+      af.id_grupo_muscular AS af_grupo,
       gm.id AS gm_id, 
-      gm.nombre AS gm_nombre 
+      gm.nombre AS gm_nombre,
+      gm.seccion
     FROM 
       actividad_fisica af 
     INNER JOIN 
@@ -1259,15 +1340,14 @@ exports.mostrarFormularioVacio = (req, res) => {
       af.id`,
     (error, actividadesResults) => {
       if (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).sendFile(__dirname + "/500.html");
       }
 
       conexion.query(
         "SELECT * FROM grupos_musculares ORDER BY id",
-
         (error, gruposMuscularesResult) => {
           if (error) {
-            return res.status(500).json({ error: error.message }); // Manejo de error
+            return res.status(500).sendFile(__dirname + "/500.html");
           }
 
           res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
@@ -1280,6 +1360,7 @@ exports.mostrarFormularioVacio = (req, res) => {
     }
   );
 };
+
 // ACTUALIZAR PLAN DE ENTRENAMIENTO
 exports.update_pe = (req, res) => {
   const { id, dia, id_actividad_fisica, series, repeticiones } = req.body;
@@ -1294,7 +1375,7 @@ exports.update_pe = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
       res.redirect("/ver_plan_ent");
     }
@@ -1331,7 +1412,58 @@ exports.registrarIngreso = async (req, res) => {
         sonido:
           "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
         ruta: "index_admin",
-        ultimosClientes: [], // En caso de error, puedes dejar vacíos los datos
+        ultimosClientes: [],
+        datosVentas: [],
+        datosSumaPorMes: [],
+        datosIngresosHoy: [],
+        datosVentasVencidas: [],
+        datosMensualidades: [],
+      });
+    }
+
+    // Obtener el cliente y su estado
+    const cliente = clienteResult.rows[0];
+
+    // Verificar el estado del cliente
+    if (cliente.estado === "Inactivo" || cliente.estado === "Vencida") {
+      return res.render("administrador/index", {
+        alert: true,
+        alertTitle: "Error",
+        alertMessage: "Cliente inactivo, no se puede registrar el ingreso.",
+        alertIcon: "error",
+        showConfirmButton: true,
+        sonido:
+          "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+        ruta: "index_admin",
+        ultimosClientes: [],
+        datosVentas: [],
+        datosSumaPorMes: [],
+        datosIngresosHoy: [],
+        datosVentasVencidas: [],
+        datosMensualidades: [],
+      });
+    }
+
+    // Verificar si la mensualidad está vencida
+    const mensualidadQuery = "SELECT * FROM mensualidades WHERE id = $1";
+    const mensualidadResult = await conexion.query(mensualidadQuery, [
+      cliente.id_mensualidad,
+    ]);
+
+    if (
+      mensualidadResult.rowCount === 0 ||
+      mensualidadResult.rows[0].estado === "Vencida"
+    ) {
+      return res.render("administrador/index", {
+        alert: true,
+        alertTitle: "Error",
+        alertMessage: "Mensualidad vencida, no se puede registrar el ingreso.",
+        alertIcon: "error",
+        showConfirmButton: true,
+        sonido:
+          "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+        ruta: "index_admin",
+        ultimosClientes: [],
         datosVentas: [],
         datosSumaPorMes: [],
         datosIngresosHoy: [],
@@ -1489,7 +1621,197 @@ exports.registrarIngreso = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al registrar el ingreso:", error);
-    res.status(500).send("Error en el servidor");
+    res.status(500).sendFile(__dirname + "/500.html");
+  }
+};
+
+exports.registrarIngresoentre = async (req, res) => {
+  try {
+    const identificacionConAsterisco = req.body.identificacion;
+
+    // Separar el * de la identificación real
+    const contraseña = identificacionConAsterisco;
+    const id_cliente = identificacionConAsterisco.replace("*", "");
+
+    // Verificar que el ID sea numérico y no esté vacío
+    if (!id_cliente || isNaN(id_cliente)) {
+      return res.status(400).json({ error: "Identificación inválida." });
+    }
+
+    // Buscar si el cliente existe en la base de datos
+    const clienteQuery = "SELECT * FROM clientes WHERE id = $1";
+    const clienteResult = await conexion.query(clienteQuery, [id_cliente]);
+
+    if (clienteResult.rowCount === 0) {
+      // Si el cliente no existe, renderizamos la página index con un error
+      return res.render("entrenador/index_entrenador", {
+        alert: true,
+        alertTitle: "Error",
+        alertMessage: "Cliente no encontrado o contraseña incorrecta.",
+        alertIcon: "error",
+        showConfirmButton: true,
+        sonido:
+          "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+        ruta: "index_admin",
+        ultimosClientes: [], // En caso de error, puedes dejar vacíos los datos
+        datosVentas: [],
+        datosSumaPorMes: [],
+        datosIngresosHoy: [],
+        datosVentasVencidas: [],
+        datosMensualidades: [],
+      });
+    }
+
+    // Obtener el valor máximo de cantidad_ingresos para este cliente
+    const maxCantidadQuery = `
+      SELECT COALESCE(MAX(cantidad_ingresos), 0) + 1 AS nueva_cantidad_ingresos 
+      FROM ingresos_clientes 
+      WHERE id_cliente = $1
+    `;
+    const maxCantidadResult = await conexion.query(maxCantidadQuery, [
+      id_cliente,
+    ]);
+    const nuevaCantidadIngresos =
+      maxCantidadResult.rows[0].nueva_cantidad_ingresos;
+
+    // Insertar un nuevo ingreso en la tabla ingresos_clientes
+    const insertQuery = `
+      INSERT INTO ingresos_clientes (id_cliente, contraseña, cantidad_ingresos, fecha_ingresos)
+      VALUES ($1, $2, $3, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'))
+      RETURNING id_cliente;
+    `;
+    const insertResult = await conexion.query(insertQuery, [
+      id_cliente,
+      contraseña,
+      nuevaCantidadIngresos,
+    ]);
+
+    if (insertResult.rowCount === 0) {
+      return res.render("entrenador/index_entrenador", {
+        alert: true,
+        alertTitle: "Error",
+        alertMessage: "Error al registrar el ingreso.",
+        alertIcon: "error",
+        showConfirmButton: true,
+        sonido:
+          "https://raw.githubusercontent.com/JeanCardozo/audios/main/usb.mp3",
+        ruta: "/index_entrenador",
+        ultimosClientes: [],
+        datosVentas: [],
+        datosSumaPorMes: [],
+        datosIngresosHoy: [],
+        datosVentasVencidas: [],
+        datosMensualidades: [],
+      });
+    }
+
+    // Llamada a la lógica para obtener los datos necesarios antes de renderizar la página
+
+    const fechaHoyBogota = new Date().toLocaleDateString("en-CA", {
+      timeZone: "America/Bogota",
+    });
+
+    // Consulta SQL para obtener el total de ventas por mes
+    const queryVentas = `
+      SELECT 
+        mc.id AS id_ventas, 
+        mc.fecha_inicio, 
+        m.id AS id_mensualidad, 
+        m.total_pagar,
+        TO_CHAR(mc.fecha_inicio, 'Mon YYYY') AS mes_anio 
+      FROM 
+        mensualidad_clientes AS mc 
+      INNER JOIN 
+        mensualidades AS m ON mc.id_mensualidad = m.id
+      ORDER BY 
+        mc.fecha_inicio DESC;
+    `;
+    const resultVentas = await conexion.query(queryVentas);
+    const datosVentas = resultVentas.rows;
+
+    // Sumar las ventas por mes
+    const datosSumaPorMes = datosVentas.reduce((acc, curr) => {
+      const mes = curr.mes_anio;
+      if (!acc[mes]) {
+        acc[mes] = 0;
+      }
+      acc[mes] += parseFloat(curr.total_pagar);
+      return acc;
+    }, {});
+
+    const datosSumaArray = Object.keys(datosSumaPorMes).map((mes) => ({
+      mes: mes,
+      total: datosSumaPorMes[mes],
+    }));
+
+    // Consulta SQL para obtener los ingresos de hoy
+    const queryIngresosHoy = `
+      SELECT 
+        ic.fecha_ingresos,
+        ic.cantidad_ingresos
+      FROM 
+        ingresos_clientes AS ic
+      WHERE 
+        DATE(ic.fecha_ingresos) = $1
+      ORDER BY 
+        ic.fecha_ingresos DESC;
+    `;
+    const resultIngresosHoy = await conexion.query(queryIngresosHoy, [
+      fechaHoyBogota,
+    ]);
+    const datosIngresosHoy = resultIngresosHoy.rows;
+
+    // Consulta SQL para obtener los últimos 5 clientes registrados
+    const queryUltimosClientes = `
+      SELECT 
+        c.nombre, 
+        c.id_mensualidad AS id_mensu_cliente, 
+        m.id AS id_mensu, 
+        m.tiempo_plan
+      FROM  
+        clientes c
+      INNER JOIN 
+        mensualidades m ON c.id_mensualidad = m.id
+      ORDER BY 
+        c.fecha_de_inscripcion DESC
+      LIMIT 5;
+    `;
+    const resultUltimosClientes = await conexion.query(queryUltimosClientes);
+    const ultimosClientes = resultUltimosClientes.rows;
+
+    // Consulta SQL para obtener ventas vencidas
+    const queryVentasVencidas = `
+      SELECT * FROM mensualidad_clientes WHERE estado = 'Vencida' ORDER BY fecha_fin DESC LIMIT 5;
+    `;
+    const resultVentasVencidas = await conexion.query(queryVentasVencidas);
+    const datosVentasVencidas = resultVentasVencidas.rows;
+
+    const querymensualidades = `
+      SELECT * FROM mensualidades;
+    `;
+    const resultMensualidades = await conexion.query(querymensualidades);
+    const datosMensualidades = resultMensualidades.rows;
+
+    // Finalmente, renderizamos la vista con todos los datos
+    res.render("entrenador/index_entrenador", {
+      alert: true,
+      alertTitle: "Ingreso registrado",
+      alertMessage: "Ingreso registrado correctamente.",
+      alertIcon: "success",
+      showConfirmButton: true,
+      sonido:
+        "https://raw.githubusercontent.com/JeanCardozo/audios/main/inicio.mp3",
+      ruta: "/index_entrenador",
+      datosVentas: datosVentas,
+      datosSumaPorMes: datosSumaArray,
+      datosIngresosHoy: datosIngresosHoy,
+      ultimosClientes: ultimosClientes,
+      datosVentasVencidas: datosVentasVencidas,
+      datosMensualidades: datosMensualidades,
+    });
+  } catch (error) {
+    console.error("Error al registrar el ingreso:", error);
+    res.status(500).sendFile(__dirname + "/500.html");
   }
 };
 
@@ -1505,7 +1827,7 @@ exports.verClientes = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1514,17 +1836,17 @@ exports.verClientes = (req, res) => {
 
 exports.verUsuarios = (req, res) => {
   conexion.query(
-    `SELECT u.id AS id_usuarios, u.nombre, u.apellido, u.telefono, u.correo_electronico, u.contraseña, u.id_rol, u.estado,
+    `SELECT u.id AS id_usuarios, u.nombre, u.apellido, u.telefono, u.correo_electronico , u.contraseña, u.id_rol, u.estado,
             r.id AS id_roles, r.tipo_de_rol AS rol 
      FROM usuarios AS u 
      INNER JOIN roles AS r ON u.id_rol = r.id 
-     WHERE u.id_rol IN ($1, $2)`,
+     WHERE u.id_rol IN ($1, $2) ORDER BY u.id`,
     [1, 2],
     (error, results) => {
       if (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).sendFile(__dirname + "/500.html");
       }
-      console.log("usuarios segun eso", results.rows);
+
       res.status(200).json(results.rows);
     }
   );
@@ -1539,7 +1861,7 @@ exports.verMensualidades = (req, res) => {
 `;
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1555,7 +1877,7 @@ exports.verTallas = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1569,14 +1891,26 @@ exports.verVentas = (req, res) => {
 SELECT mc.id AS id_mensu_cliente, mc.id_cliente, mc.nombre, mc.fecha_inicio, mc.fecha_fin, mc.id_mensualidad, mc.estado,
        m.id AS id_mensualidad, m.tiempo_plan, m.total_pagar, m.id_mensualidad_convencional, 
        mensu.id AS id_mensualidad_convencional, mensu.tipo_de_mensualidad 
-       FROM mensualidad_clientes AS mc
-       INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
-       INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id
-       ORDER BY id_mensu_cliente`;
+FROM mensualidad_clientes AS mc
+INNER JOIN mensualidades AS m ON mc.id_mensualidad = m.id
+INNER JOIN mensualidad_convencional AS mensu ON m.id_mensualidad_convencional = mensu.id
+WHERE mc.estado IS NOT NULL
+  AND mc.id_cliente IS NOT NULL
+  AND mc.nombre IS NOT NULL
+  AND mc.fecha_inicio IS NOT NULL
+  AND mc.fecha_fin IS NOT NULL
+  AND mc.id_mensualidad IS NOT NULL
+  AND m.id IS NOT NULL
+  AND m.tiempo_plan IS NOT NULL
+  AND m.total_pagar IS NOT NULL
+  AND m.id_mensualidad_convencional IS NOT NULL
+  AND mensu.id IS NOT NULL
+  AND mensu.tipo_de_mensualidad IS NOT NULL
+ORDER BY mc.id;`;
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1591,80 +1925,11 @@ SELECT * FROM grupos_musculares ORDER BY id`;
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
 
     return res.status(200).json(results.rows);
   });
-};
-
-// ver plan de entrenamiento
-
-exports.verPlanEntrenamiento = (req, res) => {
-  const query = `
-      SELECT pe.id AS id_plan_entrenamiento, pe.dia, pe.id_cliente, pe.id_actividad_fisica, pe.series, pe.repeticiones,
-      c.id AS id_del_cliente, c.nombre,
-      ac.id AS id_actividad, ac.nombre_ejercicio, ac.id_grupo_muscular,
-      gm.id AS id_grupo, gm.nombre AS nombre_musculo, gm.seccion
-      FROM plan_entrenamiento AS pe
-      INNER JOIN clientes AS c ON pe.id_cliente = c.id
-      LEFT JOIN actividad_fisica AS ac ON pe.id_actividad_fisica = ac.id
-      LEFT JOIN grupos_musculares AS gm ON ac.id_grupo_muscular = gm.id
-      ORDER BY pe.id`;
-
-  conexion.query(query, (error, results) => {
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-
-    return res.status(200).json(results.rows);
-  });
-};
-
-exports.guardarPlanentrenamiento = async (req, res) => {
-  try {
-    const { id_cliente, dias, actividades, seriesRepeticiones } = req.body;
-
-    console.log("Datos del formulario recibidos:", req.body);
-
-    console.log("Días recibidos:", dias);
-
-    if (!Array.isArray(dias) || dias.length === 0) {
-      throw new Error("Los días no son válidos.");
-    }
-    if (!Array.isArray(actividades)) {
-      throw new Error("Las actividades no son válidas.");
-    }
-    if (typeof seriesRepeticiones !== "object") {
-      throw new Error("La estructura de series y repeticiones no es válida.");
-    }
-
-    for (const dia of dias) {
-      for (const actividad of actividades) {
-        const series = seriesRepeticiones[`series_${actividad}`];
-        const repeticiones = seriesRepeticiones[`repeticiones_${actividad}`];
-
-        if (series === undefined || repeticiones === undefined) {
-          throw new Error(`Faltan datos para la actividad ${actividad}.`);
-        }
-
-        await pool.query(
-          `INSERT INTO plan_entrenamiento (dia, id_cliente, id_actividad_fisica, series, repeticiones)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [dia, id_cliente, actividad, series, repeticiones]
-        );
-      }
-    }
-
-    res.redirect("/ver_plan_ent");
-  } catch (error) {
-    console.error("Error al guardar el plan de entrenamiento:", error.message);
-    res
-      .status(500)
-      .send(
-        "Error al guardar el plan de entrenamiento. Por favor, intente de nuevo."
-      );
-  }
 };
 
 // Ver actividad fisica
@@ -1687,7 +1952,7 @@ exports.verActividadFisica = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1769,15 +2034,54 @@ exports.mensaje_ayuda = (req, res) => {
   const mensajeAyuda = req.body.mensaje_ayuda;
 
   const query =
-    "INSERT INTO pqrs (id,nombre,correo_electronico,mensaje) VALUES ($1,$2,$3,$4)";
+    "INSERT INTO pqrs (identificacion,nombre,correo_electronico,mensaje) VALUES ($1,$2,$3,$4)";
   const values = [id, nom, co, mensajeAyuda];
 
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).sendFile(__dirname + "/500.html");
     } else {
-      res.redirect("/ayuda"); // Redirigir a la página principal o donde desees
+      res.redirect("/ayuda?message=success");
+    }
+  });
+};
+
+exports.ventasDiarias = async (req, res) => {
+  try {
+    // Obtener la fecha actual en formato ISO 8601
+    const fechaInicio = new Date().toISOString().split("T")[0]; // Formato YYYY-MM-DD
+
+    await conexion.query(
+      "INSERT INTO mensualidad_clientes (fecha_inicio, id_mensualidad) VALUES ($1, $2)",
+      [fechaInicio, 5]
+    );
+
+    // Redirige al cliente a la ruta deseada
+    res.redirect("/ver_ventas");
+  } catch (error) {
+    console.error("Error al insertar datos en ventas_diarias:", error);
+    res.status(500).sendFile(__dirname + "/500.html");
+  }
+};
+
+exports.update_info = (req, res) => {
+  const id = req.body.id;
+  const nom = req.body.nombre;
+  const ape = req.body.apellido;
+  const co = req.body.correo;
+  const num = req.body.numero;
+
+  const query =
+    "UPDATE clientes SET nombre = $1, apellido = $2, correo_electronico = $3, numero_telefono=$4 WHERE id = $5";
+  const values = [nom, ape, co, num, id];
+
+  conexion.query(query, values, (error, results) => {
+    if (error) {
+      console.log(error);
+      return res.status(500).sendFile(__dirname + "/500.html");
+    } else {
+      res.redirect("/clientes/index_c");
     }
   });
 };
