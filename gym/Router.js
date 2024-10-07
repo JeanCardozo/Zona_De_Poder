@@ -1599,6 +1599,7 @@ router.get("/ver_plan_ent", authenticateToken, (req, res) => {
     }
   );
 });
+
 router.get("/info_plan/:id", authenticateToken, (req, res) => {
   const clienteId = req.params.id;
 
@@ -1717,7 +1718,7 @@ router.get(
 //Ruta para Crear Plan de Entrenamiento
 
 // CODIGO PARA ACTUALIZAR ESTADO DE MENSUALIDAD_CLIENTES-----
-cron.schedule("* * * * *", () => {
+cron.schedule("0 0 * * *", () => {
   console.log("Ejecutando actualización de estados de mensualidades...");
   crud.actualizarEstadosMensualidades();
 });
@@ -1897,6 +1898,7 @@ router.get("/cancelar", (req, res) => {
 router.get("/create_plan_ent", authenticateToken, (req, res) => {
   crud.mostrarFormularioVacio(req, res);
 });
+
 router.post("/entrenamiento/guardar", authenticateToken, async (req, res) => {
   const {
     id_cliente,
@@ -2032,6 +2034,7 @@ router.post("/update_af", crud.update_af);
 router.post("/verPlanEntrenamiento", crud.verPlanEntrenamiento);
 router.post("/update_pe", crud.update_pe);
 router.post("/guardarPlanentrenamiento", crud.guardarPlanentrenamiento);
+router.post("/guardar_plan", crud.guardar_plan);
 
 //index ahi melo para el calendario
 router.post("/crear_evento", crud.crear_evento);

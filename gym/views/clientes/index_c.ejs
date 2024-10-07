@@ -15,11 +15,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <!-- Verificación de datos para cambiar el color de fondo -->
-
   <body
     class="<%= (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente || !tallaReciente.peso) ? 'bg-black' : 'bg-gray-100' %>"
     id="bodyElement"
   >
+    <%- include('../administrador/plantillas/navbar_clientes.ejs') %>
+
     <script>
       // En el cliente, verificamos nuevamente por si acaso
       if (!<%= tallaReciente ? tallaReciente.peso : "null" %>) {
@@ -30,11 +31,11 @@
     <% if (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente
     || !tallaReciente.peso) { %>
     <div
-      class="fixed inset-0 bg-gray-500 bg-opacity-75 flex flex-col items-center justify-center z-50"
+      class="fixed inset-0 bg-gray-500 bg-opacity-75 flex flex-col items-center justify-center z-50 p-4"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-24 w-24 text-white mb-4"
+        class="h-16 w-16 sm:h-24 sm:w-24 text-white mb-4"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -46,89 +47,96 @@
           d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
         />
       </svg>
-      <p class="text-white text-center px-4 max-w-md">
+      <p
+        class="text-white text-center text-sm sm:text-base px-2 sm:px-4 max-w-xs sm:max-w-md"
+      >
         Dirígete a nuestro local Zona de poder o consulta con el administrador
         para que puedas usar la página web
       </p>
     </div>
-    <% } %> <%- include('../administrador/plantillas/navbar_clientes.ejs') %>
+    <% } %>
 
     <div class="container mx-auto p-4">
       <!-- Canvas 1 -->
       <div class="w-full mb-6">
-        <div class="w-full bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">
+        <div class="w-full bg-white rounded-lg shadow-md p-4 sm:p-6">
+          <h2
+            class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center"
+          >
             Seguimiento de Peso
           </h2>
-          <div class="h-80 w-full">
+          <div class="h-60 sm:h-80 w-full">
             <canvas id="myChart1"></canvas>
           </div>
+
+          <!-- Grafica para el cliente -->
+          <script>
+            const ctx1 = document.getElementById("myChart1");
+
+            const fechasData = "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
+            const pesos = <%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>;
+            const fechas = fechasData.split(',');
+
+            const data = {
+              labels: fechas,
+              datasets: [{
+                label: 'Peso (kg)',
+                data: pesos,
+                fill: false,
+                borderColor: '#3B82F6',
+                backgroundColor: '#93C5FD',
+                tension: 0.1,
+                pointRadius: 4,
+                pointHoverRadius: 6
+              }]
+            };
+
+            const config = {
+              type: 'line',
+              data: data,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                    title: {
+                      display: true,
+                      text: 'Peso (kg)'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Fecha'
+                    }
+                  }
+                },
+                plugins: {
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: {
+                      size: 14
+                    }
+                  }
+                }
+              }
+            };
+
+            new Chart(ctx1, config);
+          </script>
         </div>
       </div>
 
-      <script>
-        const ctx1 = document.getElementById("myChart1");
-
-        const fechasData = "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
-        const pesos = <%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>;
-        const fechas = fechasData.split(',');
-
-        const data = {
-          labels: fechas,
-          datasets: [{
-            label: 'Peso (kg)',
-            data: pesos,
-            fill: false,
-            borderColor: '#3B82F6',
-            backgroundColor: '#93C5FD',
-            tension: 0.1,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }]
-        };
-
-        const config = {
-          type: 'line',
-          data: data,
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: false,
-                title: {
-                  display: true,
-                  text: 'Peso (kg)'
-                }
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Fecha'
-                }
-              }
-            },
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                bodyFont: {
-                  size: 14
-                }
-              }
-            }
-          }
-        };
-
-        new Chart(ctx1, config);
-      </script>
-
-      <div class="grid grid-cols-2 gap-6 h-full">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
         <!-- Tabla de medidas recientes -->
         <div class="bg-white shadow-lg rounded-lg p-4 flex flex-col h-full">
-          <h2 class="text-2xl font-bold mb-2 text-gray-800 border-b pb-2">
+          <h2
+            class="text-xl sm:text-2xl font-bold mb-2 text-gray-800 border-b pb-2"
+          >
             Medidas Recientes
           </h2>
           <div class="flex-grow overflow-auto">
@@ -147,6 +155,7 @@
                   </th>
                 </tr>
               </thead>
+
               <tbody class="text-sm">
                 <% if (tallaReciente) { %>
                 <tr class="border-b hover:bg-gray-50">
@@ -202,9 +211,14 @@
             </table>
           </div>
         </div>
+
         <!-- Tabla de peso, altura y IMC -->
-        <div class="bg-white shadow-lg rounded-lg p-4 flex flex-col h-full">
-          <h2 class="text-2xl font-bold mb-2 text-gray-800 border-b pb-2">
+        <div
+          class="bg-white shadow-lg rounded-lg p-4 flex flex-col h-full mt-3 sm:mt-0"
+        >
+          <h2
+            class="text-xl sm:text-2xl font-bold mb-2 text-gray-800 border-b pb-2"
+          >
             Datos de IMC
           </h2>
           <div class="flex-grow overflow-auto">
@@ -263,7 +277,7 @@
             <div
               class="mt-4 p-4 rounded-lg <%= resultadoIMC === 'Peso normal' ? 'bg-green-100' : resultadoIMC === 'Sobrepeso' ? 'bg-yellow-100' : resultadoIMC === 'Obesidad' ? 'bg-red-100' : 'bg-blue-100' %>"
             >
-              <p class="text-center font-medium">
+              <p class="text-center text-sm sm:text-base font-medium">
                 <% if (resultadoIMC === 'Peso normal') { %> ¡Felicidades! Estás
                 en un peso saludable. Sigue manteniendo tus buenos hábitos. <% }
                 else if (resultadoIMC === 'Sobrepeso') { %> Pequeños cambios en
@@ -281,11 +295,11 @@
 
     <!-- Script para clientes -->
 
-    <footer id="footer" class="bg-gray-800 text-white py-12">
+    <footer id="footer" class="bg-gray-800 text-white py-8 sm:py-12">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 class="text-3xl font-bold mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="text-center sm:text-left">
+            <h3 class="text-2xl sm:text-3xl font-bold mb-4">
               Zona de Poder<sup>&reg;</sup>
             </h3>
             <ul class="space-y-2">
@@ -293,8 +307,10 @@
               <li>Dirección: Calle Principal #123, Ciudad</li>
             </ul>
           </div>
-          <div>
-            <h4 class="text-xl font-semibold mb-4">Enlaces útiles</h4>
+          <div class="text-center sm:text-left">
+            <h4 class="text-lg sm:text-xl font-semibold mb-4">
+              Enlaces útiles
+            </h4>
             <ul class="space-y-2">
               <li>
                 <a
@@ -326,32 +342,34 @@
               </li>
             </ul>
           </div>
-          <div>
-            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
-            <ul class="space-y-4">
-              <li>
+          <div class="text-center sm:text-left">
+            <h4 class="text-lg sm:text-xl font-semibold mb-4">Síguenos</h4>
+            <ul
+              class="flex justify-center sm:justify-start space-x-4 sm:space-x-0 sm:space-y-4"
+            >
+              <li class="sm:w-full">
                 <a
                   href="#"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
+                  ><i class="fab fa-facebook-f text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Facebook</span></a
                 >
-                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
-                </a>
               </li>
-              <li>
+              <li class="sm:w-full">
                 <a
                   href="#"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
+                  ><i class="fab fa-instagram text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Instagram</span></a
                 >
-                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
-                </a>
               </li>
-              <li>
+              <li class="sm:w-full">
                 <a
                   href="#"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
+                  ><i class="fab fa-twitter text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Twitter</span></a
                 >
-                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
-                </a>
               </li>
             </ul>
           </div>

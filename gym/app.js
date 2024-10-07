@@ -1,3 +1,4 @@
+// app.js
 const express = require("express");
 const app = express();
 const session = require("express-session");
@@ -7,13 +8,20 @@ const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
+const pgSession = require("connect-pg-simple")(session);
+const pool = require("./database/zona_de_poder_db"); // Asegúrate de exportar tu pool de PostgreSQL
+
 dotenv.config();
 
 // Configuración de la sesión global
 app.use(cookieParser());
 app.use(
   session({
-    secret: "tu_secreto_aqui",
+    store: new pgSession({
+      pool: pool, // Usar el pool de PostgreSQL
+      tableName: "session", // Nombre de la tabla para las sesiones (opcional)
+    }),
+    secret: process.env.SECRET_KEY, // Define una variable de entorno para el secreto
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -47,7 +55,8 @@ app.use(bodyParser.json());
 app.use("/", require("./Router"));
 
 // Programar la tarea para que se ejecute todos los días a la medianoche
-cron.schedule("* * * * *", () => {
+cron.schedule("0 0 * * *", () => {
+  // Ejecuta a la medianoche
   console.log("Ejecutando actualización de estados de mensualidades...");
   actualizarEstadosMensualidades();
 });

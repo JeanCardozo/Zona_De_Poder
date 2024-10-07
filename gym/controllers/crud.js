@@ -1220,6 +1220,19 @@ exports.verPlanEntrenamiento = (req, res) => {
   });
 };
 
+exports.guardar_plan = (req, res) => {
+  const planData = req.body;
+
+  // Aquí iría tu lógica para guardar planData en la base de datos
+  // Por ejemplo:
+  // database.savePlan(planData)
+  //   .then(() => res.json({ success: true }))
+  //   .catch(err => res.json({ success: false, error: err }));
+
+  // Por ahora, solo simularemos una respuesta exitosa
+  res.json({ success: true });
+};
+
 exports.guardarPlanentrenamiento = async (req, res) => {
   try {
     const { id_cliente, dias, actividades, seriesRepeticiones } = req.body;
@@ -1262,6 +1275,7 @@ exports.guardarPlanentrenamiento = async (req, res) => {
     res.status(500).sendFile(__dirname + "/500.html");
   }
 };
+
 exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
   conexion.query(
     "SELECT * FROM clientes WHERE id = $1",
@@ -1319,37 +1333,20 @@ exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
   );
 };
 
-//fa
-
 exports.mostrarFormularioVacio = (req, res) => {
   conexion.query(
-    `SELECT
-      af.id AS af_id, 
-      af.nombre_ejercicio AS af_nombre, 
-      af.id_grupo_muscular AS af_grupo,
-      gm.id AS gm_id, 
-      gm.nombre AS gm_nombre,
-      gm.seccion
-    FROM 
-      actividad_fisica af 
-    INNER JOIN 
-      grupos_musculares gm 
-    ON 
-      af.id_grupo_muscular = gm.id 
-    ORDER BY 
-      af.id`,
-    (error, actividadesResults) => {
+    "SELECT * FROM grupos_musculares ORDER BY id",
+    (error, gruposMuscularesResult) => {
       if (error) {
         return res.status(500).sendFile(__dirname + "/500.html");
       }
-
       conexion.query(
-        "SELECT * FROM grupos_musculares ORDER BY id",
-        (error, gruposMuscularesResult) => {
+        "SELECT id, nombre_ejercicio FROM actividad_fisica",
+        (error, actividadesResults) => {
           if (error) {
             return res.status(500).sendFile(__dirname + "/500.html");
           }
-
+          console.log("actividades fisicas: ", actividadesResults.rows);
           res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
             id_cliente: null,
             actividades: actividadesResults.rows,

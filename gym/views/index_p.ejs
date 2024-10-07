@@ -70,7 +70,7 @@
               >Iniciar Sesión</a
             >
           <div class="md:hidden">
-            <button class="mobile-menu-button p-2 rounded-md hover:bg-gray-100">
+            <button id="mobile-menu-button" class="mobile-menu-button p-2 rounded-md hover:bg-gray-100">
               <svg
                 class="h-6 w-6"
                 xmlns="http://www.w3.org/2000/svg"
@@ -89,14 +89,15 @@
           </div>
         </div>
       </div>
-      <div class="mobile-menu hidden md:hidden">
+      
+      <div id="mobile-menu" class="mobile-menu hidden md:hidden ease-in-out">
         <a href="#servicios" class="block py-2 px-4 text-sm hover:bg-gray-100"
           >Servicios</a
         >
-        <a href="/Planes" class="block py-2 px-4 text-sm hover:bg-gray-100"
+        <a href="#planes" class="block py-2 px-4 text-sm hover:bg-gray-100"
           >Planes</a
         >
-        <a href="/ubicacion" class="block py-2 px-4 text-sm hover:bg-gray-100"
+        <a href="#ubicacion" class="block py-2 px-4 text-sm hover:bg-gray-100"
           >Ubicación</a
         >
         <a href="/login_index" class="block py-2 px-4 text-sm hover:bg-gray-100"
@@ -104,6 +105,18 @@
         >
       </div>
     </nav>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+    
+        mobileMenuButton.addEventListener('click', function() {
+          mobileMenu.classList.toggle('hidden');
+        });
+      });
+    </script>
+    
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const links = document.querySelectorAll('a[href^="#"]');
@@ -136,7 +149,7 @@
       <div class="container mx-auto">
         <div class="">
           <!-- primer contenedor -->
-          <div
+        <div
             class="bg-cover bg-center p-3 sm:p-4 flex flex-col justify-between w-full h-screen"
             style="
               background-image: linear-gradient(
@@ -145,7 +158,7 @@
                 ),
                 url('https://raw.githubusercontent.com/JeanCardozo/audios/main/img-index_p.jpeg');
               background-attachment: fixed;
-              min-height: 100vh;
+            background-size: cover;
             "
           >
             <div class="text-center text-white mt-12 sm:mt-16">
@@ -262,7 +275,7 @@
                 rgba(0, 0, 0, 0.6)
               ),
               url('https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo_indexp.jpeg');
-            min-height: 100vh;
+          min-height: 100vh;
           "
         >
           <h1
@@ -407,14 +420,14 @@
             }
           }
         </style>
+
         <!-- tercer contendor -->
         <div
           class="bg-black bg-center p-4 sm:p-6 w-full flex flex-col lg:flex-row"
           style="
             background-image: url('ruta/a/tu/imagen-de-fondo.jpg');
             background-size: cover;
-            min-height: 100vh;
-          "
+            min-height: 100vh;"
         >
           <div
             class="w-full lg:w-1/2 pr-0 lg:pr-4 mb-6 lg:mb-0 flex items-center"
@@ -425,7 +438,7 @@
               Servicios y membresías: todo a tu alcance
             </h2>
           </div>
-          <div class="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div
               class="bg-cover bg-center rounded-lg p-4 flex flex-col justify-between items-center transform hover:scale-105 transition-transform duration-300 min-h-[250px] shadow-lg"
               style="
@@ -504,50 +517,50 @@
 
         <!-- cuarto contenedor -->
         <div
-          class="bg-gray-200 bg-center p-12 w-full flex"
-          style="
+        class="bg-gray-200 bg-center p-4 md:p-12 w-full flex flex-col md:flex-row"
+        style="
             background-image: url('ruta/a/tu/imagen-de-fondo.jpg');
             background-size: cover;
-            min-height: 100vh;
+          background-size: cover;
           "
           id="planes"
         >
-          <div class="flex w-full space-x-6">
-            <div class="w-1/2">
-              <div
-                class="bg-gray-800 bg-opacity-70 p-8 rounded-lg shadow-xl transform hover:scale-105 transition duration-300 h-128"
+        <div class="flex flex-col md:flex-row w-full md:space-x-6 space-y-6 md:space-y-0">
+          <div class="w-full md:w-1/2">
+            <div
+                class="bg-gray-800 bg-opacity-70 p-6 md:p-8 rounded-lg shadow-xl transform hover:scale-105 transition duration-300 md:h-128"
               >
-                <h2 class="text-3xl font-bold mb-6 text-center text-white">
+                <h2 class="text-3xl font-bold mb-6 md:mb-6 text-center text-white">
                   Afiliación
                   <strong class="text-green-400 italic">Comfenalco</strong>
                 </h2>
                 <div
-                  class="h-56 bg-gray-300 mb-6 rounded-lg overflow-hidden"
+                  class="h-40 md:h-56 bg-gray-300 mb-4 md:mb-6 rounded-lg overflow-hidden"
                 ></div>
-                <p class="text-xl mb-4 text-white">
+                <p class="text-xl mb-3 md:mb-4 text-white">
                   ¿Estás afiliado con Comfenalco?
                 </p>
-                <p class="text-lg mb-6 text-gray-300">
+                <p class="text-lg mb-6 md:mb-6 text-gray-300">
                   Tenemos un plan hecho exclusivamente para ti
                 </p>
                 <div class="text-center">
                   <a
                     href="https://www.comfenalco.com.co/estamos-en-todo-el-tolima/"
-                    class="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition duration-300 inline-block text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    class="bg-blue-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-lg hover:bg-blue-700 transition duration-300 inline-block text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >ADQUIERE TU PLAN</a
                   >
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
 
-            <div class="w-1/2">
+            <div class="w-full md:w-1/2">
               <div
-                class="bg-gray-800 bg-opacity-70 p-8 rounded-lg shadow-xl transform hover:scale-105 transition duration-300 width-full h-140"
-              >
-                <h2 class="text-3xl font-bold mb-6 text-center text-white">
-                  Planes
+              class="bg-gray-800 bg-opacity-70 p-6 md:p-8 rounded-lg shadow-xl transform hover:scale-105 transition duration-300 w-full h-auto md:h-140"
+            >
+            <h2 class="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center text-white">
+              Planes
                 </h2>
-                <p class="text-xl mb-8 text-center text-white">
+                <p class="text-lg md:text-xl mb-6 md:mb-8 text-center text-white">
                   Cada tipo de plan tiene un descuento por su cantidad de compra
                 </p>
                 <p class="italic text-sm mb-4 text-center text-white">
@@ -556,44 +569,44 @@
 
                 <div class="relative overflow-hidden w-full group">
                   <div
-                    class="flex transition-transform duration-300 ease-in-out pb-2"
-                    id="planCarousel"
+                  class="flex flex-col md:flex-row transition-transform duration-300 ease-in-out pb-2"
+                  id="planCarousel"
                   >
                     <!-- Plan 1 -->
-                    <div class="w-1/3 flex-shrink-0 p-2">
+            <div class="w-full md:w-1/3 flex-shrink-0 p-2">
                       <div
-                        class="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
+                        class="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
                       >
-                        <h2 class="text-center text-2xl font-bold mb-4">
+                <h2 class="text-center text-xl md:text-2xl font-bold mb-2 md:mb-4">
                           PLAN MENSUAL
                         </h2>
-                        <p class="text-lg mb-2">
+                        <p class="text-base md:text-lg mb-2">
                           1 meses:
                           <strong class="font-bold text-blue-600"
                             >15% de descuento</strong
                           >
                         </p>
-                        <p class="text-xl font-semibold mb-4">$ 60.000</p>
+                        <p class="text-lg md:text-xl font-semibold mb-3 md:mb-4">$ 60.000</p>
                         <a href="/registrar"
-                          class="bg-blue-600 text-center text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold shadow-md hover:shadow-lg"
+                  class="bg-blue-600 text-center text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-base md:text-lg font-semibold shadow-md hover:shadow-lg"
                         >
                           Ver más
                       </a>
                       </div>
                     </div>
                     <!-- Plan 2 -->
-                    <div class="w-1/3 flex-shrink-0 p-2">
+            <div class="w-full md:w-1/3 flex-shrink-0 p-2">
                       <div
-                        class="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
+                        class="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
                       >
-                        <h2 class="text-center text-2xl font-bold mb-4">
+                <h2 class="text-center text-xl md:text-2xl font-bold mb-2 md:mb-4">
                           PLAN 2 SEMANAS
                         </h2>
-                        <p>
+                        <p class="text-base md:text-lg mb-2">
                           2 semanas:
                           <strong class="font-bold">20% de descuento</strong>
                         </p>
-                        <p class="text-xl font-semibold mb-4">$ 45.000</p>
+                        <p class="text-lg md:text-xl font-semibold mb-3 md:mb-4">$ 45.000</p>
                         <a href="/registrar"
                         class="bg-blue-600 text-center text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold shadow-md hover:shadow-lg"
                       >
@@ -602,18 +615,18 @@
                       </div>
                     </div>
                     <!-- Plan 3 -->
-                    <div class="w-1/3 flex-shrink-0 p-2">
+            <div class="w-full md:w-1/3 flex-shrink-0 p-2">
                       <div
-                        class="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
+                        class="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
                       >
-                        <h2 class="text-center text-2xl font-bold mb-4">
+                <h2 class="text-center text-xl md:text-2xl font-bold mb-2 md:mb-4">
                           PLAN 3 MESES
                         </h2>
-                        <p>
+                        <p class="text-base md:text-lg mb-2">
                           1 año:
                           <strong class="font-bold">15% de descuento</strong>
                         </p>
-                        <p class="text-xl font-semibold mb-4">$ 153.000</p>
+                        <p class="text-lg md:text-xl font-semibold mb-3 md:mb-4">$ 153.000</p>
                         <a href="/registrar"
                         class="bg-blue-600 text-center text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold shadow-md hover:shadow-lg"
                       >
@@ -622,38 +635,38 @@
                       </div>
                     </div>
                     <!-- Plan 4 -->
-                    <div class="w-1/3 flex-shrink-0 p-2">
+            <div class="w-full md:w-1/3 flex-shrink-0 p-2">
                       <div
-                        class="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
+                        class="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
                       >
-                        <h2 class="text-center text-2xl font-bold mb-4">
+                <h2 class="text-center text-xl md:text-2xl font-bold mb-2 md:mb-4">
                           PLAN 6 MESES
                         </h2>
-                        <p>
+                        <p class="text-base md:text-lg mb-2">
                           6 MESES:
                           <strong class="font-bold">20% de descuento</strong>
                         </p>
-                        <p class="text-xl font-semibold mb-4">$ 280.000</p>
+                        <p class="text-lg md:text-xl font-semibold mb-3 md:mb-4">$ 280.000</p>
                         <a href="/registrar"
-                          class="bg-blue-600 text-center text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold shadow-md hover:shadow-lg"
+                  class="bg-blue-600 text-center text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-base md:text-lg font-semibold shadow-md hover:shadow-lg"
                         >
                           Ver más
                       </a>
                       </div>
                     </div>
                     <!-- Plan 5 -->
-                    <div class="w-1/3 flex-shrink-0 p-2">
+            <div class="w-full md:w-1/3 flex-shrink-0 p-2">
                       <div
-                        class="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
+                        class="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col justify-between h-full transform hover:scale-105 transition duration-300"
                       >
-                        <h2 class="text-center text-2xl font-bold mb-4">
+                <h2 class="text-center text-xl md:text-2xl font-bold mb-2 md:mb-4">
                           PLAN 1 AÑO
                         </h2>
-                        <p>
+                        <p class="text-base md:text-lg mb-2">
                           1 año:
                           <strong class="font-bold">25% de descuento</strong>
                         </p>
-                        <p class="text-xl font-semibold mb-4">$ 540.000</p>
+                        <p class="text-lg md:text-xl font-semibold mb-3 md:mb-4">$ 540.000</p>
                         <a href="/registrar"
                         class="bg-blue-600 text-center text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 w-full text-lg font-semibold shadow-md hover:shadow-lg"
                       >
@@ -666,16 +679,16 @@
 
                   <!-- Flechas de navegación -->
                   <button
-                    class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-4 rounded-full shadow-md hover:bg-blue-700 transition duration-300 focus:outline-none opacity-0 group-hover:opacity-100"
-                    id="prevBtn"
-                  >
-                    <svg
-                      class="w-8 h-8"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
+                  class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 md:p-4 rounded-full shadow-md hover:bg-blue-700 transition duration-300 focus:outline-none opacity-0 group-hover:opacity-100"
+                  id="prevBtn"
+                >
+                <svg
+                class="w-6 h-6 md:w-8 md:h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -686,16 +699,17 @@
                   </button>
 
                   <button
-                    class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-4 rounded-full shadow-md hover:bg-blue-700 transition duration-300 focus:outline-none opacity-0 group-hover:opacity-100"
-                    id="nextBtn"
-                  >
-                    <svg
-                      class="w-8 h-8"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
+                  class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 md:p-4 rounded-full shadow-md hover:bg-blue-700 transition duration-300 focus:outline-none opacity-0 group-hover:opacity-100"
+                  id="nextBtn"
+                >
+      
+                <svg
+                class="w-6 h-6 md:w-8 md:h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -738,61 +752,59 @@
 
         <!-- quinto contenedor  -->
         <div
-          class="bg-center p-6 w-full flex"
-          style="
-            background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo_indexp.jpeg');
-            background-size: cover;
-            min-height: 100vh;
+        class="bg-center p-4 sm:p-6 w-full flex flex-col sm:flex-row h-screen min-h-full"
+        style="
+          background-image: url('https://raw.githubusercontent.com/JeanCardozo/audios/main/fondo_indexp.jpeg');
+          background-size: cover;
           "
-          id="ubicacion"
-        >
-          <div class="w-1/2 md:w-2/3 pr-4 mb-8 md:mb-0">
-            <h2
-              class="text-gray-800 text-3xl font-bold mb-6 text-gray-600 animate-pulse"
-            >
-              ¡Descubre dónde nos encontramos!
-              <span class="inline-block transform rotate-90 text-yellow-300"
-                >➜</span
-              >
-            </h2>
-            <div
-              id="map"
-              class="ml-10 relative z-40 h-96 rounded-lg shadow-2xl"
-            ></div>
-          </div>
-
-          <div
-            class="w-1/2 md:w-1/3 pl-4 flex flex-col justify-center items-center bg-opacity-80 rounded-lg p-6 transform hover:scale-105 transition-transform duration-300"
+        id="ubicacion"
+      >
+        <div class="w-full sm:w-1/2 md:w-2/3 pr-0 sm:pr-4 mb-8">
+          <h2
+            class="text-gray-800 text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-600 animate-pulse"
           >
-            <h3 class="text-2xl font-semibold mb-6 text-gray-800">
-              Horarios de atención
-            </h3>
-            <div class="flex flex-col items-center space-y-4">
-              <div class="text-center">
-                <h4 class="font-bold text-lg text-gray-700">Lunes a viernes</h4>
-                <p class="text-gray-600">5:00 - 12:00 | 15:00 - 21:30</p>
-              </div>
-              <div class="text-center">
-                <h4 class="font-bold text-lg text-gray-700">
-                  Sábados y festivos
-                </h4>
-                <p class="text-gray-600">6:00 - 12:00</p>
-              </div>
-              <div class="text-center">
-                <h4 class="font-bold text-lg text-gray-700">Domingos</h4>
-                <p class="text-gray-600">Cerrado</p>
-              </div>
-            </div>
-            <form
-            action=https://api.whatsapp.com/send?phone=573209316797&text=Hola%21%20Quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20zona%20de%20poder>
-            <button
-              class="mt-6 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transform hover:scale-110 transition-transform duration-300"
-            >
-              Mas informacion
-            </button>
-          </form>
-          </div>
+            ¡Descubre dónde nos encontramos!
+            <span class="inline-block transform rotate-90 text-yellow-300">➜</span>
+          </h2>
+          <div
+            id="map"
+            class="ml-0 sm:ml-10 relative z-40 h-64 sm:h-96 rounded-lg shadow-2xl"
+          ></div>
         </div>
+      
+        <div
+          class="w-full sm:w-1/2 md:w-1/3 pl-0 sm:pl-4 flex flex-col justify-center items-center bg-white bg-opacity-80 rounded-lg p-4 sm:p-6 transform hover:scale-105 transition-transform duration-300"
+        >
+          <h3 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-800">
+            Horarios de atención
+          </h3>
+          <div class="flex flex-col items-center space-y-3 sm:space-y-4">
+            <div class="text-center">
+              <h4 class="font-bold text-base sm:text-lg text-gray-700">Lunes a viernes</h4>
+              <p class="text-sm sm:text-base text-gray-600">5:00 - 12:00 | 15:00 - 21:30</p>
+            </div>
+            <div class="text-center">
+              <h4 class="font-bold text-base sm:text-lg text-gray-700">
+                Sábados y festivos
+              </h4>
+              <p class="text-sm sm:text-base text-gray-600">6:00 - 12:00</p>
+            </div>
+            <div class="text-center">
+              <h4 class="font-bold text-base sm:text-lg text-gray-700">Domingos</h4>
+              <p class="text-sm sm:text-base text-gray-600">Cerrado</p>
+            </div>
+          </div>
+          <form
+          action="https://api.whatsapp.com/send?phone=573209316797&text=Hola%21%20Quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20zona%20de%20poder">
+          <button
+            class="mt-4 sm:mt-6 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transform hover:scale-110 transition-transform duration-300 text-sm sm:text-base"
+          >
+            Más información
+          </button>
+        </form>
+        </div>
+      </div>
+      
       </div>
       <script>
         document.addEventListener("DOMContentLoaded", function () {
