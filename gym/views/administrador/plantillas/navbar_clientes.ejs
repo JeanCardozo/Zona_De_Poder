@@ -32,7 +32,6 @@
           class="h-12 w-auto"
         />
       </div>
-
       <div class="hidden sm:flex sm:space-x-8">
         <a
           href="/clientes/index_c"
@@ -94,10 +93,78 @@
             >
           </div>
         </div>
+        <button
+          id="mobile-menu-button"
+          class="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+          aria-expanded="false"
+        >
+          <span class="sr-only">Abrir menú principal</span>
+          <svg
+            class="h-6 w-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </div>
+  <!-- Menú móvil -->
+  <div class="sm:hidden hidden" id="mobile-menu">
+    <div class="px-2 pt-2 pb-3 space-y-1">
+      <a
+        href="/clientes/index_c"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+        >Inicio</a
+      >
+      <a
+        href="/mis_planes"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+        >Mis Planes</a
+      >
+      <a
+        href="/info_personal"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+        >Información</a
+      >
+      <a
+        href="/ayuda"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+        >Ayuda</a
+      >
+      <a
+        href="/mi_plan"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+        >Mi plan de Entrenamiento</a
+      >
+    </div>
+  </div>
 </nav>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const mobileMenu = document.getElementById("mobile-menu");
+
+    mobileMenuButton.addEventListener("click", function () {
+      mobileMenu.classList.toggle("hidden");
+    });
+  });
+
+  function toggleProfileDropdown() {
+    const dropdown = document.getElementById("profileDropdown");
+    dropdown.classList.toggle("hidden");
+  }
+</script>
+
 <script>
   function toggleProfileDropdown() {
     console.log("Función toggleProfileDropdown llamada");

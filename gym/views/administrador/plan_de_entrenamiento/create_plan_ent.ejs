@@ -37,6 +37,7 @@
       #external-events {
         position: fixed;
         z-index: 2;
+        left: 1300px;
         width: 150px;
         padding: 0 10px;
         border: 1px solid #ccc;
@@ -51,11 +52,14 @@
       #calendar-container {
         position: relative;
         z-index: 1;
+        margin-left: 250px;
+        width: 1000px;
       }
 
       #calendar {
+        max-width: 1100px;
         margin: 20px auto;
-        background-color: white;
+        background-color: #eee;
       }
       #trash-button {
         position: absolute;
@@ -222,8 +226,8 @@
           var planData = events.map(function (event) {
             return {
               title: event.title,
-              start: event.start,
-              end: event.end,
+              start: event.start.toISOString(), // Convertir la fecha a un string ISO
+              end: event.end ? event.end.toISOString() : null,
             };
           });
 
@@ -234,7 +238,12 @@
             },
             body: JSON.stringify(planData),
           })
-            .then((response) => response.json())
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+              return response.json();
+            })
             .then((data) => {
               if (data.success) {
                 alert("Plan de entrenamiento guardado con éxito");

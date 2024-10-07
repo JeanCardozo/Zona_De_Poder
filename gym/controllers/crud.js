@@ -1219,18 +1219,27 @@ exports.verPlanEntrenamiento = (req, res) => {
     );
   });
 };
-
 exports.guardar_plan = (req, res) => {
   const planData = req.body;
+  console.log("Plan data received:", planData); // Verifica el contenido de los datos recibidos
 
-  // Aquí iría tu lógica para guardar planData en la base de datos
-  // Por ejemplo:
-  // database.savePlan(planData)
-  //   .then(() => res.json({ success: true }))
-  //   .catch(err => res.json({ success: false, error: err }));
+  const values = planData.map((event) => [event.start, event.title]);
 
-  // Por ahora, solo simularemos una respuesta exitosa
-  res.json({ success: true });
+  const query = `
+    INSERT INTO plan_entrenamiento (fecha, nombre_ejercicio)
+    VALUES ?
+  `;
+
+  pool.query(query, [values], (err, result) => {
+    if (err) {
+      console.error("Error al guardar el plan de entrenamiento:", err);
+      return res.json({ success: false, error: err });
+    }
+    res.json({
+      success: true,
+      message: "Plan de entrenamiento guardado con éxito",
+    });
+  });
 };
 
 exports.guardarPlanentrenamiento = async (req, res) => {
