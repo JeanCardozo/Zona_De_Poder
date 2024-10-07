@@ -1219,34 +1219,6 @@ exports.verPlanEntrenamiento = (req, res) => {
     );
   });
 };
-exports.guardar_plan = (req, res) => {
-  const planData = req.body;
-
-  // Generamos un arreglo de promesas para manejar múltiples inserciones
-  const queries = planData.map((event, index) => {
-    const query = `
-      INSERT INTO plan_entrenamiento (dia, nombre_ejercicio)
-      VALUES ($1, $2)
-    `;
-    const values = [event.start, event.title];
-
-    // Ejecutamos la consulta para cada evento
-    return conexion.query(query, values);
-  });
-
-  // Ejecutamos todas las promesas de inserción
-  Promise.all(queries)
-    .then(() => {
-      res.json({
-        success: true,
-        message: "Plan de entrenamiento guardado con éxito",
-      });
-    })
-    .catch((err) => {
-      console.error("Error al guardar el plan de entrenamiento:", err);
-      res.json({ success: false, error: err });
-    });
-};
 
 exports.guardarPlanentrenamiento = async (req, res) => {
   try {

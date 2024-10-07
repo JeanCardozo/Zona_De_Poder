@@ -2034,7 +2034,6 @@ router.post("/update_af", crud.update_af);
 router.post("/verPlanEntrenamiento", crud.verPlanEntrenamiento);
 router.post("/update_pe", crud.update_pe);
 router.post("/guardarPlanentrenamiento", crud.guardarPlanentrenamiento);
-router.post("/guardar_plan", crud.guardar_plan);
 
 //index ahi melo para el calendario
 router.post("/crear_evento", crud.crear_evento);
