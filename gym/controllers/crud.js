@@ -1221,25 +1221,31 @@ exports.verPlanEntrenamiento = (req, res) => {
 };
 exports.guardar_plan = (req, res) => {
   const planData = req.body;
-  console.log("Plan data received:", planData); // Verifica el contenido de los datos recibidos
 
-  const values = planData.map((event) => [event.start, event.title]);
+  // Generamos un arreglo de promesas para manejar múltiples inserciones
+  const queries = planData.map((event, index) => {
+    const query = `
+      INSERT INTO plan_entrenamiento (dia, nombre_ejercicio)
+      VALUES ($1, $2)
+    `;
+    const values = [event.start, event.title];
 
-  const query = `
-    INSERT INTO plan_entrenamiento (fecha, nombre_ejercicio)
-    VALUES ?
-  `;
-
-  pool.query(query, [values], (err, result) => {
-    if (err) {
-      console.error("Error al guardar el plan de entrenamiento:", err);
-      return res.json({ success: false, error: err });
-    }
-    res.json({
-      success: true,
-      message: "Plan de entrenamiento guardado con éxito",
-    });
+    // Ejecutamos la consulta para cada evento
+    return conexion.query(query, values);
   });
+
+  // Ejecutamos todas las promesas de inserción
+  Promise.all(queries)
+    .then(() => {
+      res.json({
+        success: true,
+        message: "Plan de entrenamiento guardado con éxito",
+      });
+    })
+    .catch((err) => {
+      console.error("Error al guardar el plan de entrenamiento:", err);
+      res.json({ success: false, error: err });
+    });
 };
 
 exports.guardarPlanentrenamiento = async (req, res) => {
