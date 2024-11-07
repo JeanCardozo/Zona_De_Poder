@@ -100,8 +100,8 @@
         title: "<%= alertTitle %>",
         text: "<%= alertMessage %>",
         icon: "<%= alertIcon %>",
-        showConfirmButton: <%= showConfirmButton %>,
-        timer: <%= timer %>
+        showConfirmButton: "<%= showConfirmButton %>",
+        timer: "<%= timer %>",
       }).then(() => {
         if ("<%= ruta %>") {
           window.location.href = "<%= ruta %>";
@@ -109,5 +109,41 @@
       });
     </script>
     <% } %>
+
+    <script>
+      // Función para obtener parámetros de la URL
+      function getQueryParams() {
+        const params = {};
+        window.location.search
+          .substring(1)
+          .split("&")
+          .forEach((pair) => {
+            const [key, value] = pair.split("=");
+            if (key)
+              params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+          });
+        return params;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = getQueryParams();
+        if (params.alert === "success") {
+          Swal.fire({
+            title: "Registro Exitoso",
+            text: params.message || "Ahora puedes iniciar sesión.",
+            icon: "success",
+            confirmButtonText: "Aceptar",
+          });
+        } else if (params.alert === "error") {
+          Swal.fire({
+            title: "Error",
+            text: params.message || "Ocurrió un problema.",
+            icon: "error",
+            confirmButtonText: "Aceptar",
+          });
+        }
+        // Puedes manejar más tipos de alertas si es necesario
+      });
+    </script>
   </body>
 </html>

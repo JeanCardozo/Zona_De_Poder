@@ -46,6 +46,7 @@
     "nth-check": "^2.1.1",
     "pdfkit": "^0.15.0",
     "pg": "^8.12.0",
+    "pg-format": "^1.0.4",
     "pg-hstore": "^2.3.4",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",

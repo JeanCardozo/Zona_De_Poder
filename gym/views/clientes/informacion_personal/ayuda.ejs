@@ -37,114 +37,119 @@
   </head>
   <body class="bg-gray-100">
     <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
-    <div class="bg-gradient-to-r min-h-screen py-12">
+    <div
+      class="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen py-6 sm:py-12"
+    >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-8 text-center">
+        <h1
+          class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 sm:mb-8 text-center"
+        >
           Mi Información
         </h1>
 
         <% results.forEach(function(cliente) { %>
 
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
-          <div class="p-6">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6 sm:mb-8">
+          <div class="p-4 sm:p-6">
             <form
               id="ayuda_mensaje"
               action="/mensaje_ayuda"
               method="post"
-              class="mt-8"
+              class="mt-4 sm:mt-8"
             >
-              <div class="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h2
-                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
-                  >
-                    Identificación
-                  </h2>
-                  <input
-                    class="text-lg font-medium text-gray-900 "
-                    id="id"
-                    name="id"
-                    value="<%= cliente.id %>"
-                  >
-                    
-                </input>
+              <div class="space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div class="space-y-2">
+                    <h2
+                      class="text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                    >
+                      Identificación
+                    </h2>
+                    <input
+                      class="text-base sm:text-lg font-medium text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md"
+                      id="id"
+                      name="id"
+                      value="<%= cliente.id %>"
+                      readonly
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <h2
+                      class="text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                    >
+                      Nombre
+                    </h2>
+                    <input
+                      class="text-base sm:text-lg font-medium text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md"
+                      id="nombre"
+                      name="nombre"
+                      value="<%= cliente.nombre %>"
+                      readonly
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <h2
+                      class="text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                    >
+                      Apellido
+                    </h2>
+                    <p
+                      class="text-base sm:text-lg font-medium text-gray-900 px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                      <%= cliente.apellido %>
+                    </p>
+                  </div>
+                  <div class="space-y-2">
+                    <h2
+                      class="text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                    >
+                      Correo electrónico
+                    </h2>
+                    <input
+                      class="text-base sm:text-lg font-medium text-gray-900 w-full px-3 py-2 border border-gray-300 rounded-md"
+                      id="correo"
+                      name="correo"
+                      value="<%= cliente.correo_electronico %>"
+                      readonly
+                    />
+                  </div>
                 </div>
-                <div>
-                  <h2
-                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
-                  >
-                    Nombre
-                  </h2>
-                  <input
-                    class="text-lg font-medium text-gray-900"
-                    id="nombre"
-                    name="nombre"
-                    value=" <%= cliente.nombre %>"
-                  >
-                   
-                </input>
-                </div>
-                <div>
-                  <h2
-                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
-                  >
-                    Apellido
-                  </h2>
-                  <p class="text-lg font-medium text-gray-900">
-                    <%= cliente.apellido %>
-                  </p>
-                </div>
-                <div>
-                  <h2
-                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1"
-                  >
-                    Correo electrónico
-                  </h2>
-                  <input
-                    class="text-lg font-medium text-gray-900 readonly"
-                    id="correo"
-                    name="correo"
-                    value="<%= cliente.correo_electronico %>"
-                  >
-                    
-                  </input>
-                </div>
-              </div>
 
-              <div class="mt-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                  Detalles adicionales
-                </h3>
-              </div>
+                <div class="mt-6 sm:mt-8">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    Detalles adicionales
+                  </h3>
+                </div>
 
-              <div class="mb-4">
-                <label
-                  for="mensaje_ayuda"
-                  class="block text-sm font-medium text-gray-700 mb-2"
-                  >Mensaje de ayuda</label
-                >
-                <textarea
-                  id="mensaje_ayuda"
-                  name="mensaje_ayuda"
-                  rows="3"
-                  class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md required"
-                  placeholder="Escribe tu mensaje de ayuda aquí"
-                ></textarea>
-              </div>
-              <input
-                    class="text-lg font-medium text-gray-900 "
-                    type="hidden"
-                    id="message"
-                    name="message"
-                    value="success"
+                <div class="space-y-2">
+                  <label
+                    for="mensaje_ayuda"
+                    class="block text-sm font-medium text-gray-700"
+                    >Mensaje de ayuda</label
                   >
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Enviar mensaje
-                </button>
+                  <textarea
+                    id="mensaje_ayuda"
+                    name="mensaje_ayuda"
+                    rows="4"
+                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-sm border-gray-300 rounded-md"
+                    placeholder="Escribe tu mensaje de ayuda aquí"
+                    required
+                  ></textarea>
+                </div>
+                <input
+                  type="hidden"
+                  id="message"
+                  name="message"
+                  value="success"
+                />
+                <div class="flex justify-end mt-4 sm:mt-6">
+                  <button
+                    type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Enviar mensaje
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -180,21 +185,23 @@
         `<% } %>`;
       });
     </script>
-    <!-- Pie de página -->
-    <footer id="footer" class="bg-gray-800 text-white py-12">
+
+    <footer id="footer" class="bg-gray-800 text-white py-8 sm:py-12">
       <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 class="text-3xl font-bold mb-4">
-              <a href="/logout">Zona de Poder<sup>&reg;</sup></a>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="text-center sm:text-left">
+            <h3 class="text-2xl sm:text-3xl font-bold mb-4">
+              Zona de Poder<sup>&reg;</sup>
             </h3>
             <ul class="space-y-2">
               <li>Teléfono: +57 123 456 7890</li>
               <li>Dirección: Calle Principal #123, Ciudad</li>
             </ul>
           </div>
-          <div>
-            <h4 class="text-xl font-semibold mb-4">Enlaces útiles</h4>
+          <div class="text-center sm:text-left">
+            <h4 class="text-lg sm:text-xl font-semibold mb-4">
+              Enlaces útiles
+            </h4>
             <ul class="space-y-2">
               <li>
                 <a
@@ -226,32 +233,34 @@
               </li>
             </ul>
           </div>
-          <div>
-            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
-            <ul class="space-y-4">
-              <li>
+          <div class="text-center sm:text-left">
+            <h4 class="text-lg sm:text-xl font-semibold mb-4">Síguenos</h4>
+            <ul
+              class="flex justify-center sm:justify-start space-x-4 sm:space-x-0 sm:space-y-4"
+            >
+              <li class="sm:w-full">
                 <a
                   href="#"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
+                  ><i class="fab fa-facebook-f text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Facebook</span></a
                 >
-                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
-                </a>
               </li>
-              <li>
+              <li class="sm:w-full">
                 <a
                   href="#"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
+                  ><i class="fab fa-instagram text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Instagram</span></a
                 >
-                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
-                </a>
               </li>
-              <li>
+              <li class="sm:w-full">
                 <a
                   href="#"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
+                  ><i class="fab fa-twitter text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Twitter</span></a
                 >
-                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
-                </a>
               </li>
             </ul>
           </div>

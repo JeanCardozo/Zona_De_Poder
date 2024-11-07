@@ -103,7 +103,7 @@
       .fc-toolbar .fc-next-button:hover {
         background-color: transparent;
         color: black;
-        transform: scale(1.5);
+        transform: scale(1.2);
       }
 
       .crearEventoBtn {
@@ -250,46 +250,6 @@
         </div>
       </div>
     </div>
-
-    <script>
-      document.querySelectorAll(".crearEventoBtn").forEach((btn) => {
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-
-          Swal.fire({
-            title: "Agregar un evento",
-            html: `
-              <form id="crearEventoform" action="/crear_evento" method="post" class="space-y-4">
-                <div class="mb-4">
-                  <label for="Evento" class="block text-xl font-medium text-gray-700">Evento</label>
-                  <input type="text" name="evento"id="evento" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-                   focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-                    dark:placeholder-gray-400 dark:text-white" id="rol" name="rol" required />
-
-<label for="fecha" class="block text-xl font-medium text-gray-700">Fecha</label>
-<input type="datetime-local" id="fecha" name="fecha" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-      focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-      dark:placeholder-gray-400 dark:text-white" required />
-
-                </div>
-              </form>
-            `,
-            showCancelButton: true,
-            confirmButtonClass: "btn-confirmar",
-            cancelButtonClass: "btn-cancelar",
-            customClass: {
-              confirmButton: "btn-confirmar",
-              cancelButton: "btn-cancelar",
-            },
-            confirmButtonText: "Guardar",
-            cancelButtonText: "Cancelar",
-            preConfirm: () => {
-              document.getElementById("crearEventoform").submit();
-            },
-          });
-        });
-      });
-    </script>
 
     <script>
       document.querySelectorAll(".renovar-btn").forEach((btn) => {
@@ -608,20 +568,19 @@
                 Swal.fire({
                   title: "Agregar un evento",
                   html: `
-                                      <form id="crearEventoform" action="/crear_evento" method="post" class="space-y-4">
-                                          <div class="mb-4">
-                                              <label for="evento" class="block text-xl font-medium text-gray-700">Evento</label>
-                                              <input type="text" name="evento" id="evento" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-                                                  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-                                                  dark:placeholder-gray-400 dark:text-white" required />
+                        <form id="crearEventoform" action="/crear_evento" method="post" class="space-y-4">
+                          <div class="mb-4">
+                              <label for="evento" class="block text-xl font-medium text-gray-700">Evento</label>
+                              <input type="text" name="evento" id="evento" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                                  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
+                                  dark:placeholder-gray-400 dark:text-white" requ
+                              <label for="fecha" class="block text-xl font-medium text-gray-700">Fecha</label>
+                              <input type="datetime-local" id="fecha" name="fecha" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                              focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
+                              dark:placeholder-gray-400 dark:text-white" required />
 
-                                              <label for="fecha" class="block text-xl font-medium text-gray-700">Fecha</label>
-      <input type="datetime-local" id="fecha" name="fecha" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-            focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600
-            dark:placeholder-gray-400 dark:text-white" required />
-
-                                          </div>
-                                      </form>
+                          </div>
+                        </form>
                                   `,
                   showCancelButton: true,
                   confirmButtonClass: "btn-confirmar",
@@ -661,13 +620,12 @@
           var tooltip = document.createElement("div");
           tooltip.className = "event-tooltip";
           tooltip.innerHTML = `
-                      <strong>${info.event.title}</strong><br>
-                      Fecha: ${info.event.start.toLocaleString()}<br>
-                      Descripción: ${
-                        info.event.extendedProps.description ||
-                        "Sin descripción"
-                      }
-                  `;
+          <strong>${info.event.title}</strong><br>
+          Fecha: ${info.event.start.toLocaleString()}<br>
+          Descripción: ${
+            info.event.extendedProps.description || "Sin descripción"
+          }
+          `;
           document.body.appendChild(tooltip);
 
           // Posicionar el tooltip

@@ -16,6 +16,11 @@ const fs = require("fs");
 const axios = require("axios");
 const mercadopago = require("mercadopago");
 const { title } = require("process");
+const format = require("pg-format");
+const moment = require("moment");
+const {
+  InstalledAddOnContextImpl,
+} = require("twilio/lib/rest/marketplace/v1/installedAddOn");
 
 router.use((req, res, next) => {
   if (req.session.userData) {
@@ -1562,7 +1567,6 @@ router.get("/actualizar_f/:id", authenticateToken, (req, res) => {
 
 // Ruta para "Ver Plan Entrenamiento"
 router.get("/ver_plan_ent", authenticateToken, (req, res) => {
-  // Primera consulta: obtener el plan de entrenamiento
   conexion.query(
     "SELECT pe.id AS id_plan_entrenamiento, pe.id_cliente FROM plan_entrenamiento pe ORDER BY pe.id ASC",
     (error, results) => {
@@ -1570,14 +1574,12 @@ router.get("/ver_plan_ent", authenticateToken, (req, res) => {
         return res.status(500).sendFile(__dirname + "/500.html");
       }
 
-      // Si no hay resultados en el plan de entrenamiento
       if (results.rows.length === 0) {
         return res.status(500).sendFile(__dirname + "/500.html");
       }
 
-      const clienteId = results.rows[0].id_cliente; // Se usa id_cliente, no id
+      const clienteId = results.rows[0].id_cliente;
 
-      // Segunda consulta: obtener el nombre del cliente
       conexion.query(
         "SELECT nombre FROM clientes WHERE id = $1",
         [clienteId],
@@ -1739,6 +1741,72 @@ async function getMensualidades() {
   });
 }
 
+// Función para procesar el registro temporal
+async function procesarRegistroTemporal(tempRegistroId) {
+  const client = await conexion.connect(); // Obtener un cliente del pool
+  try {
+    await client.query("BEGIN"); // Iniciar la transacción
+
+    // Obtener datos de temp_registro
+    const queryTemp =
+      "SELECT * FROM temp_registro WHERE id_usuario = $1 FOR UPDATE";
+    const resTemp = await client.query(queryTemp, [tempRegistroId]);
+
+    if (resTemp.rows.length === 0) {
+      throw new Error("Registro temporal no encontrado");
+    }
+
+    const tempData = resTemp.rows[0];
+
+    // Insertar en usuarios
+    const queryUsuario = `
+      INSERT INTO usuarios (id, nombre, apellido, correo_electronico, telefono, contraseña, id_rol, estado)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id
+    `;
+    const resUsuario = await client.query(queryUsuario, [
+      tempData.id_usuario,
+      tempData.nombre,
+      tempData.apellido,
+      tempData.correo,
+      tempData.telefono,
+      tempData.contraseña,
+      3, // id_rol
+      "Activo", // estado
+    ]);
+
+    const usuarioId = resUsuario.rows[0].id;
+
+    // Insertar en clientes
+    const queryCliente = `
+      INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, estado)
+      VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota', $6, $7, $8, $9)
+    `;
+    await client.query(queryCliente, [
+      usuarioId,
+      tempData.nombre,
+      tempData.apellido,
+      tempData.edad,
+      tempData.sexo,
+      tempData.correo,
+      tempData.telefono,
+      tempData.id_mensu,
+      "Activo", // estado
+    ]);
+
+    // Eliminar el registro temporal
+    const queryDeleteTemp = "DELETE FROM temp_registro WHERE id_usuario = $1";
+    await client.query(queryDeleteTemp, [tempRegistroId]);
+
+    await client.query("COMMIT"); // Confirmar la transacción
+  } catch (error) {
+    await client.query("ROLLBACK"); // Revertir la transacción en caso de error
+    throw error; // Propagar el error
+  } finally {
+    client.release(); // Liberar el cliente de vuelta al pool
+  }
+}
+
 // Ruta para mostrar la página de mensualidades
 router.get("/mensualidades", async (req, res) => {
   const { tempRegistroId } = req.query;
@@ -1775,20 +1843,24 @@ const client = new MercadoPagoConfig({
 // Ruta para crear una orden de Mercado Pago
 router.post("/create-preference", async (req, res) => {
   try {
+    const { title, unit_price, tempRegistroId, id_mensualidad } = req.body;
+
     const body = {
       items: [
         {
-          title: req.body.title,
-          unit_price: Number(req.body.unit_price),
+          title: title,
+          unit_price: Number(unit_price),
           currency_id: "COP",
-          quantity: 1, // Asegúrate de incluir la cantidad
+          quantity: 1,
         },
       ],
       back_urls: {
-        success: "http://localhost:5000/pago-exitoso",
-        failure: "http://localhost:5000/pago-fallido",
-        pending: "http://localhost:5000/pago-pendiente",
+        success: `http://localhost:5000/success?tempRegistroId=${tempRegistroId}&id_mensualidad=${id_mensualidad}`,
+        failure: `http://localhost:5000/failure?tempRegistroId=${tempRegistroId}`,
+        pending: `http://localhost:5000/pending?tempRegistroId=${tempRegistroId}`,
       },
+      auto_return: "approved",
+      default_installments: 1,
     };
 
     const preference = new Preference(client);
@@ -1798,37 +1870,59 @@ router.post("/create-preference", async (req, res) => {
       id: result.id,
     });
   } catch (error) {
-    const mensualidades = await getMensualidades();
-    res.render("administrador/mensualidades/mensualidades", {
-      alertTitle: "Error",
-      alertMessage: "Hubo un problema al crear la orden de pago.",
-      alertIcon: "error",
-      showConfirmButton: true,
-      tempRegistroId: req.body.tempRegistroId,
-      mensualidades,
+    console.error("Error al crear la preferencia de pago:", error);
+    // Aquí devolvemos JSON en lugar de renderizar una vista HTML
+    res.status(500).json({
+      success: false,
+      message: "Hubo un problema al crear la orden de pago.",
     });
   }
 });
 
-// Rutas de redirección después del pago
+// Ruta de éxito de pago
 router.get("/success", async (req, res) => {
-  try {
-    const mensualidades = await getMensualidades();
-    res.render("administrador/mensualidades/mensualidades", {
-      alertTitle: "Pago Exitoso",
-      alertMessage: "Tu pago ha sido realizado con éxito.",
-      alertIcon: "success",
-      showConfirmButton: true,
-      tempRegistroId: req.query.tempRegistroId,
-      mensualidades,
+  const { tempRegistroId, id_mensualidad } = req.query;
+
+  if (!tempRegistroId || !id_mensualidad) {
+    return res.status(400).json({
+      success: false,
+      message: "Registro temporal no encontrado o mensualidad no proporcionada",
     });
+  }
+
+  try {
+    console.log("xd:", tempRegistroId, "xd2:", id_mensualidad);
+    // Actualizar el registro temporal con el id de mensualidad pagada
+    const queryUpdateMensualidad =
+      "UPDATE temp_registro SET id_mensu = $1 WHERE id_usuario = $2";
+    await conexion.query(queryUpdateMensualidad, [
+      id_mensualidad,
+      tempRegistroId,
+    ]);
+
+    // Procesar el registro temporal
+    await procesarRegistroTemporal(tempRegistroId);
+
+    // Redirigir al login con alertas
+    res.redirect(
+      `/login_index?alert=success&message=Registro exitoso. Ahora puedes iniciar sesión.`
+    );
   } catch (error) {
-    console.error("Error en la ruta de éxito:", error);
+    console.error("Error al procesar el registro temporal:", error);
     res.status(500).sendFile(__dirname + "/500.html");
   }
 });
 
 router.get("/failure", async (req, res) => {
+  const { tempRegistroId } = req.query;
+
+  if (!tempRegistroId) {
+    return res.status(400).json({
+      success: false,
+      message: "Registro temporal no encontrado",
+    });
+  }
+
   try {
     const mensualidades = await getMensualidades();
     res.render("administrador/mensualidades/mensualidades", {
@@ -1836,7 +1930,7 @@ router.get("/failure", async (req, res) => {
       alertMessage: "Hubo un problema al procesar tu pago.",
       alertIcon: "error",
       showConfirmButton: true,
-      tempRegistroId: req.query.tempRegistroId,
+      tempRegistroId: tempRegistroId,
       mensualidades,
     });
   } catch (error) {
@@ -1846,6 +1940,15 @@ router.get("/failure", async (req, res) => {
 });
 
 router.get("/pending", async (req, res) => {
+  const { tempRegistroId } = req.query;
+
+  if (!tempRegistroId) {
+    return res.status(400).json({
+      success: false,
+      message: "Registro temporal no encontrado",
+    });
+  }
+
   try {
     const mensualidades = await getMensualidades();
     res.render("administrador/mensualidades/mensualidades", {
@@ -1853,24 +1956,12 @@ router.get("/pending", async (req, res) => {
       alertMessage: "Tu pago está en proceso. Espera la confirmación.",
       alertIcon: "info",
       showConfirmButton: true,
-      tempRegistroId: req.query.tempRegistroId,
+      tempRegistroId: tempRegistroId,
       mensualidades,
     });
   } catch (error) {
     console.error("Error en la ruta de pendiente:", error);
     res.status(500).sendFile(__dirname + "/500.html");
-  }
-});
-
-// Ruta para recibir webhooks de Mercado Pago
-router.post("/webhook", async (req, res) => {
-  try {
-    await receiveWebhook(req, res);
-    res.sendStatus(204); // No hay contenido que devolver
-  } catch (error) {
-    if (!res.headersSent) {
-      res.status(500).sendFile(__dirname + "/500.html"); // Enviar un estado de error si falla el webhook
-    }
   }
 });
 
@@ -1899,72 +1990,30 @@ router.get("/create_plan_ent", authenticateToken, (req, res) => {
   crud.mostrarFormularioVacio(req, res);
 });
 
-router.post("/entrenamiento/guardar", authenticateToken, async (req, res) => {
-  const {
+router.post("/guardar_plan", async (req, res) => {
+  const { id_cliente, plan: eventos } = req.body;
+  const values = eventos.map((evento) => [
     id_cliente,
-    dia,
-    tipo_tren,
-    musculo,
-    ejercicio,
-    series,
-    repeticiones,
-  } = req.body;
-
-  console.log("Datos recibidos:", req.body);
-
-  // Verifica si las variables son undefined o vacías
-  if (
-    !id_cliente ||
-    !dia ||
-    !tipo_tren ||
-    !musculo ||
-    !ejercicio ||
-    !series ||
-    !repeticiones
-  ) {
-    return res.status(400).send("Todos los campos son obligatorios");
-  }
-
-  // Convierte a entero el id_cliente
-  const id_cliente_int = parseInt(id_cliente, 10);
-
-  if (
-    isNaN(id_cliente_int) ||
-    !Array.isArray(series) ||
-    !Array.isArray(repeticiones) ||
-    series.some(isNaN) ||
-    repeticiones.some(isNaN)
-  ) {
-    return res
-      .status(400)
-      .send(
-        "Los valores de ID deben ser números enteros, y series y repeticiones deben ser arrays de números enteros"
-      );
-  }
+    moment(evento.start).format("DD/MM/YYYY"), // Formato de fecha
+    evento.title,
+    `{${evento.series}}`,
+    `{${evento.repeticiones}}`,
+  ]);
 
   try {
-    const query = `
-      INSERT INTO plan_entrenamiento
-      (id_cliente, dia, tipo_tren, musculo, ejercicio, series, repeticiones)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `;
-    const values = [
-      id_cliente_int,
-      dia,
-      tipo_tren,
-      musculo,
-      ejercicio,
-      series,
-      repeticiones,
-    ];
+    const query = format(
+      `
+      INSERT INTO plan_entrenamiento (id_cliente, dia, ejercicio,series,repeticiones)
+      VALUES %L RETURNING id
+    `,
+      values
+    );
 
-    await conexion.query(query, values);
-
-    console.log("Entrenamiento guardado");
-    res.send("Entrenamiento guardado");
-  } catch (err) {
-    console.error("Error al guardar el entrenamiento:", err);
-    res.status(500).sendFile(__dirname + "/500.html");
+    const result = await conexion.query(query);
+    res.json({ success: true, ids: result.rows.map((row) => row.id) });
+  } catch (error) {
+    console.error("Error al guardar el plan de entrenamiento:", error);
+    res.status(500).json({ success: false });
   }
 });
 
@@ -2031,9 +2080,8 @@ router.post("/crear_af", crud.crear_af);
 router.post("/update_af", crud.update_af);
 
 //PLAN DE ENTRENAMIENTO
-router.post("/verPlanEntrenamiento", crud.verPlanEntrenamiento);
+router.post("/verPlanEnt", crud.verPlanEnt);
 router.post("/update_pe", crud.update_pe);
-router.post("/guardarPlanentrenamiento", crud.guardarPlanentrenamiento);
 
 //index ahi melo para el calendario
 router.post("/crear_evento", crud.crear_evento);

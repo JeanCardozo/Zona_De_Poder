@@ -21,7 +21,7 @@ exports.crear_evento = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/index_admin");
     }
@@ -34,7 +34,7 @@ exports.verPqrss = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -52,7 +52,7 @@ exports.crearRoles = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_roles?message=success");
     }
@@ -73,7 +73,7 @@ exports.updateRoles = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_roles?message=success");
     }
@@ -202,7 +202,7 @@ exports.crearclienteS = async (req, res) => {
   } catch (error) {
     await conexion.query("ROLLBACK");
     console.error("Error en la creación del cliente:", error);
-    return res.status(500).sendFile(__dirname + "/500.html");
+    return res.status(500).sendFile(__dirname + ".././views/500.html");
   }
 };
 
@@ -319,7 +319,7 @@ exports.update_cliente = async (req, res) => {
       console.error("Error al hacer ROLLBACK:", rollbackError);
     }
 
-    res.status(500).sendFile(__dirname + "/500.html");
+    res.status(500).sendFile(__dirname + ".././views/500.html");
   }
 };
 
@@ -336,7 +336,7 @@ exports.renovar_cliente = (req, res) => {
     (errorMensualidades, resultsMensualidades) => {
       if (errorMensualidades) {
         console.log(errorMensualidades);
-        return res.status(500).sendFile(__dirname + "/500.html");
+        return res.status(500).sendFile(__dirname + ".././views/500.html");
       }
 
       if (resultsMensualidades.rows.length === 0) {
@@ -372,7 +372,7 @@ exports.renovar_cliente = (req, res) => {
       conexion.query("BEGIN", (err) => {
         if (err) {
           console.log(err);
-          return res.status(500).sendFile(__dirname + "/500.html");
+          return res.status(500).sendFile(__dirname + ".././views/500.html");
         }
 
         conexion.query(queryVentas, valuesVentas, (error, resultsVentas) => {
@@ -380,10 +380,14 @@ exports.renovar_cliente = (req, res) => {
             return conexion.query("ROLLBACK", (rollbackErr) => {
               if (rollbackErr) {
                 console.log(rollbackErr);
-                return res.status(500).sendFile(__dirname + "/500.html");
+                return res
+                  .status(500)
+                  .sendFile(__dirname + ".././views/500.html");
               }
               console.log(error);
-              return res.status(500).sendFile(__dirname + "/500.html");
+              return res
+                .status(500)
+                .sendFile(__dirname + ".././views/500.html");
             });
           }
 
@@ -410,10 +414,14 @@ exports.renovar_cliente = (req, res) => {
               if (errorInsert) {
                 return conexion.query("ROLLBACK", (rollbackErr) => {
                   if (rollbackErr) {
-                    return res.status(500).sendFile(__dirname + "/500.html");
+                    return res
+                      .status(500)
+                      .sendFile(__dirname + ".././views/500.html");
                   }
                   console.log(errorInsert);
-                  return res.status(500).sendFile(__dirname + "/500.html");
+                  return res
+                    .status(500)
+                    .sendFile(__dirname + ".././views/500.html");
                 });
               }
 
@@ -433,7 +441,9 @@ exports.renovar_cliente = (req, res) => {
                           .sendFile(__dirname + "/500.html");
                       }
                       console.log(errorUpdate);
-                      return res.status(500).sendFile(__dirname + "/500.html");
+                      return res
+                        .status(500)
+                        .sendFile(__dirname + ".././views/500.html");
                     });
                   }
 
@@ -679,7 +689,7 @@ exports.desactivarusuario = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
     res.redirect("/ver_usuarios");
   });
@@ -698,7 +708,7 @@ exports.activarusuario = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
     res.redirect("/ver_usuarios");
   });
@@ -745,14 +755,14 @@ exports.update_tallas = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       // Buscar los datos del usuario en la base de datos
       const queryUser = "SELECT * FROM tallas WHERE id = $1";
       conexion.query(queryUser, [id], (errorUser, resultsUser) => {
         if (errorUser) {
           console.log(errorUser);
-          return res.status(500).sendFile(__dirname + "/500.html");
+          return res.status(500).sendFile(__dirname + ".././views/500.html");
         }
 
         // Cambia la consulta para que coincida con el nombre de la columna correcta en la tabla 'clientes'
@@ -763,7 +773,9 @@ exports.update_tallas = (req, res) => {
           (errorCliente, resultsCliente) => {
             if (errorCliente) {
               console.log(errorCliente);
-              return res.status(500).sendFile(__dirname + "/500.html");
+              return res
+                .status(500)
+                .sendFile(__dirname + ".././views/500.html");
             }
 
             // Renderizar la vista con los datos del cliente y del usuario (tallas)
@@ -791,7 +803,7 @@ exports.crearConvenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_convenio?message=success");
     }
@@ -816,7 +828,7 @@ exports.update_convenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_convenio?message=success");
     }
@@ -837,7 +849,7 @@ exports.desactivarconvenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
     res.redirect("/ver_convenio");
   });
@@ -857,7 +869,7 @@ exports.activarconvenio = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.error("Error al desactivar el usuario:", error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
     res.redirect("/ver_convenio");
   });
@@ -879,7 +891,7 @@ exports.crearMensu = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_mensualidad?message=success");
     }
@@ -899,7 +911,7 @@ exports.update_mensualidad = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_mensualidad?message=success");
     }
@@ -908,7 +920,7 @@ exports.update_mensualidad = (req, res) => {
 
 // REGISTRAR --------------------------------------------------------------------------
 exports.register = async (req, res) => {
-  const { id, nombre, apellido, correo, telefono, pass } = req.body;
+  const { id, nombre, apellido, correo, telefono, edad, sexo, pass } = req.body;
 
   if (!id || !nombre || !apellido || !correo || !telefono || !pass) {
     return res.status(400).json({
@@ -922,11 +934,20 @@ exports.register = async (req, res) => {
 
     // Almacenar temporalmente en la tabla `temp_registro`
     const query = `
-      INSERT INTO temp_registro (id_usuario, nombre, apellido, correo, telefono, contraseña)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO temp_registro (id_usuario, nombre, apellido, correo, telefono, contraseña, edad, sexo)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id_usuario;
     `;
-    const values = [id, nombre, apellido, correo, telefono, hashedPassword];
+    const values = [
+      id,
+      nombre,
+      apellido,
+      correo,
+      telefono,
+      hashedPassword,
+      edad,
+      sexo,
+    ];
 
     conexion.query(query, values, (error, result) => {
       if (error) {
@@ -1086,7 +1107,7 @@ exports.crear_gm = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_grupo_muscular?message=success");
     }
@@ -1110,7 +1131,7 @@ exports.update_gm = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_grupo_muscular?message=success");
     }
@@ -1131,7 +1152,7 @@ exports.crear_af = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_acti_fisica?message=success");
     }
@@ -1154,7 +1175,7 @@ exports.update_af = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_acti_fisica?message=success");
     }
@@ -1162,185 +1183,80 @@ exports.update_af = (req, res) => {
 };
 
 // PLAN DE ENTRENAMIENTO --------------------------------------------------------------------------------------------------------------
-
-//CREAR PLAN DE ENTRENAMIENTO CON FORMULARIOS DIFERENTES(DEJARLO TAL CUAL ESTA A MENOS QUE SE QUIERA MODIFICAR LA LOGICA)
-exports.verPlanEntrenamiento = (req, res) => {
-  // Primera consulta: Obtener los planes de entrenamiento
+exports.verPlanEnt = (req, res) => {
+  // Primera consulta: Obtener los datos del plan de entrenamiento
   const planEntrenamientoQuery = `
-    SELECT pe.id AS id_plan_entrenamiento, pe.id_cliente, pe.dia, pe.tipo_tren, pe.musculo, pe.ejercicio, pe.series, pe.repeticiones
-    FROM plan_entrenamiento AS pe
-    ORDER BY pe.id ASC
+    SELECT id, id_cliente, dias, ejercicio, series, repeticiones 
+    FROM plan_entrenamiento 
+    ORDER BY id ASC
   `;
 
   conexion.query(planEntrenamientoQuery, (error, planResults) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + "../views/500.html");
     }
 
-    // Si no hay resultados en el plan de entrenamiento
     if (planResults.rows.length === 0) {
       return res
         .status(404)
         .json({ error: "No se encontraron planes de entrenamiento" });
     }
 
-    // Obtener los IDs de todos los clientes de los planes de entrenamiento
-    const clienteIds = planResults.rows.map((plan) => plan.id_cliente);
+    const clienteIds = [
+      ...new Set(planResults.rows.map((plan) => plan.id_cliente)),
+    ]; // Elimina duplicados
 
     // Segunda consulta: Obtener los nombres de los clientes
     const clienteQuery = `
-      SELECT id, nombre FROM clientes WHERE id = ANY($1::int[])
+      SELECT id, nombre 
+      FROM clientes 
+      WHERE id = ANY($1::int[])
     `;
     conexion.query(
       clienteQuery,
       [clienteIds],
       (clienteError, clienteResults) => {
         if (clienteError) {
-          return res.status(500).sendFile(__dirname + "/500.html");
+          return res.status(500).sendFile(__dirname + ".././views/500.html");
         }
 
-        // Crear un diccionario para acceder a los nombres de los clientes fácilmente
+        // Crear un diccionario para los nombres de los clientes
         const clientes = {};
         clienteResults.rows.forEach((cliente) => {
           clientes[cliente.id] = cliente.nombre;
         });
+        console.log("plan de entrenamiento full", planResults.rows);
+        // Combinar los datos del plan de entrenamiento con los nombres de los clientes
+        const planesConNombreCliente = planResults.rows.map((plan) => ({
+          id: plan.id,
+          id_cliente: plan.id_cliente,
+          nombre_cliente: clientes[plan.id_cliente] || "Nombre no encontrado",
+          dias: plan.dias,
+          ejercicio: plan.ejercicio,
+          series: plan.series,
+          repeticiones: plan.repeticiones,
+        }));
 
-        // Agregar los nombres de los clientes a los resultados del plan de entrenamiento
-        const planesConNombreCliente = planResults.rows.map((plan) => {
-          return {
-            ...plan,
-            nombreCliente: clientes[plan.id_cliente] || "Nombre no encontrado",
-          };
-        });
-
-        // Retornar la información combinada
+        // Enviar los datos combinados como respuesta
         return res.status(200).json(planesConNombreCliente);
       }
     );
   });
 };
-
-exports.guardarPlanentrenamiento = async (req, res) => {
-  try {
-    const { id_cliente, dias, actividades, seriesRepeticiones } = req.body;
-
-    console.log("Datos del formulario recibidos:", req.body);
-
-    console.log("Días recibidos:", dias);
-
-    if (!Array.isArray(dias) || dias.length === 0) {
-      throw new Error("Los días no son válidos.");
-    }
-    if (!Array.isArray(actividades)) {
-      throw new Error("Las actividades no son válidas.");
-    }
-    if (typeof seriesRepeticiones !== "object") {
-      throw new Error("La estructura de series y repeticiones no es válida.");
-    }
-
-    for (const dia of dias) {
-      for (const actividad of actividades) {
-        const series = `seriesRepeticiones[series_${actividad}]`;
-        const repeticiones = `seriesRepeticiones[repeticiones_${actividad}]`;
-
-        if (series === undefined || repeticiones === undefined) {
-          throw new Error(`Faltan datos para la actividad ${actividad}.`);
-        }
-
-        await pool.query(
-          `
-          INSERT INTO plan_entrenamiento (dia, id_cliente, id_actividad_fisica, series, repeticiones)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [dia, id_cliente, actividad, series, repeticiones]
-        );
-      }
-    }
-
-    res.redirect("/ver_plan_ent");
-  } catch (error) {
-    console.error("Error al guardar el plan de entrenamiento:", error.message);
-    res.status(500).sendFile(__dirname + "/500.html");
-  }
-};
-
-exports.mostrarFormularioConCliente = (req, res, id_cliente) => {
-  conexion.query(
-    "SELECT * FROM clientes WHERE id = $1",
-    [id_cliente],
-    (error, results) => {
-      if (error) {
-        return res.status(500).sendFile(__dirname + "/500.html");
-      }
-
-      if (results.rowCount > 0) {
-        // Obtener las actividades físicas
-        conexion.query(
-          `
-          SELECT
-              af.id AS af_id, 
-              af.nombre_ejercicio AS af_nombre, 
-            
-              gm.id AS gm_id, 
-              gm.nombre AS gm_nombre 
-            FROM 
-              actividad_fisica af 
-            INNER JOIN 
-              grupos_musculares gm 
-            ON 
-              af.id_grupo_muscular = gm.id 
-            ORDER BY 
-              af.id`,
-          (error, actividadesResults) => {
-            if (error) {
-              return res.status(500).sendFile(__dirname + "/500.html");
-            }
-
-            conexion.query(
-              "SELECT * FROM grupos_musculares ORDER BY id",
-
-              (error, results) => {
-                if (error) {
-                  return res.status(500).sendFile(__dirname + "/500.html"); // Manejo de error
-                }
-              }
-            );
-            res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
-              user: results.rows[0],
-              id_cliente: id_cliente,
-              actividades: actividadesResults.rows,
-            });
-          }
-        );
-      } else {
-        res.status(404).json({
-          error: `No se encontró un usuario con el id_cliente ${id_cliente}`,
-        });
-      }
-    }
-  );
-};
+//CREAR PLAN DE ENTRENAMIENTO CON FORMULARIOS DIFERENTES(DEJARLO TAL CUAL ESTA A MENOS QUE SE QUIERA MODIFICAR LA LOGICA)
 
 exports.mostrarFormularioVacio = (req, res) => {
   conexion.query(
-    "SELECT * FROM grupos_musculares ORDER BY id",
-    (error, gruposMuscularesResult) => {
+    "SELECT id, nombre_ejercicio FROM actividad_fisica",
+    (error, actividadesResults) => {
       if (error) {
-        return res.status(500).sendFile(__dirname + "/500.html");
+        return res.status(500).sendFile(__dirname + ".././views/500.html");
       }
-      conexion.query(
-        "SELECT id, nombre_ejercicio FROM actividad_fisica",
-        (error, actividadesResults) => {
-          if (error) {
-            return res.status(500).sendFile(__dirname + "/500.html");
-          }
-          console.log("actividades fisicas: ", actividadesResults.rows);
-          res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
-            id_cliente: null,
-            actividades: actividadesResults.rows,
-            gruposMusculares: gruposMuscularesResult.rows,
-          });
-        }
-      );
+      console.log("actividades fisicas: ", actividadesResults.rows);
+      res.render("administrador/plan_de_entrenamiento/create_plan_ent", {
+        id_cliente: null,
+        actividades: actividadesResults.rows,
+      });
     }
   );
 };
@@ -1359,7 +1275,7 @@ exports.update_pe = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ver_plan_ent");
     }
@@ -1605,7 +1521,7 @@ exports.registrarIngreso = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al registrar el ingreso:", error);
-    res.status(500).sendFile(__dirname + "/500.html");
+    res.status(500).sendFile(__dirname + ".././views/500.html");
   }
 };
 
@@ -1795,7 +1711,7 @@ exports.registrarIngresoentre = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al registrar el ingreso:", error);
-    res.status(500).sendFile(__dirname + "/500.html");
+    res.status(500).sendFile(__dirname + ".././views/500.html");
   }
 };
 
@@ -1811,7 +1727,7 @@ exports.verClientes = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1828,7 +1744,7 @@ exports.verUsuarios = (req, res) => {
     [1, 2],
     (error, results) => {
       if (error) {
-        return res.status(500).sendFile(__dirname + "/500.html");
+        return res.status(500).sendFile(__dirname + ".././views/500.html");
       }
 
       res.status(200).json(results.rows);
@@ -1845,7 +1761,7 @@ exports.verMensualidades = (req, res) => {
 `;
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1861,7 +1777,7 @@ exports.verTallas = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1894,7 +1810,7 @@ ORDER BY mc.id;`;
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1909,7 +1825,7 @@ SELECT * FROM grupos_musculares ORDER BY id`;
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -1936,7 +1852,7 @@ exports.verActividadFisica = (req, res) => {
 
   conexion.query(query, (error, results) => {
     if (error) {
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     }
 
     return res.status(200).json(results.rows);
@@ -2024,7 +1940,7 @@ exports.mensaje_ayuda = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/ayuda?message=success");
     }
@@ -2045,7 +1961,7 @@ exports.ventasDiarias = async (req, res) => {
     res.redirect("/ver_ventas");
   } catch (error) {
     console.error("Error al insertar datos en ventas_diarias:", error);
-    res.status(500).sendFile(__dirname + "/500.html");
+    res.status(500).sendFile(__dirname + "../500.html");
   }
 };
 
@@ -2063,7 +1979,7 @@ exports.update_info = (req, res) => {
   conexion.query(query, values, (error, results) => {
     if (error) {
       console.log(error);
-      return res.status(500).sendFile(__dirname + "/500.html");
+      return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
       res.redirect("/clientes/index_c");
     }

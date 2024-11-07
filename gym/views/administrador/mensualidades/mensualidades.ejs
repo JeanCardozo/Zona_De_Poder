@@ -29,7 +29,7 @@
       <div class="relative">
         <div class="overflow-hidden" id="carrusel">
           <div class="flex transition-transform duration-300 ease-in-out">
-            <% mensualidades.forEach(function(mensualidad) { %>
+            <% mensualidades.forEach(function(mensualidad, index) { %>
             <div class="w-full flex-shrink-0 px-2">
               <div
                 class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center justify-between h-80"
@@ -49,6 +49,12 @@
                   />
                   <input
                     type="hidden"
+                    class="tiempo"
+                    name="id_mensualidad"
+                    value="<%= mensualidad.id %>"
+                  />
+                  <input
+                    type="hidden"
                     class="total"
                     name="unit_price"
                     value="<%= mensualidad.total_pagar %>"
@@ -60,12 +66,14 @@
                   />
                   <button
                     type="submit"
-                    id="check-btn"
-                    class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out text-sm"
+                    class="check-btn w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out text-sm"
                   >
                     Seleccionar y pagar
                   </button>
-                  <div id="wallet_container"></div>
+                  <div
+                    id="wallet_container_<%= index %>"
+                    class="wallet-container hidden"
+                  ></div>
                 </form>
               </div>
             </div>
@@ -73,6 +81,7 @@
           </div>
         </div>
         <button
+          id="prevBtn"
           class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white p-1 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 focus:outline-none"
           onclick="moverCarrusel(-1)"
         >
@@ -92,6 +101,7 @@
           </svg>
         </button>
         <button
+          id="nextBtn"
           class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-1 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 focus:outline-none"
           onclick="moverCarrusel(1)"
         >
@@ -112,11 +122,11 @@
         </button>
       </div>
     </div>
-
     <script>
       const carrusel = document.getElementById("carrusel");
       const items = carrusel.querySelector(".flex");
       let currentIndex = 0;
+      let carruselInterval;
 
       function moverCarrusel(direccion) {
         const itemCount = items.children.length;
@@ -124,24 +134,30 @@
         items.style.transform = `translateX(-${currentIndex * 100}%)`;
       }
 
-      setInterval(() => {
-        moverCarrusel(1);
-      }, 10000);
+      function iniciarCarrusel() {
+        carruselInterval = setInterval(() => {
+          moverCarrusel(1);
+        }, 10000);
+      }
+
+      function detenerCarrusel() {
+        clearInterval(carruselInterval);
+      }
+
+      iniciarCarrusel();
 
       // Configuración de MercadoPago
       const mp = new MercadoPago(
         "APP_USR-4f711762-fd0f-4dd6-ae28-02c99c6090d6",
         { locale: "es-CO" }
       );
-    </script>
 
-    <script>
-      // Al hacer clic en el botón, se crea la preferencia de pago y se redirige
-      document.querySelectorAll("#check-btn").forEach((button) => {
+      // Manejar la selección y pago para cada botón
+      document.querySelectorAll(".check-btn").forEach((button, index) => {
         button.addEventListener("click", async (event) => {
-          event.preventDefault(); // Prevenir el envío automático del formulario
+          event.preventDefault();
+          detenerCarrusel();
 
-          // Capturar el formulario y extraer los datos
           const form = button.closest("form");
           const title = form.querySelector('input[name="title"]').value;
           const unit_price = form.querySelector(
@@ -150,47 +166,87 @@
           const tempRegistroId = form.querySelector(
             'input[name="tempRegistroId"]'
           ).value;
+          const id_mensualidad = form.querySelector(
+            'input[name="id_mensualidad"]'
+          ).value;
 
           console.log("Enviando datos a /create-preference:", {
             title,
             unit_price,
             tempRegistroId,
-          }); // Verifica que los datos se envían correctamente
+            id_mensualidad,
+          });
 
           try {
-            // Hacer la solicitud para crear la preferencia
+            // Desactivar todos los botones para evitar múltiples selecciones
+            document
+              .querySelectorAll(".check-btn")
+              .forEach((btn) => (btn.disabled = true));
+
             const response = await fetch("/create-preference", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ title, unit_price, tempRegistroId }),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title,
+                unit_price,
+                tempRegistroId,
+                id_mensualidad,
+              }),
             });
 
             const preference = await response.json();
-            console.log("Respuesta de /create-preference:", preference); // Verifica la respuesta del servidor
+            console.log("Respuesta de /create-preference:", preference);
 
-            // Verificar si se ha creado correctamente la preferencia
             if (preference.id) {
               console.log(
                 "Preferencia creada correctamente con ID:",
                 preference.id
               );
               const bricksBuilder = mp.bricks();
-              const renderComponent = async () => {
-                await bricksBuilder.create("wallet", "wallet_container", {
+
+              // Ocultar todos los contenedores de wallet
+              document
+                .querySelectorAll(".wallet-container")
+                .forEach((container) => {
+                  container.classList.add("hidden");
+                });
+
+              // Mostrar solo el contenedor de wallet correspondiente
+              const walletContainer = document.getElementById(
+                `wallet_container_${index}`
+              );
+              walletContainer.classList.remove("hidden");
+
+              await bricksBuilder.create(
+                "wallet",
+                `wallet_container_${index}`,
+                {
                   initialization: {
                     preferenceId: preference.id,
                   },
-                });
-              };
-              renderComponent();
+                }
+              );
+
+              // Ocultar el botón "Seleccionar y pagar" actual
+              button.style.display = "none";
+
+              // Centrar el carrusel en el plan seleccionado
+              items.style.transform = `translateX(-${index * 100}%)`;
+              currentIndex = index;
             } else {
-              alert("Error al crear la preferencia de pago");
-              console.error("Error en la preferencia:", preference); // Mostrar en consola el error
+              throw new Error("No se recibió un ID de preferencia válido");
             }
           } catch (error) {
             console.error("Error al crear la preferencia:", error);
+            alert(
+              "Ocurrió un error al procesar tu pago. Por favor, intenta de nuevo."
+            );
+            iniciarCarrusel();
+          } finally {
+            // Reactivar los botones
+            document
+              .querySelectorAll(".check-btn")
+              .forEach((btn) => (btn.disabled = false));
           }
         });
       });

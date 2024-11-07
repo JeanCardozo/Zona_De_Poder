@@ -66,12 +66,12 @@
     
       async function getData() {
         try {
-          const response = await fetch('/verPlanEntrenamiento', {
+          const response = await fetch('/verPlanEnt', {
             method: 'POST',
           });
     
           if (!response.ok) {
-            throw new Error('La solicitud no fue exitosa: ' + response.statusText);
+            throw new Error('La solicitud no fue exitosa: ' + response.error);
           }
     
           return await response.json();

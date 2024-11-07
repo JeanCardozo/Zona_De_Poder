@@ -37,7 +37,7 @@
       #external-events {
         position: fixed;
         z-index: 2;
-        left: 1300px;
+        left: 1250px;
         width: 150px;
         padding: 0 10px;
         border: 1px solid #ccc;
@@ -53,7 +53,7 @@
         position: relative;
         z-index: 1;
         margin-left: 250px;
-        width: 1000px;
+        width: 950px;
       }
 
       #calendar {
@@ -82,6 +82,21 @@
       .fc-event-selected {
         transform: scale(1.05); /* Escalar al 110% cuando está seleccionado */
       }
+      .btn-confirmar {
+        background-color: green;
+        color: white;
+      }
+      .btn-confirmar:hover {
+        background-color: #22c55e;
+      }
+
+      .btn-cancelar {
+        background-color: red;
+        color: white;
+      }
+      .btn-cancelar:hover {
+        background-color: #c53222c4;
+      }
     </style>
   </head>
 
@@ -106,11 +121,23 @@
         />
       </svg>
     </a>
+    <div class="flex flex-col items-center justify-center p-4">
+      <!-- Input de ID del cliente -->
+      <label class="text-white font-semibold" for="id_cliente"
+        >ID del Cliente:</label
+      >
+      <input
+        type="text"
+        id="id_cliente"
+        class="border border-gray-300 rounded-md px-4 py-2 w-1/3 mt-2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        placeholder="Ingrese el ID del cliente"
+      />
+    </div>
+
+    <!-- Botón para regresar -->
 
     <div id="external-events">
-      <p>
-        <strong>Draggable Events</strong>
-      </p>
+      <p><strong>Draggable Events</strong></p>
       <% if (actividades.length > 0) { %> <%
       actividades.forEach(function(actividad) { %>
       <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event">
@@ -118,51 +145,40 @@
       </div>
       <% }); %> <% } else { %>
       <p class="text-center text-gray-600 py-8">
-        No hay actividades fisicas activas
+        No hay actividades físicas activas
       </p>
       <% } %>
     </div>
+
     <div id="calendar-container">
       <div id="calendar"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.7/locales/es.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         var Calendar = FullCalendar.Calendar;
         var Draggable = FullCalendar.Draggable;
-
         var containerEl = document.getElementById("external-events");
         var calendarEl = document.getElementById("calendar");
+        var idClienteInput = document.getElementById("id_cliente");
 
-        // Initialize external events
         function initExternalEvents() {
           new Draggable(containerEl, {
             itemSelector: ".fc-event",
             eventData: function (eventEl) {
               return {
                 title: eventEl.innerText,
-                id: eventEl.dataset.eventId, // or generate a unique ID here
+                id: eventEl.dataset.eventId,
               };
             },
           });
         }
 
-        // Initialize calendar
         function initCalendar() {
           var calendar = new Calendar(calendarEl, {
             initialView: "dayGridWeek",
-            height: 500,
+            height: 450,
             customButtons: {
-              Borrar: {
-                text: "Borrar",
-                click: function () {
-                  if (selectedEvent) {
-                    selectedEvent.remove();
-                    selectedEvent = null; // Resetear la variable
-                  }
-                },
-              },
               Guardar: {
                 text: "Guardar Plan",
                 click: function () {
@@ -173,7 +189,7 @@
             headerToolbar: {
               left: "prev,next",
               center: "title",
-              right: "Borrar Guardar",
+              right: "Guardar",
             },
             locale: "es",
             editable: true,
@@ -186,48 +202,74 @@
 
         initExternalEvents();
         var calendar = initCalendar();
-
-        // Variables para almacenar el evento seleccionado y su elemento DOM
-        var selectedEvent = null;
-        var selectedElement = null;
-
-        // Agregar evento de clic al calendario
         calendar.on("eventClick", function (info) {
-          // Si el evento seleccionado es el mismo que el clickeado, deseleccionarlo
-          if (selectedEvent && selectedEvent.id === info.event.id) {
-            selectedElement.classList.remove("fc-event-selected"); // Remover animación
-            selectedEvent = null;
-            selectedElement = null;
-            return; // Salir de la función
-          }
+          Swal.fire({
+            title: "Modificar evento",
+            html: `
+              <form id="crearEventoform" class="space-y-4">
+                <div class="mb-4">
+                  <label for="evento" class="block text-xl font-medium text-gray-700">Evento</label>
+                  <input type="text" name="evento" id="evento" value="${info.event.title}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " readonly/>
 
-          // Si hay un evento previamente seleccionado, quitar su selección
-          if (selectedElement) {
-            selectedElement.classList.remove("fc-event-selected"); // Remover animación del evento anterior
-          }
+                  <label for="series" class="block text-xl font-medium text-gray-700">Series</label>
+                  <input type="number" pleaceholder="0" name="series" id="series" value="${info.event.extendedProps.series}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
 
-          // Seleccionar el nuevo evento
-          selectedEvent = info.event;
-          selectedElement = info.el;
-          selectedElement.classList.add("fc-event-selected"); // Agregar animación
+                  <label for="repeticiones" class="block text-xl font-medium text-gray-700">Repeticiones</label>
+                  <input type="number"pleaceholder="0"name="repeticiones" id="repeticiones" value="${info.event.extendedProps.repeticiones}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+                </div>
+              </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Guardar cambios",
+            cancelButtonText: "Borrar evento",
+            showCloseButton: true,
+            customClass: {
+              confirmButton: "btn-confirmar",
+              cancelButton: "btn-cancelar",
+            },
+            preConfirm: () => {
+              const evento = document.getElementById("evento");
+              const series = document.getElementById("series");
+              const repeticiones = document.getElementById("repeticiones");
+              if (!evento.value) {
+                Swal.showValidationMessage("Por favor, ingrese un ejercicio");
+                return false;
+              }
+              return {
+                title: evento.value,
+                series: parseInt(series.value) || 0,
+                repeticiones: parseInt(repeticiones.value) || 0,
+              };
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              info.event.setProp("title", result.value.title);
+              info.event.setExtendedProp("series", result.value.series);
+              info.event.setExtendedProp(
+                "repeticiones",
+                result.value.repeticiones
+              );
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              info.event.remove(); // Elimina el evento del calendario
+              console.log(`Evento borrado: ${info.event.title}`);
+            }
+          });
         });
 
-        // Evento para detectar clic fuera de cualquier evento y deseleccionar
-        document.addEventListener("click", function (e) {
-          // Si el clic ocurre fuera de cualquier evento del calendario
-          if (!e.target.closest(".fc-event") && selectedElement) {
-            selectedElement.classList.remove("fc-event-selected"); // Remover la animación
-            selectedEvent = null;
-            selectedElement = null; // Limpiar las variables
-          }
-        });
         function savePlanToDatabase(calendar) {
+          var idCliente = idClienteInput.value.trim();
+          if (!idCliente) {
+            Swal.fire("Error", "Por favor, ingrese el ID del cliente", "error");
+            return;
+          }
+
           var events = calendar.getEvents();
           var planData = events.map(function (event) {
             return {
-              title: event.title,
-              start: event.start.toISOString(), // Convertir la fecha a un string ISO
-              end: event.end ? event.end.toISOString() : null,
+              title: event.title || "",
+              start: event.start.toISOString() || null,
+              series: event.extendedProps.series || 0,
+              repeticiones: event.extendedProps.repeticiones || 0,
             };
           });
 
@@ -236,24 +278,34 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(planData),
+            body: JSON.stringify({ id_cliente: idCliente, plan: planData }),
           })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-              }
-              return response.json();
-            })
+            .then((response) => response.json())
             .then((data) => {
               if (data.success) {
-                alert("Plan de entrenamiento guardado con éxito");
+                Swal.fire(
+                  "¡Éxito!",
+                  "Plan de entrenamiento guardado con éxito",
+                  "success"
+                ).then(() => {
+                  // Redirige a la página "ver_plan_ent" después de cerrar el modal de éxito
+                  window.location.href = "/ver_plan_ent";
+                });
               } else {
-                alert("Error al guardar el plan de entrenamiento");
+                Swal.fire(
+                  "Error",
+                  "No se pudo guardar el plan de entrenamiento",
+                  "error"
+                );
               }
             })
             .catch((error) => {
               console.error("Error:", error);
-              alert("Error al guardar el plan de entrenamiento");
+              Swal.fire(
+                "Error",
+                "Error al guardar el plan de entrenamiento",
+                "error"
+              );
             });
         }
       });
