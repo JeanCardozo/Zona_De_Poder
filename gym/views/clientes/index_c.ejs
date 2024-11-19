@@ -19,17 +19,9 @@
     class="<%= (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente || !tallaReciente.peso) ? 'bg-black' : 'bg-gray-100' %>"
     id="bodyElement"
   >
-    <%- include('../administrador/plantillas/navbar_clientes.ejs') %>
-
-    <script>
-      // En el cliente, verificamos nuevamente por si acaso
-      if (!<%= tallaReciente ? tallaReciente.peso : "null" %>) {
-        document.getElementById('bodyElement').classList.add('bg-black');
-      }
-    </script>
-
-    <% if (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente
-    || !tallaReciente.peso) { %>
+    <%- include('../administrador/plantillas/navbar_clientes.ejs') %> <% if
+    (typeof pesos === 'undefined' || pesos.length === 0 || !tallaReciente ||
+    !tallaReciente.peso) { %>
     <div
       class="fixed inset-0 bg-gray-500 bg-opacity-75 flex flex-col items-center justify-center z-50 p-4"
     >
@@ -73,26 +65,30 @@
           <script>
             const ctx1 = document.getElementById("myChart1");
 
-            const fechasData = "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
-            const pesos = <%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>;
-            const fechas = fechasData.split(',');
+            const fechasData =
+              "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
+            const pesos =
+              "<%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>";
+            const fechas = fechasData.split(",");
 
             const data = {
               labels: fechas,
-              datasets: [{
-                label: 'Peso (kg)',
-                data: pesos,
-                fill: false,
-                borderColor: '#3B82F6',
-                backgroundColor: '#93C5FD',
-                tension: 0.1,
-                pointRadius: 4,
-                pointHoverRadius: 6
-              }]
+              datasets: [
+                {
+                  label: "Peso (kg)",
+                  data: pesos,
+                  fill: false,
+                  borderColor: "#3B82F6",
+                  backgroundColor: "#93C5FD",
+                  tension: 0.1,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                },
+              ],
             };
 
             const config = {
-              type: 'line',
+              type: "line",
               data: data,
               options: {
                 responsive: true,
@@ -102,28 +98,28 @@
                     beginAtZero: false,
                     title: {
                       display: true,
-                      text: 'Peso (kg)'
-                    }
+                      text: "Peso (kg)",
+                    },
                   },
                   x: {
                     title: {
                       display: true,
-                      text: 'Fecha'
-                    }
-                  }
+                      text: "Fecha",
+                    },
+                  },
                 },
                 plugins: {
                   legend: {
-                    display: false
+                    display: false,
                   },
                   tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    backgroundColor: "rgba(0,0,0,0.8)",
                     bodyFont: {
-                      size: 14
-                    }
-                  }
-                }
-              }
+                      size: 14,
+                    },
+                  },
+                },
+              },
             };
 
             new Chart(ctx1, config);
