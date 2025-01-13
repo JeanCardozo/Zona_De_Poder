@@ -14,7 +14,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.7/locales/es.js"></script>
 
-    <!-- Incluyendo Font Awesome desde CDN -->
+    <!-- Incluyendo Font Awesome desde CDN ñ-->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -251,9 +251,9 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
       document.querySelectorAll(".renovar-btn").forEach((btn) => {
-        btn.addEventListener("click", function (e) {
+        btn.addEventListener("DOMContentLoaded", "click", function (e) {
           e.preventDefault();
           const idMensualidad = this.getAttribute("data-id");
 
@@ -343,7 +343,7 @@
       </form>
     </div>
 
-    <script>
+    <script type="module">
       // Obtener elementos del DOM
       const inputSearch = document.getElementById("inputSearch");
       const tableBody = document.getElementById("tableBody");
@@ -371,13 +371,13 @@
       // Añadir evento al botón de búsqueda
       document
         .getElementById("searchButton")
-        .addEventListener("click", filterTable);
+        .addEventListener("DOMContentLoaded", "click", filterTable);
 
       // Opcional: filtrar en tiempo real mientras se escribe
-      inputSearch.addEventListener("keyup", filterTable);
+      inputSearch.addEventListener("DOMContentLoaded", "keyup", filterTable);
     </script>
 
-    <script>
+    <script type="module">
                 document.addEventListener("DOMContentLoaded", function() {
                     // Obtener los datos del backend, asegurando que no sean undefined
                     const datosVentas = <%- typeof datosVentas !== 'undefined' ? JSON.stringify(datosVentas) : '[]' %>;
@@ -386,6 +386,7 @@
 
                     // Procesar los datos para el gráfico de ventas
                     const labelsVentas = datosSumaPorMes.map(d => d.mes);
+
                     const dataVentas = datosSumaPorMes.map(d => d.total);
 
                     if (datosVentas == 0) {
@@ -480,8 +481,8 @@
       };
     </script>
 
-    <script>
-      document.addEventListener("keydown", function (e) {
+    <script type="module">
+      document.addEventListener("DOMContentLoaded", "keydown", function (e) {
         if (e.key === "*") {
           e.preventDefault();
           const campoTexto = document.getElementById("campoTexto");
@@ -496,7 +497,7 @@
 
       document
         .getElementById("campoTexto")
-        .addEventListener("keydown", function (e) {
+        .addEventListener("DOMContentLoaded", "keydown", function (e) {
           if (e.key === "Enter") {
             e.preventDefault(); // Prevenir el comportamiento por defecto de Enter
             const identificacionConAsterisco =
@@ -515,14 +516,14 @@
       // Cerrar el formulario al hacer clic en el botón de escape
       document
         .getElementById("closeButton")
-        .addEventListener("click", function () {
+        .addEventListener("DOMContentLoaded", "click", function () {
           document.getElementById("overlay").classList.add("hidden");
           document.getElementById("loginContainer").classList.add("hidden");
         });
     </script>
 
     <% if (typeof alert !== "undefined") { %>
-    <script>
+    <script type="module">
       document.addEventListener("DOMContentLoaded", function () {
         // Reproducir el sonido antes de mostrar la alerta
         const sonido = "<%= typeof sonido !== 'undefined' ? sonido : '' %>";
@@ -551,7 +552,7 @@
 
     <!-- GRAFICOS -->
     <% } %>
-    <script>
+    <script type="module">
       document.addEventListener("DOMContentLoaded", function () {
         var calendarEl = document.getElementById("calendari");
         var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -634,9 +635,13 @@
           tooltip.style.top = `${info.jsEvent.pageY + 5}px`;
 
           // Al salir del mouse, eliminar el tooltip
-          info.el.addEventListener("mouseleave", function () {
-            document.body.removeChild(tooltip);
-          });
+          info.el.addEventListener(
+            "DOMContentLoaded",
+            "mouseleave",
+            function () {
+              document.body.removeChild(tooltip);
+            }
+          );
         });
       });
     </script>

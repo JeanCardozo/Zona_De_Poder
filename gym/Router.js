@@ -2106,12 +2106,8 @@ function clasificarIMC(imc) {
   return "No clasificado";
 }
 
-router.get("/clientes/index_c", authenticateToken, (req, res) => {
-  if (!res.locals.userData) {
-    return res
-      .status(401)
-      .json({ error: "No autorizado: datos del usuario no encontrados" });
-  }
+router.get("/clientes/index_c", verifyClient, authenticateToken, (req, res) => {
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   let identificacion = res.locals.userData.id;
 
@@ -2189,8 +2185,9 @@ router.get("/clientes/index_c", authenticateToken, (req, res) => {
 
 //informacion personal
 
-router.get("/info_personal", authenticateToken, (req, res) => {
+router.get("/info_personal", verifyClient, authenticateToken, (req, res) => {
   // Verifica si 'userData' está configurado correctamente
+  console.log("hpta: ", res.locals.userData.id);
   if (!res.locals.userData) {
     return res
       .status(401)
@@ -2221,7 +2218,7 @@ router.get("/info_personal", authenticateToken, (req, res) => {
   );
 });
 
-router.get("/info_cliente/:id", authenticateToken, (req, res) => {
+router.get("/info_cliente/:id", verifyClient, authenticateToken, (req, res) => {
   const clientId = req.params.id;
 
   const clientQuery = `

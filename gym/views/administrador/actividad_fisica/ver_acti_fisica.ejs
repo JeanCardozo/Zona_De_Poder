@@ -255,7 +255,7 @@
         .addEventListener("click", filterTable);
 
       // Opcional: filtrar en tiempo real mientras se escribe
-      inputSearch.addEventListener("keyup", filterTable);
+      inputSearch.addEventListener('DOMContentLoaded',"keyup", filterTable);
     </script>
 
 
@@ -443,7 +443,7 @@ document
     }
 
     // Añadir evento al input de búsqueda
-    inputSearch.addEventListener("keyup", filterTable);
+    inputSearch.addEventListener('DOMContentLoaded',"keyup", filterTable);
 
     // Inicializar tabla
     async function inicializar() {

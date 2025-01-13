@@ -271,8 +271,8 @@
 
   document
     .getElementById("searchButton")
-    .addEventListener("click", filterTable);
-  inputSearch.addEventListener("keyup", filterTable);
+    .addEventListener("DOMContentLoaded", "click", filterTable);
+  inputSearch.addEventListener("DOMContentLoaded", "keyup", filterTable);
 </script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
