@@ -234,6 +234,18 @@
               if (!evento.value) {
                 Swal.showValidationMessage("Por favor, ingrese un ejercicio");
                 return false;
+              } else {
+                if (!series.value) {
+                  Swal.showValidationMessage("Por favor, ingrese las series");
+                  return false;
+                } else {
+                  if (!repeticiones.value) {
+                    Swal.showValidationMessage(
+                      "Por favor, ingrese las repeticiones"
+                    );
+                    return false;
+                  }
+                }
               }
               return {
                 title: evento.value,
@@ -264,6 +276,32 @@
           }
 
           var events = calendar.getEvents();
+
+          // Validar que todos los eventos tengan series y repeticiones
+          for (let event of events) {
+            const series = event.extendedProps.series;
+            const repeticiones = event.extendedProps.repeticiones;
+
+            if (!series || series <= 0) {
+              Swal.fire(
+                "Error",
+                `Por favor, ingrese las series para el ejercicio "${event.title}"`,
+                "error"
+              );
+              return;
+            }
+
+            if (!repeticiones || repeticiones <= 0) {
+              Swal.fire(
+                "Error",
+                `Por favor, ingrese las repeticiones para el ejercicio "${event.title}"`,
+                "error"
+              );
+              return;
+            }
+          }
+
+          // Si la validación pasa, continuar con el envío
           var planData = events.map(function (event) {
             return {
               title: event.title || "",
@@ -288,7 +326,7 @@
                   "Plan de entrenamiento guardado con éxito",
                   "success"
                 ).then(() => {
-                  // Redirige a la página "ver_plan_ent" después de cerrar el modal de éxito
+                  // Redirige a la página "ver_plan_ent"
                   window.location.href = "/ver_plan_ent";
                 });
               } else {

@@ -76,8 +76,8 @@ function renderLoginPage(res, options) {
     alertTitle: options.alertTitle,
     alertMessage: options.alertMessage,
     alertIcon: options.alertIcon,
-    showConfirmButton: true,
-    timer: 3500,
+    showConfirmButton: false,
+    timer: 1500,
     ruta: "login_index",
   });
 }
@@ -279,6 +279,8 @@ router.get("/", async (req, res) => {
     alertMessage = {
       type: "success",
       text: "Acccion Ejecutada Con Exito",
+      timer: 1000,
+      showConfirmButton: false,
     };
   }
   const queryEventos = `SELECT nombre, fecha, estado FROM eventos ORDER BY fecha`;
@@ -486,7 +488,9 @@ router.get("/ver_roles", authenticateToken, verifyAdmin, (req, res) => {
   if (message === "success") {
     alertMessage = {
       type: "success",
-      text: "Cambios Realizados Con Exito.",
+      text: "Creacion del rol realizada",
+      showConfirmButton: false,
+      timer: 1200,
     };
   }
 
@@ -507,13 +511,6 @@ router.get("/ver_roles", authenticateToken, verifyAdmin, (req, res) => {
 router.get("/actualizar/:id", authenticateToken, (req, res) => {
   const id = req.params.id;
   const message = req.query.message;
-  let alertMessage = null;
-  if (message === "success") {
-    alertMessage = {
-      type: "success",
-      text: "Cambios Realizados Con Exito.",
-    };
-  }
 
   conexion.query(
     "SELECT * FROM roles WHERE id = $1",
@@ -524,15 +521,10 @@ router.get("/actualizar/:id", authenticateToken, (req, res) => {
       }
 
       if (results.rowCount > 0) {
-        // Enviar los datos del rol como JSON
         res.json(results.rows[0]);
       } else {
         res.status(404).json({ error: "Rol no encontrado" });
       }
-      res.render("administrador/roles/ver_roles", {
-        results: results.rows,
-        alertMessage: alertMessage,
-      });
     }
   );
 });
@@ -1169,6 +1161,8 @@ router.get("/ver_convenio", authenticateToken, (req, res) => {
     alertMessage = {
       type: "success",
       text: "Cambios Realizados Con Exito.",
+      timer: 1200,
+      showConfirmButton: false,
     };
   }
   conexion.query(
@@ -1222,6 +1216,8 @@ router.get("/ver_mensualidad", authenticateToken, (req, res) => {
     alertMessage = {
       type: "success",
       text: "Cambios Realizados Con Exito.",
+      timer: 1200,
+      showConfirmButton: false,
     };
   }
   // Corrige la consulta SQL
@@ -1318,6 +1314,8 @@ router.get("/ver_grupo_muscular", authenticateToken, (req, res) => {
     alertMessage = {
       type: "success",
       text: "Cambios Realizados Con Exito.",
+      showConfirmButton: false,
+      timer: 1200,
     };
   }
   conexion.query(

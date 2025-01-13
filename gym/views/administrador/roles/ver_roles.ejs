@@ -256,10 +256,9 @@
                   Swal.fire({
                     title: "EL ROL SE HA ELIMINADO.",
                     text: "¡Esta acción no se puede deshacer!",
-                    confirmButtonClass: "btn-confirmar",
-                    customClass: {
-                      confirmButton: "btn-confirmar",
-                    },
+                    icon: "warning",
+                    showConfirmButton: false,
+                    timer: 1000,
                   }).then(() => {
                     location.reload("");
                   });
@@ -277,20 +276,19 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Verificar si hay un mensaje de alerta en la respuesta
-        `<% if (typeof alertMessage !== 'undefined' && alertMessage) { %>`;
-        Swal.fire({
-          title: "Éxito",
-          text: "<%= alertMessage.text %>",
-          icon: "<%= alertMessage.type %>",
-          confirmButtonText: "OK",
-        }).then(() => {
-          // Remover el parámetro de la URL después de mostrar la alerta
-          const url = new URL(window.location);
-          url.searchParams.delete("message");
-          window.history.replaceState({}, "", url);
-        });
-        `<% } %>`;
+        <% if (typeof alertMessage !== 'undefined' && alertMessage) { %>
+          Swal.fire({
+            title: "Éxito",
+            text: "<%= alertMessage.text %>",
+            icon: "<%= alertMessage.type %>",
+            showConfirmButton: <%= alertMessage.showConfirmButton %>,
+            timer: <%= alertMessage.timer %>,
+          }).then(() => {
+            const url = new URL(window.location);
+            url.searchParams.delete("message");
+            window.history.replaceState({}, "", url);
+          });
+        <% } %>
       });
     </script>
   </body>

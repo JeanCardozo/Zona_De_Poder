@@ -100,8 +100,8 @@
         title: "<%= alertTitle %>",
         text: "<%= alertMessage %>",
         icon: "<%= alertIcon %>",
-        showConfirmButton: "<%= showConfirmButton %>",
-        timer: "<%= timer %>",
+        showConfirmButton: <%= showConfirmButton %>,
+        timer: <%= timer %>,
       }).then(() => {
         if ("<%= ruta %>") {
           window.location.href = "<%= ruta %>";

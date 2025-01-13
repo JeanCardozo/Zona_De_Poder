@@ -22,19 +22,19 @@
 
     <style>
       .btn-confirmar {
-        background-color: green;
-        color: white;
+        background-color: green !important;
+        color: white !important;
       }
       .btn-confirmar:hover {
-        background-color: #22C55E; 
+        background-color: #22c55e !important;
       }
-  
+
       .btn-cancelar {
-        background-color: red; 
-        color: white;
+        background-color: red !important;
+        color: white !important;
       }
       .btn-cancelar:hover {
-        background-color: #c53222c4; 
+        background-color: #c53222c4 !important;
       }
     </style>
   </head>
@@ -302,7 +302,7 @@ document
               cancelButton: 'btn-cancelar'
             },         
           showCancelButton: true,
-          confirmButtonText: "Guardar",
+          confirmButtonText: "monda",
           cancelButtonText: "Cancelar",
           preConfirm: () => {
         
@@ -375,14 +375,14 @@ document
                 </div>
               </form>
             `,
-            confirmButtonClass : 'btn-confirmar',
-            cancelButtonClass : 'btn-cancelar',
-            customClass: {
-              confirmButton: 'btn-confirmar',
-              cancelButton: 'btn-cancelar'
-            },            
+            confirmButtonClass: "btn-confirmar",
+                cancelButtonClass: "btn-cancelar",
+                customClass: {
+                  confirmButton: "btn-confirmar",
+                  cancelButton: "btn-cancelar",
+                },           
             showCancelButton: true,
-            confirmButtonText: "Guardar",
+            confirmButtonText: "monda",
             cancelButtonText: "Cancelar",
             preConfirm: () => {
         
@@ -490,8 +490,9 @@ document
       title: "Éxito",
       text: "<%= alertMessage.text %>",
       icon: "<%= alertMessage.type %>",
-      confirmButtonText: "OK",
-      timer: 2000,
+      showConfirmButton: <%= alertMessage.showConfirmButton %>,
+      timer: <%= alertMessage.timer %>,
+      
     }).then(() => {
       // Remover el parámetro de la URL después de mostrar la alerta
       const url = new URL(window.location);

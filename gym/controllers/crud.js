@@ -328,7 +328,7 @@ exports.renovar_cliente = (req, res) => {
   const mensualidad = req.body.mensualidad;
 
   const queryMensualidades =
-    "SELECT mes, dias FROM mensualidades WHERE id = $1";
+    "SELECT mes, dias, total_pagar FROM mensualidades WHERE id = $1";
 
   conexion.query(
     queryMensualidades,
@@ -343,7 +343,7 @@ exports.renovar_cliente = (req, res) => {
         return res.status(404).json({ error: "Mensualidad no encontrada" });
       }
 
-      const { mes: meses, dias } = resultsMensualidades.rows[0];
+      const { mes: meses, dias, total_pagar } = resultsMensualidades.rows[0];
 
       // Validar los valores de meses y días
       if (isNaN(meses) || isNaN(dias)) {
@@ -432,6 +432,7 @@ exports.renovar_cliente = (req, res) => {
               conexion.query(
                 queryUpdateEstado,
                 valuesUpdateEstado,
+                valuesInsertMensualidadCliente,
                 (errorUpdate) => {
                   if (errorUpdate) {
                     return conexion.query("ROLLBACK", (rollbackErr) => {
@@ -448,8 +449,8 @@ exports.renovar_cliente = (req, res) => {
                   }
 
                   const queryUpdateCliente =
-                    "UPDATE clientes SET estado = 'Activo' WHERE id = $1 ";
-                  const valuesUpdateCliente = [id_cliente];
+                    "UPDATE clientes SET estado = 'Activo', mensualidad = $1 WHERE id = $2";
+                  const valuesUpdateCliente = [total_pagar, id_cliente];
 
                   conexion.query(
                     queryUpdateCliente,
@@ -478,8 +479,7 @@ exports.renovar_cliente = (req, res) => {
                             .sendFile(__dirname + "/500.html");
                         }
 
-                        // Redireccionar a otra página después de realizar las operaciones
-                        res.redirect("/index_admin"); // Cambia la URL a la que quieres redirigir
+                        res.redirect("/index_admin");
                       });
                     }
                   );

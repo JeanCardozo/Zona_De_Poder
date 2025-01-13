@@ -278,7 +278,7 @@
 
               if (!seccionInput.value) {
                 Swal.showValidationMessage(
-                  "Por favor, ingrese una seccino del cuerpo"
+                  "Por favor, ingrese una seccion del cuerpo"
                 );
                 return false;
               } else {
@@ -393,8 +393,8 @@
           title: "Éxito",
           text: "<%= alertMessage.text %>",
           icon: "<%= alertMessage.type %>",
-          confirmButtonText: "OK",
-          timer: 2000,
+          showConfirmButton: <%= alertMessage.showConfirmButton %>,
+          timer: <%= alertMessage.timer %>,
         }).then(() => {
           // Remover el parámetro de la URL después de mostrar la alerta
           const url = new URL(window.location);

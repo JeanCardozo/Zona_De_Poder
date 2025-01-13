@@ -226,7 +226,8 @@
           title: "Éxito",
           text: "<%= alertMessage.text %>",
           icon: "<%= alertMessage.type %>",
-          confirmButtonText: "OK",
+          timer: <%= alertMessage.timer %>,
+          showConfirmButton: <%= alertMessage.showConfirmButton %>
         }).then(() => {
           // Remover el parámetro de la URL después de mostrar la alerta
           const url = new URL(window.location);
