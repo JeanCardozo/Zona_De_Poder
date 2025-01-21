@@ -22,7 +22,10 @@
     <title>Ver plan de entrenamiento</title>
   </head>
   <body class="bg-fondo"> 
-    <%- include('../plantillas/navbar.ejs') %>
+    <% if (userData.rol == "Administrador") { %> <%-
+      include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
+      "Entrenador") { %> <%-
+      include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %>
 
     <div class="px-10 mx-auto mt-4 p-5">
       <div class="flex justify-start gap-2 mb-4">
@@ -31,7 +34,7 @@
         
         <i class="bx bx-plus-circle mr-2"></i> Crear Plan de entrenamiento
       </a>
-      <a href="/index_admin" 
+      <a href="<%= userData.rol == 'Administrador' ? '/index_admin' : '/index_entrenador' %>"
       class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
       >Volver</a>
     </div>
@@ -41,12 +44,12 @@
            sm:text-sm lg:text-base text-left text-gray-500
       
             dark:text-gray-400">
-        <thead class="bg-gray-500 text-center text-lg">
+        <thead class="text-xm bg-gray-500 text-center ">
           <tr class="text-white">
-            <th scope="col" class="py-4 px-6">Plan</th>
-            <th scope="col" class="py-4 px-6">Identificacion</th>
-            <th scope="col" class="py-4 px-6">Nombre</th>
-            <th scope="col" class="py-4 px-6">Ver Mas</th>
+            <th scope="col" class="px-4 py-6">Plan</th>
+            <th scope="col" class="px-4 py-6">Identificacion</th>
+            <th scope="col" class="px-4 py-6">Nombre</th>
+            <th scope="col" class="px-4 py-6">Ver Mas</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -56,7 +59,7 @@
 
     </div>
 
-  <script defer>
+    <script defer>
       const divPagination = document.getElementById('pagination');
       const searchInput = document.getElementById('searchInput');
       let datos = [];
@@ -71,7 +74,9 @@
           });
     
           if (!response.ok) {
-            throw new Error('La solicitud no fue exitosa: ' + response.error);
+            throw new Error(
+              "La solicitud no fue exitosa: " + response.statusText
+            );
           }
     
           return await response.json();
@@ -88,11 +93,11 @@
       }
     
       function actualizarTablaYPaginacion() {
-        const totalPages = Math.ceil(Object.keys(agruparPorCliente(filteredData)).length / itemsPorPagina);
+        const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
         generatePagination(totalPages);
         mostrarPagina(currentPage);
       }
-    
+  
       function generatePagination(totalPages) {
         let startPage = Math.max(currentPage - 1, 1);
         let endPage = Math.min(startPage + 2, totalPages);
@@ -101,28 +106,36 @@
           startPage = Math.max(endPage - 2, 1);
         }
     
-        let paginationHTML = `
+        let paginationHTML = "";
+  
+        paginationHTML += `
           <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-l hover:bg-gray-100" 
           ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">
             Anterior
           </button>
         `;
-    
+        
         for (let i = startPage; i <= endPage; i++) {
           paginationHTML += `
             <button class="mt-4 px-4 py-2 font-bold ${
-              i === currentPage ? "text-blue-500 bg-blue-100" : "text-gray-700 bg-white"
-            } hover:bg-gray-100 ${i === currentPage ? "active" : ""}" data-page="${i}">${i}</button>
+              i === currentPage
+                ? "text-blue-500 bg-blue-100"
+                : "text-gray-700 bg-white"
+            } hover:bg-gray-100 ${
+            i === currentPage ? "active" : ""
+          }" data-page="${i}">${i}</button>
           `;
         }
-    
+  
         paginationHTML += `
           <button class="mt-4 px-4 py-2 font-bold text-gray-500 bg-white rounded-r hover:bg-gray-100" 
-          ${currentPage === totalPages ? "disabled" : ""} data-page="${currentPage + 1}">
+          ${currentPage === totalPages ? "disabled" : ""} data-page="${
+          currentPage + 1
+        }">
             Siguiente
           </button>
         `;
-    
+        
         divPagination.innerHTML = paginationHTML;
     
         divPagination.querySelectorAll("button").forEach((button) => {
@@ -135,49 +148,37 @@
         });
       }
     
-      function agruparPorCliente(data) {
-        const clientes = {};
-        data.forEach((dato) => {
-          if (!clientes[dato.id_cliente]) {
-            clientes[dato.id_cliente] = [];
-          }
-          clientes[dato.id_cliente].push(dato);
-        });
-        return clientes;
-      }
-    
       function mostrarPagina(numeroPagina) {
         const inicio = (numeroPagina - 1) * itemsPorPagina;
         const fin = inicio + itemsPorPagina;
-        
-        const clientes = agruparPorCliente(filteredData);
-        const clientesParaMostrar = Object.keys(clientes).slice(inicio, fin);
+        const datosParaMostrar = filteredData.slice(inicio, fin);
         
         const tbody = document.querySelector('tbody');
-        tbody.innerHTML = clientesParaMostrar.map((id_cliente, index) => {
-          const cliente = clientes[id_cliente][0];
-          return `
-            <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${index % 2 == 0 && "bg-gray-100"}">
-              <td class="p-3 text-lg">${cliente.id_plan_entrenamiento}</td>
-              <td class="p-3 text-lg">${cliente.id_cliente}</td>
-              <td class="p-3 text-lg">${cliente.nombreCliente}</td>
+        tbody.innerHTML = datosParaMostrar
+          .map((dato, index) => `
+            <tr class="py-0 text-xm max-w-sm text-center hover:bg-gray-100 ${
+              index % 2 === 0 ? "bg-gray-100" : ""
+            }">
+              <td class="p-2">${dato.planes[0].id}</td>
+              <td class="p-2">${dato.id_cliente}</td>
+              <td class="p-2">${dato.nombre_cliente}</td>
               <td>
                 <a href="#" class="px-2 py-1 bg-blue-500 text-white rounded-md
                   hover:bg-blue-700 ver-mas"
-                  data-client-id="${cliente.id_cliente}">Ver más</a>
+                  data-client-id="${dato.id_cliente}">Ver más</a>
               </td>
             </tr>
-          `;
-        }).join('');
+          `)
+          .join('');
       }
     
       function filtrarResultados() {
         const input = searchInput.value.toLowerCase();
         filteredData = datos.filter(
           (dato) =>
-            dato.id_plan_entrenamiento.toString().includes(input) ||
+            dato.planes[0].id.toString().includes(input) ||
             dato.id_cliente.toString().includes(input) ||
-            dato.nombreCliente.toLowerCase().includes(input)
+            dato.nombre_cliente.toLowerCase().includes(input)
         );
         currentPage = 1;
         actualizarTablaYPaginacion();
@@ -187,28 +188,44 @@
     
       inicializar();
   </script>
+  
     <script>
       document.body.addEventListener("click", function (event) {
         if (event.target.classList.contains("ver-mas")) {
           const clienteId = event.target.dataset.clientId;
-      
+          
           fetch(`/info_plan/${clienteId}`)
             .then((response) => {
+              
               if (!response.ok) {
                 throw new Error("Error al obtener los datos del plan de entrenamiento");
               }
-              return response.json();
+              return response.json(); // Esta línea debe ser después de verificar `response.ok`
             })
             .then((data) => {
               const nombreCliente = data.nombreCliente;
               const planes = data.planesDeEntrenamiento;
-      
+
+              // Agrupar ejercicios por día
+              const ejerciciosPorDia = {};
+              planes.forEach(plan => {
+                const dia = plan.dia;
+                if (!ejerciciosPorDia[dia]) {
+                  ejerciciosPorDia[dia] = [];
+                }
+                ejerciciosPorDia[dia].push({
+                  ejercicio: plan.ejercicio,
+                  series: plan.series,
+                  repeticiones: plan.repeticiones
+                });
+              });
+
+              // Generar contenido de la tabla
               let planContent = `
                 <table class="min-w-full bg-white mb-4">
                   <thead class="bg-gray-800 text-white text-xl">
                     <tr>
                       <th class="py-2 px-4">Día</th>
-                      <th class="py-2 px-4">Músculo</th>
                       <th class="py-2 px-4">Ejercicio</th>
                       <th class="py-2 px-4">Series</th>
                       <th class="py-2 px-4">Repeticiones</th>
@@ -216,31 +233,22 @@
                   </thead>
                   <tbody class="text-gray-700">
               `;
-      
-              planes.forEach(plan => {
-                const dia = plan.dia;
-                const musculos = plan.musculo;
-                const ejercicios = plan.ejercicio;
-                const series = plan.series;
-                const repeticiones = plan.repeticiones;
-      
-                // Calcular cuántas filas habrá para este plan
-                const length = Math.max(musculos.length, ejercicios.length, series.length, repeticiones.length);  
-                for (let i = 0; i < length; i++) {
+
+              for (const [dia, ejercicios] of Object.entries(ejerciciosPorDia)) {
+                ejercicios.forEach((ejercicio, index) => {
                   planContent += `
                     <tr class="text-lg">
-                      ${i === 0 ? `<td class="py-2 px-4 border" rowspan="${length}" style="vertical-align: middle;">${dia}</td>` : ''}
-                      <td class="py-2 px-4 border">${musculos[i] || ''}</td>
-                      <td class="py-2 px-4 border">${ejercicios[i] || ''}</td>
-                      <td class="py-2 px-4 border">${series[i] || ''}</td>
-                      <td class="py-2 px-4 border">${repeticiones[i] || ''}</td>
+                      ${index === 0 ? `<td class="py-2 px-4 border" rowspan="${ejercicios.length}" style="vertical-align: middle;">${dia}</td>` : ''}
+                      <td class="py-2 px-4 border">${ejercicio.ejercicio}</td>
+                      <td class="py-2 px-4 border">${ejercicio.series}</td>
+                      <td class="py-2 px-4 border">${ejercicio.repeticiones}</td>
                     </tr>
                   `;
-                }
-              });
-      
+                });
+              }
+
               planContent += `</tbody></table>`;
-      
+
               Swal.fire({
                 title: `Planes del Cliente: ${nombreCliente}`,
                 html: planContent,
@@ -249,7 +257,9 @@
                 confirmButtonText: "Cerrar",
               });
             })
+
             .catch((error) => {
+              console.error('Error capturado:', error);
               Swal.fire({
                 title: "Error",
                 text: "Hubo un error al cargar el plan de entrenamiento.",

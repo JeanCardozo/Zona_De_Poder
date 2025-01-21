@@ -14,7 +14,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.7/locales/es.js"></script>
 
-    <!-- Incluyendo Font Awesome desde CDN ñ-->
+    <!-- Incluyendo Font Awesome desde CDN m-->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -153,8 +153,10 @@
           <h2 class="text-lg font-bold mb-4 text-gray-700 text-center">
             Resumen de ingresos diarios
           </h2>
-          <div class="h-64">
-            <canvas id="myCharts"></canvas>
+          <div className="p-2 flex items-center justify-center">
+            <div className="w-6 h-6 relative">
+              <canvas id="myCharts"></canvas>
+            </div>
           </div>
         </div>
 
@@ -251,9 +253,9 @@
       </div>
     </div>
 
-    <script type="module">
+    <script>
       document.querySelectorAll(".renovar-btn").forEach((btn) => {
-        btn.addEventListener("DOMContentLoaded", "click", function (e) {
+        btn.addEventListener("click", function (e) {
           e.preventDefault();
           const idMensualidad = this.getAttribute("data-id");
 
@@ -343,7 +345,7 @@
       </form>
     </div>
 
-    <script type="module">
+    <script>
       // Obtener elementos del DOM
       const inputSearch = document.getElementById("inputSearch");
       const tableBody = document.getElementById("tableBody");
@@ -371,13 +373,13 @@
       // Añadir evento al botón de búsqueda
       document
         .getElementById("searchButton")
-        .addEventListener("DOMContentLoaded", "click", filterTable);
+        .addEventListener("click", filterTable);
 
       // Opcional: filtrar en tiempo real mientras se escribe
-      inputSearch.addEventListener("DOMContentLoaded", "keyup", filterTable);
+      inputSearch.addEventListener("keyup", filterTable);
     </script>
 
-    <script type="module">
+    <script>
                 document.addEventListener("DOMContentLoaded", function() {
                     // Obtener los datos del backend, asegurando que no sean undefined
                     const datosVentas = <%- typeof datosVentas !== 'undefined' ? JSON.stringify(datosVentas) : '[]' %>;
@@ -386,7 +388,6 @@
 
                     // Procesar los datos para el gráfico de ventas
                     const labelsVentas = datosSumaPorMes.map(d => d.mes);
-
                     const dataVentas = datosSumaPorMes.map(d => d.total);
 
                     if (datosVentas == 0) {
@@ -481,8 +482,8 @@
       };
     </script>
 
-    <script type="module">
-      document.addEventListener("DOMContentLoaded", "keydown", function (e) {
+    <script>
+      document.addEventListener("keydown", function (e) {
         if (e.key === "*") {
           e.preventDefault();
           const campoTexto = document.getElementById("campoTexto");
@@ -497,7 +498,7 @@
 
       document
         .getElementById("campoTexto")
-        .addEventListener("DOMContentLoaded", "keydown", function (e) {
+        .addEventListener("keydown", function (e) {
           if (e.key === "Enter") {
             e.preventDefault(); // Prevenir el comportamiento por defecto de Enter
             const identificacionConAsterisco =
@@ -516,14 +517,14 @@
       // Cerrar el formulario al hacer clic en el botón de escape
       document
         .getElementById("closeButton")
-        .addEventListener("DOMContentLoaded", "click", function () {
+        .addEventListener("click", function () {
           document.getElementById("overlay").classList.add("hidden");
           document.getElementById("loginContainer").classList.add("hidden");
         });
     </script>
 
     <% if (typeof alert !== "undefined") { %>
-    <script type="module">
+    <script>
       document.addEventListener("DOMContentLoaded", function () {
         // Reproducir el sonido antes de mostrar la alerta
         const sonido = "<%= typeof sonido !== 'undefined' ? sonido : '' %>";
@@ -539,7 +540,8 @@
           title: "<%= alertTitle %>",
           text: "<%= alertMessage %>",
           icon: "<%= alertIcon %>",
-          showConfirmButton: true, // El usuario debe presionar OK
+          showConfirmButton: false,
+          timer: 1200,
         }).then(() => {
           // Redirigir después de que el usuario presione OK
           const ruta = "<%= typeof ruta !== 'undefined' ? ruta : '' %>";
@@ -552,7 +554,7 @@
 
     <!-- GRAFICOS -->
     <% } %>
-    <script type="module">
+    <script>
       document.addEventListener("DOMContentLoaded", function () {
         var calendarEl = document.getElementById("calendari");
         var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -635,13 +637,9 @@
           tooltip.style.top = `${info.jsEvent.pageY + 5}px`;
 
           // Al salir del mouse, eliminar el tooltip
-          info.el.addEventListener(
-            "DOMContentLoaded",
-            "mouseleave",
-            function () {
-              document.body.removeChild(tooltip);
-            }
-          );
+          info.el.addEventListener("mouseleave", function () {
+            document.body.removeChild(tooltip);
+          });
         });
       });
     </script>

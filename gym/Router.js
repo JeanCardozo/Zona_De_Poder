@@ -4,7 +4,7 @@ const conexion = require("./database/zona_de_poder_db");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = "negrosdemierda";
+const SECRET_KEY = "Zonadpr";
 const path = require("path");
 const crud = require("./controllers/crud");
 const cron = require("node-cron");
@@ -35,8 +35,7 @@ router.use((req, res, next) => {
   next();
 });
 
-// Middleware para verificar el token JWT
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const token = req.cookies.token;
 
   if (!token) {
@@ -51,8 +50,47 @@ function authenticateToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
     req.user = decoded;
+    res.locals.userData = decoded;
 
-    // Verificar si el token e  stá a punto de expirar y renovarlo si es necesario
+    if (req.session.userData) {
+      res.locals.userData = { ...res.locals.userData, ...req.session.userData };
+    } else {
+      const query = `
+        SELECT u.id AS id_usuario, u.nombre AS nombre_usuario, 
+               r.tipo_de_rol AS rol,
+               CASE WHEN u.imagen_perfil IS NOT NULL THEN true ELSE false END AS tiene_imagen
+        FROM usuarios AS u
+        INNER JOIN roles AS r ON u.id_rol = r.id
+        WHERE u.id = $1
+      `;
+      const result = await conexion.query(query, [decoded.id]);
+
+      if (result.rows.length > 0) {
+        const userData = result.rows[0];
+
+        // Verificar si el usuario es cliente (admite diferentes formatos)
+        if (["Cliente", "Clientes"].includes(userData.rol)) {
+          userData.imagen_perfil = userData.tiene_imagen
+            ? `/profile-image/client/${userData.id_usuario}`
+            : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
+        } else {
+          userData.imagen_perfil = userData.tiene_imagen
+            ? `/profile-image/${userData.id_usuario}`
+            : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
+        }
+
+        req.session.userData = userData;
+        res.locals.userData = { ...res.locals.userData, ...userData };
+      } else {
+        return renderLoginPage(res, {
+          status: 401,
+          alertTitle: "Acceso Denegado",
+          alertMessage: "Usuario no autorizado",
+          alertIcon: "error",
+        });
+      }
+    }
+
     if (isTokenAboutToExpire(decoded)) {
       const newToken = generateToken(decoded);
       setTokenCookie(res, newToken);
@@ -165,47 +203,6 @@ router.get("/profile-image/:userId", async (req, res) => {
   }
 });
 
-// Ruta para el navbar del administrador
-router.get("/navbar", authenticateToken, verifyAdmin, async (req, res) => {
-  const loggedUserId = req.user.id;
-
-  try {
-    const query = `
-      SELECT u.id as id_usuario, u.nombre AS nombre_usuario, r.tipo_de_rol AS rol, 
-      CASE WHEN u.imagen_perfil IS NOT NULL THEN true ELSE false END AS tiene_imagen
-      FROM usuarios AS u   
-      INNER JOIN roles AS r ON u.id_rol = r.id 
-      WHERE u.id = $1
-    `;
-
-    const result = await conexion.query(query, [loggedUserId]);
-
-    if (result.rows && result.rows.length > 0) {
-      const userData = result.rows[0];
-      console.log(`Datos del usuario obtenidos:`, userData);
-
-      userData.imagen_perfil = userData.tiene_imagen
-        ? `/profile-image/user/${userData.id_usuario}`
-        : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
-
-      req.session.userData = userData;
-      console.log(
-        `Datos del usuario guardados en sesión:`,
-        req.session.userData
-      );
-
-      res.render("administrador/plantillas/navbar", { userData: userData });
-    } else {
-      console.log(`No se encontraron datos para el usuario ID ${loggedUserId}`);
-      req.session.userData = null;
-      res.render("administrador/plantillas/navbar", { userData: null });
-    }
-  } catch (error) {
-    console.error("Error al obtener datos del usuario:", error);
-    res.status(500).sendFile(__dirname + "/500.html");
-  }
-});
-
 router.get("/profile-image/client/:clientId", async (req, res) => {
   try {
     const clientId = req.params.clientId;
@@ -218,59 +215,14 @@ router.get("/profile-image/client/:clientId", async (req, res) => {
       res.contentType(imagen_content_type);
       res.send(imagen_perfil);
     } else {
-      res.status(404).send("Imagen no encontrada");
+      res.redirect(
+        "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png"
+      );
     }
   } catch (error) {
-    console.error("Error al obtener la imagen de perfil del cliente:", error);
     res.status(500).send("Error al obtener la imagen de perfil del cliente");
   }
 });
-
-// Ruta para el navbar del cliente
-router.get(
-  "/navbar_clientes",
-  authenticateToken,
-  verifyClient,
-  async (req, res) => {
-    const loggedClientId = req.user.id;
-
-    try {
-      const clientQuery = `
-      SELECT id, nombre, imagen_perfil 
-      FROM clientes 
-      WHERE id = $1
-    `;
-      const clientResult = await conexion.query(clientQuery, [loggedClientId]);
-
-      if (clientResult.rows.length === 0) {
-        req.session.userData = null;
-        return res.render("cliente/plantillas/navbar_clientes", {
-          userData: null,
-        });
-      }
-
-      const clientData = clientResult.rows[0];
-
-      clientData.imagen_perfil = clientData.imagen_perfil
-        ? `/profile-image/client/${clientData.id}`
-        : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
-
-      req.session.userData = {
-        id: clientData.id,
-        nombre_cliente: clientData.nombre,
-        imagen_perfil: clientData.imagen_perfil,
-      };
-
-      console.log("imagen cargada: ", clientData.imagen_perfil);
-      res.render("administrador/plantillas/navbar_clientes", {
-        userData: req.session.userData,
-      });
-    } catch (error) {
-      console.error("Error al obtener los datos del cliente:", error);
-      res.status(500).sendFile(__dirname + "/500.html");
-    }
-  }
-);
 
 router.get("/", async (req, res) => {
   const message = req.query.message;
@@ -427,6 +379,10 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
 
     const resultMensualidades = await conexion.query(querymensualidades);
     const datosMensualidades = resultMensualidades.rows;
+    console.log(
+      "para el renovarcliente a ver que es la informaicon que esta mandando",
+      datosVentasVencidas
+    );
 
     // Renderizar la vista con los datos de todas las consultas
     res.render("administrador/index", {
@@ -508,7 +464,7 @@ router.get("/ver_roles", authenticateToken, verifyAdmin, (req, res) => {
 
 // Editar Roles
 
-router.get("/actualizar/:id", authenticateToken, (req, res) => {
+router.get("/actualizar/:id", authenticateToken, verifyAdmin, (req, res) => {
   const id = req.params.id;
   const message = req.query.message;
 
@@ -531,7 +487,7 @@ router.get("/actualizar/:id", authenticateToken, (req, res) => {
 
 // Eliminar roles
 
-router.get("/eliminarRol/:id", authenticateToken, (req, res) => {
+router.get("/eliminarRol/:id", authenticateToken, verifyAdmin, (req, res) => {
   const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
@@ -657,6 +613,7 @@ router.get("/tallas/:id", authenticateToken, (req, res) => {
   });
 });
 
+//Factura del pedido
 router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
   const { id_cliente } = req.params;
 
@@ -675,7 +632,16 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
     }
 
     const cliente = result.rows[0];
-    const doc = new PDFDocument({ size: "A5", margin: 40 });
+    // Configurar el documento con márgenes específicos para usar 80% del ancho
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: {
+        top: 30, // Margen superior reducido para maximizar espacio
+        bottom: 30, // Margen inferior reducido
+        left: 50, // Aproximadamente 10% del ancho (595.28 × 0.10)
+        right: 50, // Aproximadamente 10% del ancho
+      },
+    });
 
     res.setHeader(
       "Content-Disposition",
@@ -684,242 +650,202 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     doc.pipe(res);
 
-    const pageWidth = doc.page.width;
-    const contentWidth = pageWidth - 80; // 40px margen a cada lado
+    // Calcular dimensiones útiles
+    const pageWidth = doc.page.width; // 595.28 puntos para A4
+    const pageHeight = doc.page.height; // 841.89 puntos para A4
+    const contentWidth = pageWidth * 0.8; // 80% del ancho
+    const contentHeight = pageHeight * 0.9; // 90% del alto
+    const marginX = (pageWidth - contentWidth) / 2;
+    const marginY = (pageHeight - contentHeight) / 2;
 
-    // Añadir marca de agua
+    // Fondo gris claro que cubra toda la página
+    doc.rect(0, 0, pageWidth, pageHeight).fill("#f8f9fa");
 
-    // Encabezado
-    doc
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .text("ZONA DE PODER GYM", { align: "center" });
-    doc.fontSize(10).text("Teléfono: 3209316797", { align: "center" });
-    doc.text("Dirección: Calle 6ta - 7-20 centro", { align: "center" });
+    // Logo centrado en la parte superior
+    const logoWidth = 120;
+    const logoHeight = 60;
+    const logoX = (pageWidth - logoWidth) / 2;
+    const logoY = marginY;
 
-    doc
-      .moveTo(40, 100)
-      .lineTo(pageWidth - 40, 100)
-      .stroke();
-
-    // Información del cliente
-    const clienteInfo = [
-      { label: "Contacto:", value: `${cliente.nombre} ${cliente.apellido}` },
-      {
-        label: "Fecha de transacción:",
-        value: new Date(cliente.fecha_de_inscripcion).toLocaleDateString(
-          "es-CO"
-        ),
-      },
-      { label: "Vendedor:", value: "Laura del Sol Hdez" },
-      { label: "Método de pago:", value: "Efectivo" },
-      { label: "Estado:", value: cliente.estado },
-      { label: "Número de transacción:", value: cliente.numero_transaccion },
-    ];
-
-    doc.fontSize(10);
-    let y = 120;
-    clienteInfo.forEach((item) => {
-      doc.text(item.label, 40, y);
-      doc.text(item.value, -450, y, { align: "right" });
-      y += 15;
-    });
-
-    doc
-      .moveTo(40, y + 10)
-      .lineTo(pageWidth - 40, y + 10)
-      .stroke();
-
-    // Detalles de los productos
-    y += 30;
-    const headers = ["Producto", "Cant.", "Precio U.", "Valor"];
-    const headerPositions = [40, pageWidth - 240, pageWidth - 160, -450];
-
-    doc.font("Helvetica-Bold");
-    headers.forEach((header, index) => {
-      doc.text(header, headerPositions[index], y, {
-        width: index === 0 ? 200 : 80,
-        align: index === 0 ? "left" : "right",
+    try {
+      doc.image("./public/images/logo.png", logoX, logoY, {
+        width: logoWidth,
+        height: logoHeight,
+        align: "center",
       });
-    });
-
-    y += 20;
-    doc.font("Helvetica");
-    doc.text("Mensualidad servicio de entrenamiento físico", 40, y, {
-      width: 200,
-    });
-    doc.text("1", headerPositions[1], y, { width: 80, align: "right" });
-    doc.text(
-      `$ ${cliente.total_pagar.toLocaleString()}`,
-      headerPositions[2],
-      y,
-      {
-        width: 80,
-        align: "right",
-      }
-    );
-    doc.text(
-      `$ ${cliente.total_pagar.toLocaleString()}`,
-      headerPositions[3],
-      y,
-      {
-        width: 80,
-        align: "right",
-      }
-    );
-
-    // Total
-    y += 30;
-    doc
-      .moveTo(40, y)
-      .lineTo(pageWidth - 40, y)
-      .stroke();
-    y += 10;
-    doc.font("Helvetica-Bold");
-    doc.text("TOTAL:", 40, y);
-    doc.text(`$ ${cliente.total_pagar.toLocaleString()}`, -450, y, {
-      align: "right",
-    });
-
-    doc.end();
-  } catch (error) {
-    console.error("Error al generar el PDF:", error);
-    res.status(500).sendFile(__dirname + "/500.html");
-  }
-});
-// Función para cargar la imagen desde una URL
-function loadImageFromURL(url) {
-  return new Promise((resolve, reject) => {
-    request({ url, encoding: null }, (error, response, body) => {
-      if (error) reject(error);
-      else resolve(body);
-    });
-  });
-}
-
-router.get("/clientes/pdf/:id_cliente", authenticateToken, async (req, res) => {
-  const { id_cliente } = req.params;
-
-  try {
-    const result = await conexion.query(
-      `SELECT c.nombre, c.apellido, c.fecha_de_inscripcion, c.estado, m.total_pagar, v.id AS numero_transaccion
-      FROM clientes AS c
-      LEFT JOIN mensualidades AS m ON c.id_mensualidad = m.id
-      LEFT JOIN mensualidad_clientes AS v ON c.id = v.id_cliente
-      WHERE c.id = $1`,
-      [id_cliente]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).send("Cliente no encontrado");
+    } catch (err) {
+      console.error("Error al cargar el logo:", err);
     }
 
-    const cliente = result.rows[0];
-    const doc = new PDFDocument({ size: "A5", margin: 40 });
-
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename="factura_${cliente.nombre}_${cliente.apellido}.pdf"`
-    );
-    res.setHeader("Content-Type", "application/pdf");
-    doc.pipe(res);
-
-    const pageWidth = doc.page.width;
-    const contentWidth = pageWidth - 80; // 40px margen a cada lado
-
-    // Añadir marca de agua
-
-    // Encabezado
+    // Encabezado debajo del logo
+    const headerY = logoY + logoHeight + 20;
     doc
-      .fontSize(14)
+      .fillColor("#000000")
+      .fontSize(18)
       .font("Helvetica-Bold")
-      .text("ZONA DE PODER GYM", { align: "center" });
-    doc.fontSize(10).text("Teléfono: 3209316797", { align: "center" });
-    doc.text("Dirección: Calle 6ta - 7-20 centro", { align: "center" });
+      .text("ZONA DE PODER GYM", marginX, headerY, {
+        width: contentWidth,
+        align: "center",
+      });
 
+    // Información de contacto
     doc
-      .moveTo(40, 100)
-      .lineTo(pageWidth - 40, 100)
+      .fontSize(11)
+      .font("Helvetica")
+      .moveDown(0.5)
+      .text("Teléfono: 3209316797", {
+        width: contentWidth,
+        align: "center",
+      })
+      .text("Dirección: Calle 6ta - 7-20 centro, Chaparral", {
+        width: contentWidth,
+        align: "center",
+      });
+
+    // Línea divisoria
+    const lineY1 = doc.y + 20;
+    doc
+      .moveTo(marginX, lineY1)
+      .lineTo(pageWidth - marginX, lineY1)
+      .strokeColor("#cccccc")
+      .lineWidth(1)
       .stroke();
 
-    // Información del cliente
+    // Información del cliente en formato de tabla
     const clienteInfo = [
-      { label: "Contacto:", value: `${cliente.nombre} ${cliente.apellido}` },
+      { label: "Contacto ", value: `${cliente.nombre} ${cliente.apellido}` },
       {
-        label: "Fecha de transacción:",
+        label: "Fecha de transacción ",
         value: new Date(cliente.fecha_de_inscripcion).toLocaleDateString(
           "es-CO"
         ),
       },
-      { label: "Vendedor:", value: "Laura del Sol Hdez" },
-      { label: "Método de pago:", value: "Efectivo" },
-      { label: "Estado:", value: cliente.estado },
-      { label: "Número de transacción:", value: cliente.numero_transaccion },
+      { label: "Vendedor ", value: "Laura del Sol Hernandez" },
+      { label: "Método de pago ", value: "Efectivo" },
+      { label: "Estado ", value: cliente.estado },
+      { label: "Número de transacción ", value: cliente.numero_transaccion },
     ];
 
-    doc.fontSize(10);
-    let y = 120;
+    // Configurar la tabla de información del cliente
+    doc.fontSize(11).fillColor("#333333");
+    let yPos = lineY1 + 30;
+    const labelWidth = contentWidth * 0.5;
+    const valueWidth = contentWidth * 0.7;
+
     clienteInfo.forEach((item) => {
-      doc.text(item.label, 40, y);
-      doc.text(item.value, -450, y, { align: "right" });
-      y += 15;
+      doc
+        .font("Helvetica-Bold")
+        .text(item.label, marginX, yPos, {
+          width: labelWidth,
+          continued: true,
+        })
+        .font("Helvetica")
+        .text(`: ${item.value}`, {
+          width: valueWidth,
+        });
+      yPos += 25;
     });
 
+    // Segunda línea divisoria
+    const lineY2 = yPos + 20;
     doc
-      .moveTo(40, y + 10)
-      .lineTo(pageWidth - 40, y + 10)
+      .moveTo(marginX, lineY2)
+      .lineTo(pageWidth - marginX, lineY2)
+      .strokeColor("#cccccc")
+      .lineWidth(1)
       .stroke();
 
-    // Detalles de los productos
-    y += 30;
-    const headers = ["Producto", "Cant.", "Precio U.", "Valor"];
-    const headerPositions = [40, pageWidth - 240, pageWidth - 160, -450];
+    // Tabla de productos
+    const headerY2 = lineY2 + 30;
+    const headers = ["Producto", "Cant.", "Precio U.", "Total"];
+    const columnWidths = [
+      contentWidth * 0.4, // Producto
+      contentWidth * 0.2, // Cantidad
+      contentWidth * 0.2, // Precio Unitario
+      contentWidth * 0.2, // Total
+    ];
 
-    doc.font("Helvetica-Bold");
-    headers.forEach((header, index) => {
-      doc.text(header, headerPositions[index], y, {
-        width: index === 0 ? 200 : 80,
-        align: index === 0 ? "left" : "right",
+    // Encabezados de la tabla
+    let xPos = marginX;
+    doc.font("Helvetica-Bold").fontSize(11);
+    headers.forEach((header, i) => {
+      doc.text(header, xPos, headerY2, {
+        width: columnWidths[i],
+        align: i === 0 ? "left" : "right",
       });
+      xPos += columnWidths[i];
     });
 
-    y += 20;
-    doc.font("Helvetica");
-    doc.text("Mensualidad servicio de entrenamiento físico", 40, y, {
-      width: 200,
+    // Datos de la tabla
+    const rowY = headerY2 + 30;
+    xPos = marginX;
+    doc.font("Helvetica").fontSize(11);
+
+    // Producto
+    doc.text("Mensualidad servicio de entrenamiento físico", xPos, rowY, {
+      width: columnWidths[0],
     });
-    doc.text("1", headerPositions[1], y, { width: 80, align: "right" });
+
+    // Cantidad
+    doc.text("1", xPos + columnWidths[0], rowY, {
+      width: columnWidths[1],
+      align: "right",
+    });
+
+    // Precio Unitario
     doc.text(
       `$ ${cliente.total_pagar.toLocaleString()}`,
-      headerPositions[2],
-      y,
+      xPos + columnWidths[0] + columnWidths[1],
+      rowY,
       {
-        width: 80,
-        align: "right",
-      }
-    );
-    doc.text(
-      `$ ${cliente.total_pagar.toLocaleString()}`,
-      headerPositions[3],
-      y,
-      {
-        width: 80,
+        width: columnWidths[2],
         align: "right",
       }
     );
 
     // Total
-    y += 30;
+    doc.text(
+      `$ ${cliente.total_pagar.toLocaleString()}`,
+      xPos + columnWidths[0] + columnWidths[1] + columnWidths[2],
+      rowY,
+      {
+        width: columnWidths[3],
+        align: "right",
+      }
+    );
+
+    // Línea final antes del total
+    const lineY3 = rowY + 40;
     doc
-      .moveTo(40, y)
-      .lineTo(pageWidth - 40, y)
+      .moveTo(marginX, lineY3)
+      .lineTo(pageWidth - marginX, lineY3)
+      .strokeColor("#cccccc")
+      .lineWidth(1)
       .stroke();
-    y += 10;
-    doc.font("Helvetica-Bold");
-    doc.text("TOTAL:", 40, y);
-    doc.text(`$ ${cliente.total_pagar.toLocaleString()}`, -450, y, {
-      align: "right",
-    });
+
+    // Total final
+    const totalY = lineY3 + 20;
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(12)
+      .text(
+        "TOTAL:",
+        marginX + contentWidth - columnWidths[2] - columnWidths[3],
+        totalY,
+        {
+          width: columnWidths[2],
+          align: "right",
+        }
+      )
+      .text(
+        `$ ${cliente.total_pagar.toLocaleString()}`,
+        marginX + contentWidth - columnWidths[3],
+        totalY,
+        {
+          width: columnWidths[3],
+          align: "right",
+        }
+      );
 
     doc.end();
   } catch (error) {
@@ -927,15 +853,6 @@ router.get("/clientes/pdf/:id_cliente", authenticateToken, async (req, res) => {
     res.status(500).sendFile(__dirname + "/500.html");
   }
 });
-// Función para cargar la imagen desde una URL
-function loadImageFromURL(url) {
-  return new Promise((resolve, reject) => {
-    request({ url, encoding: null }, (error, response, body) => {
-      if (error) reject(error);
-      else resolve(body);
-    });
-  });
-}
 
 /////////////////////////////////////////////////////////////////
 
@@ -1013,7 +930,7 @@ router.get("/ver_usuarios", authenticateToken, verifyAdmin, (req, res) => {
 
 // CREAR USUARIOS
 
-router.get("/create_usuarios", authenticateToken, (req, res) => {
+router.get("/create_usuarios", authenticateToken, verifyAdmin, (req, res) => {
   conexion.query(
     "SELECT id, tipo_de_rol FROM roles ORDER BY id",
 
@@ -1028,46 +945,51 @@ router.get("/create_usuarios", authenticateToken, (req, res) => {
   );
 });
 
-router.get("/actualizar_usuarios/:id", authenticateToken, (req, res) => {
-  const id = parseInt(req.params.id, 10);
+router.get(
+  "/actualizar_usuarios/:id",
+  authenticateToken,
+  verifyAdmin,
+  (req, res) => {
+    const id = parseInt(req.params.id, 10);
 
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "Invalid ID" });
-  }
-
-  // Primera consulta: Obtener usuario por ID
-  conexion.query(
-    "SELECT * FROM usuarios WHERE id = $1",
-    [id],
-    (error, userResults) => {
-      if (error) {
-        returnres.status(500).sendFile(__dirname + "/500.html");
-      }
-
-      if (userResults.rowCount > 0) {
-        // Segunda consulta: Obtener todos los roles
-        conexion.query("SELECT * FROM roles", (roleError, roleResults) => {
-          if (roleError) {
-            return res.status(500).sendFile(__dirname + "/500.html");
-          }
-
-          // Asegurarse de que las variables 'user' y 'roles' no estén vacías
-          if (roleResults.rowCount > 0) {
-            // Renderizar la vista con los datos del usuario y los roles
-            res.render("administrador/usuarios/actualizar_usuarios", {
-              user: userResults.rows[0],
-              roles: roleResults.rows, // Pasar los roles obtenidos
-            });
-          } else {
-            res.status(404).json({ error: "No roles found" });
-          }
-        });
-      } else {
-        res.status(404).json({ error: "User not found" });
-      }
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
     }
-  );
-});
+
+    // Primera consulta: Obtener usuario por ID
+    conexion.query(
+      "SELECT * FROM usuarios WHERE id = $1",
+      [id],
+      (error, userResults) => {
+        if (error) {
+          returnres.status(500).sendFile(__dirname + "/500.html");
+        }
+
+        if (userResults.rowCount > 0) {
+          // Segunda consulta: Obtener todos los roles
+          conexion.query("SELECT * FROM roles", (roleError, roleResults) => {
+            if (roleError) {
+              return res.status(500).sendFile(__dirname + "/500.html");
+            }
+
+            // Asegurarse de que las variables 'user' y 'roles' no estén vacías
+            if (roleResults.rowCount > 0) {
+              // Renderizar la vista con los datos del usuario y los roles
+              res.render("administrador/usuarios/actualizar_usuarios", {
+                user: userResults.rows[0],
+                roles: roleResults.rows, // Pasar los roles obtenidos
+              });
+            } else {
+              res.status(404).json({ error: "No roles found" });
+            }
+          });
+        } else {
+          res.status(404).json({ error: "User not found" });
+        }
+      }
+    );
+  }
+);
 
 // -------------------------------------------
 
@@ -1154,7 +1076,7 @@ router.get("/actualizar_tallas/:id", authenticateToken, (req, res) => {
 // });
 
 // ver comvenios
-router.get("/ver_convenio", authenticateToken, (req, res) => {
+router.get("/ver_convenio", authenticateToken, verifyAdmin, (req, res) => {
   const message = req.query.message;
   let alertMessage = null;
   if (message === "success") {
@@ -1181,7 +1103,7 @@ router.get("/ver_convenio", authenticateToken, (req, res) => {
 });
 
 // crear convenio
-router.get("/create_convenio", authenticateToken, (req, res) => {
+router.get("/create_convenio", authenticateToken, verifyAdmin, (req, res) => {
   res.render("administrador/convenio/create_convenio");
 });
 
@@ -1209,7 +1131,7 @@ router.get("/actualizar_convenio/:id", authenticateToken, (req, res) => {
 
 /////////////////////////////////////////////////////////// Ver mensualidad
 
-router.get("/ver_mensualidad", authenticateToken, (req, res) => {
+router.get("/ver_mensualidad", authenticateToken, verifyAdmin, (req, res) => {
   const message = req.query.message;
   let alertMessage = null;
   if (message === "success") {
@@ -1236,54 +1158,64 @@ router.get("/ver_mensualidad", authenticateToken, (req, res) => {
   });
 });
 
-router.get("/actualizar_mensualidad/:id", authenticateToken, (req, res) => {
-  const id = req.params.id;
+router.get(
+  "/actualizar_mensualidad/:id",
+  authenticateToken,
+  verifyAdmin,
+  (req, res) => {
+    const id = req.params.id;
 
-  const queryMensualidad = `
+    const queryMensualidad = `
     SELECT m.id AS id_mensualidad, m.total_pagar, m.tiempo_plan, mc.id AS id_mensu_convencional, mc.tipo_de_mensualidad
     FROM mensualidades AS m
     INNER JOIN mensualidad_convencional AS mc ON m.id_mensualidad_convencional = mc.id
     WHERE m.id = $1
   `;
 
-  const queryMensualidadConvencional = `
+    const queryMensualidadConvencional = `
     SELECT * FROM mensualidad_convencional
   `;
 
-  // Ejecutar ambas consultas en paralelo
-  Promise.all([
-    conexion.query(queryMensualidad, [id]),
-    conexion.query(queryMensualidadConvencional),
-  ])
-    .then(([mensualidadesResult, mensualidadConvencionalResult]) => {
-      if (mensualidadesResult.rowCount > 0) {
-        res.json({
-          mensualidades: mensualidadesResult.rows,
-          mensualidadConvencional: mensualidadConvencionalResult.rows,
-        });
-      } else {
-        res.status(404).json({ error: "Mensualidad no encontrada" });
-      }
-    })
-    .catch((error) => {
-      res.status(500).sendFile(__dirname + "/500.html");
-    });
-});
+    // Ejecutar ambas consultas en paralelo
+    Promise.all([
+      conexion.query(queryMensualidad, [id]),
+      conexion.query(queryMensualidadConvencional),
+    ])
+      .then(([mensualidadesResult, mensualidadConvencionalResult]) => {
+        if (mensualidadesResult.rowCount > 0) {
+          res.json({
+            mensualidades: mensualidadesResult.rows,
+            mensualidadConvencional: mensualidadConvencionalResult.rows,
+          });
+        } else {
+          res.status(404).json({ error: "Mensualidad no encontrada" });
+        }
+      })
+      .catch((error) => {
+        res.status(500).sendFile(__dirname + "/500.html");
+      });
+  }
+);
 
-router.get("/get_mensu_convenio", authenticateToken, (req, res) => {
-  conexion.query(
-    "SELECT id, tipo_de_mensualidad FROM mensualidad_convencional",
-    (error, results) => {
-      if (error) {
-        return res.status(500).sendFile(__dirname + "/500.html");
+router.get(
+  "/get_mensu_convenio",
+  authenticateToken,
+  verifyAdmin,
+  (req, res) => {
+    conexion.query(
+      "SELECT id, tipo_de_mensualidad FROM mensualidad_convencional",
+      (error, results) => {
+        if (error) {
+          return res.status(500).sendFile(__dirname + "/500.html");
+        }
+        res.json(results.rows);
       }
-      res.json(results.rows);
-    }
-  );
-});
+    );
+  }
+);
 
 //eliminar mensualidades
-router.get("/eliminarMensu/:id", authenticateToken, (req, res) => {
+router.get("/eliminarMensu/:id", authenticateToken, verifyAdmin, (req, res) => {
   const id = parseInt(req.params.id, 10); // Usa 'id' en lugar de 'iden' y asegúrate de que se convierte a entero
 
   if (isNaN(id)) {
@@ -1307,35 +1239,40 @@ router.get("/eliminarMensu/:id", authenticateToken, (req, res) => {
 //GRUPOS MUSCULARES
 
 // ver grupo muscular
-router.get("/ver_grupo_muscular", authenticateToken, (req, res) => {
-  const message = req.query.message;
-  let alertMessage = null;
-  if (message === "success") {
-    alertMessage = {
-      type: "success",
-      text: "Cambios Realizados Con Exito.",
-      showConfirmButton: false,
-      timer: 1200,
-    };
-  }
-  conexion.query(
-    "SELECT * FROM grupos_musculares ORDER BY id",
-
-    (error, results) => {
-      if (error) {
-        res.status(500).sendFile(__dirname + "/500.html"); // Manejo de error
-      }
-
-      res.render("administrador/grupo_muscular/ver_grupo_muscular", {
-        alertMessage: alertMessage,
-        results: results.rows,
-      });
+router.get(
+  "/ver_grupo_muscular",
+  authenticateToken,
+  verifyAdmin,
+  (req, res) => {
+    const message = req.query.message;
+    let alertMessage = null;
+    if (message === "success") {
+      alertMessage = {
+        type: "success",
+        text: "Cambios Realizados Con Exito.",
+        showConfirmButton: false,
+        timer: 1200,
+      };
     }
-  );
-});
+    conexion.query(
+      "SELECT * FROM grupos_musculares ORDER BY id",
+
+      (error, results) => {
+        if (error) {
+          res.status(500).sendFile(__dirname + "/500.html"); // Manejo de error
+        }
+
+        res.render("administrador/grupo_muscular/ver_grupo_muscular", {
+          alertMessage: alertMessage,
+          results: results.rows,
+        });
+      }
+    );
+  }
+);
 
 // editar grupo muscular
-router.get("/actualizar_g/:id", authenticateToken, (req, res) => {
+router.get("/actualizar_g/:id", authenticateToken, verifyAdmin, (req, res) => {
   const id = req.params.id;
 
   conexion.query(
@@ -1360,7 +1297,7 @@ router.get("/actualizar_g/:id", authenticateToken, (req, res) => {
 
 //VENTAS
 
-router.get("/ver_ventas", authenticateToken, async (req, res) => {
+router.get("/ver_ventas", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     // Consultar la base de datos para obtener los datos necesarios
     conexion.query(
@@ -1474,7 +1411,7 @@ ORDER BY mc.id;
 //ACTIVIDAD FISICA
 
 //VER
-router.get("/ver_acti_fisica", authenticateToken, (req, res) => {
+router.get("/ver_acti_fisica", authenticateToken, verifyAdmin, (req, res) => {
   const message = req.query.message;
   let alertMessage = null;
   if (message === "success") {
@@ -1512,20 +1449,25 @@ router.get("/ver_acti_fisica", authenticateToken, (req, res) => {
   });
 });
 
-router.get("/get_grupos_musculares", authenticateToken, (req, res) => {
-  conexion.query(
-    "SELECT id, nombre FROM grupos_musculares",
-    (error, results) => {
-      if (error) {
-        return res.status(500).sendFile(__dirname + "/500.html");
+router.get(
+  "/get_grupos_musculares",
+  authenticateToken,
+  verifyAdmin,
+  (req, res) => {
+    conexion.query(
+      "SELECT id, nombre FROM grupos_musculares",
+      (error, results) => {
+        if (error) {
+          return res.status(500).sendFile(__dirname + "/500.html");
+        }
+        res.json(results.rows);
       }
-      res.json(results.rows);
-    }
-  );
-});
+    );
+  }
+);
 
 //ACTUALIZAR
-router.get("/actualizar_f/:id", authenticateToken, (req, res) => {
+router.get("/actualizar_f/:id", authenticateToken, verifyAdmin, (req, res) => {
   const id = req.params.id;
 
   const queryActividadFisica = `
@@ -1604,8 +1546,8 @@ router.get("/info_plan/:id", authenticateToken, (req, res) => {
   const clienteId = req.params.id;
 
   const planQuery = `
-    SELECT pe.dia, pe.tipo_tren, pe.musculo, pe.ejercicio, pe.series, pe.repeticiones, c.nombre
-    FROM plan_entrenamiento AS pe
+    SELECT pe.dia, pe.id_cliente, pe.ejercicio, pe.series, pe.repeticiones, c.nombre
+    FROM plan_entrenamiento AS pe  
     JOIN clientes AS c ON pe.id_cliente = c.id
     WHERE pe.id_cliente = $1`;
 
@@ -1623,8 +1565,6 @@ router.get("/info_plan/:id", authenticateToken, (req, res) => {
     // Agrupar los resultados por cliente
     const planesDeEntrenamiento = planResults.rows;
     const nombreCliente = planesDeEntrenamiento[0].nombre;
-
-    console.log("planes", planesDeEntrenamiento);
 
     // Responder con los datos del plan agrupados
     res.json({
@@ -1646,76 +1586,7 @@ router.get("/get_actividad_fisica", authenticateToken, (req, res) => {
   );
 });
 
-// nose si sirve esa cochinada
-router.get("/actualizar_pe/:id", authenticateToken, (req, res) => {
-  const id = req.params.id;
-
-  conexion.query(
-    `SELECT pe.id AS id_plan_entrenamiento, pe.dia, pe.id_cliente, pe.id_actividad_fisica, pe.series, pe.repeticiones,
-            c.nombre AS nombre_cliente,
-            af.nombre_ejercicio
-     FROM plan_entrenamiento AS pe
-     INNER JOIN clientes AS c ON pe.id_cliente = c.id
-     LEFT JOIN actividad_fisica AS af ON pe.id_actividad_fisica = af.id
-     WHERE pe.id = $1`,
-    [id],
-    (error, results) => {
-      if (error) {
-        console.error("Error en la consulta:", error);
-        return res.status(500).sendFile(__dirname + "/500.html");
-      }
-
-      if (results.rowCount === 0) {
-        console.log(`No se encontró plan de entrenamiento con ID: ${id}`);
-        return res
-          .status(404)
-          .json({ error: "Plan de entrenamiento no encontrado", id: id });
-      }
-
-      // Obtener la lista de actividades físicas
-      conexion.query("SELECT * FROM actividad_fisica", (errorAf, afResults) => {
-        if (errorAf) {
-          console.error("Error al obtener actividades físicas:", errorAf);
-          return res.status(500).sendFile(__dirname + "/500.html");
-        }
-
-        res.render("administrador/plan_de_entrenamiento/actualizar_pe", {
-          plan: results.rows[0],
-          actividades: afResults.rows,
-        });
-      });
-    }
-  );
-});
-
 // Ruta para obtener actividades físicas por grupo muscular
-router.get(
-  "/get_actividades/:id_grupo_muscular",
-  authenticateToken,
-  async (req, res) => {
-    const idGrupoMuscular = req.params.id_grupo_muscular;
-    try {
-      const grupoMuscular = await db.query(
-        "SELECT * FROM grupos_musculares WHERE id = $1",
-        [idGrupoMuscular]
-      );
-      const actividades = await db.query(
-        "SELECT * FROM actividades_fisicas WHERE id_grupo_muscular = $1",
-        [idGrupoMuscular]
-      );
-
-      res.json({
-        grupoMuscular: grupoMuscular.rows[0],
-        actividades: actividades.rows,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).sendFile(__dirname + "/500.html");
-    }
-  }
-);
-
-//Ruta para Crear Plan de Entrenamiento
 
 // CODIGO PARA ACTUALIZAR ESTADO DE MENSUALIDAD_CLIENTES-----
 cron.schedule("0 0 * * *", () => {
@@ -2080,6 +1951,7 @@ router.post("/update_af", crud.update_af);
 //PLAN DE ENTRENAMIENTO
 router.post("/verPlanEnt", crud.verPlanEnt);
 router.post("/update_pe", crud.update_pe);
+router.get("/create_plan_ent", crud.mostrarFormularioVacio);
 
 //index ahi melo para el calendario
 router.post("/crear_evento", crud.crear_evento);
@@ -2096,8 +1968,6 @@ router.post("/ver_pqrs", crud.verPqrss);
 ///////////////////////////////////////////////////////////////////////////////////////////  CLIENTES CODGIO
 
 // Define la función clasificarIMC fuera del callback
-// Define la función clasificarIMC fuera del callback
-// Define la función clasificarIMC fuera del callback
 function clasificarIMC(imc) {
   if (imc < 18.5) return "Bajo peso";
   if (imc >= 18.5 && imc < 25) return "Normal";
@@ -2106,86 +1976,102 @@ function clasificarIMC(imc) {
   return "No clasificado";
 }
 
-router.get("/clientes/index_c", verifyClient, authenticateToken, (req, res) => {
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+router.get(
+  "/clientes/index_c",
+  authenticateToken,
+  verifyClient,
+  async (req, res) => {
+    console.log(
+      "Datos de res.locals.userData en la ruta:",
+      res.locals.userData
+    );
+    if (!res.locals.userData) {
+      return res
+        .status(401)
+        .json({ error: "No autorizado. Datos de usuario no encontrados." });
+    }
 
-  let identificacion = res.locals.userData.id;
+    const identificacion = res.locals.userData.id;
+    const nombre_usuario = res.locals.userData.nombre_usuario; // Ahora puedes acceder a nombre_usuario
+    const imagen_perfil = res.locals.userData.imagen_perfil;
 
-  if (!Number.isInteger(identificacion)) {
-    return res.status(400).json({ error: "ID de cliente inválido" });
-  }
+    if (!Number.isInteger(identificacion)) {
+      return res.status(400).json({ error: "ID de cliente inválido" });
+    }
 
-  // Consulta para obtener la talla más reciente
-  conexion.query(
-    `SELECT * FROM tallas 
+    // Consulta para obtener la talla más reciente
+    conexion.query(
+      `SELECT * FROM tallas 
       WHERE id_cliente = $1
       ORDER BY fecha DESC
       LIMIT 1`,
-    [identificacion],
-    (error, results) => {
-      if (error) {
-        return res.status(500).sendFile(__dirname + "/500.html");
-      }
+      [identificacion],
+      (error, results) => {
+        if (error) {
+          return res.status(500).sendFile(__dirname + "/500.html");
+        }
 
-      const tallaReciente = results.rows.length > 0 ? results.rows[0] : null;
+        const tallaReciente = results.rows.length > 0 ? results.rows[0] : null;
 
-      // Calcular el IMC
-      let imc = null;
-      let resultadoIMC = "No clasificado";
-      if (tallaReciente && tallaReciente.peso && tallaReciente.altura) {
-        const peso = parseFloat(tallaReciente.peso);
-        const altura = parseFloat(tallaReciente.altura);
-        const alturaEnMetros = altura / 100;
-        imc = (peso / (alturaEnMetros * alturaEnMetros)).toFixed(2);
-        console.log(`Peso: ${peso}, Altura: ${altura}, IMC: ${imc}`); // Verifica los valores
-        resultadoIMC = clasificarIMC(parseFloat(imc));
-        console.log(`Resultado IMC clasificado: ${resultadoIMC}`); // Verifica el resultado
-      }
+        // Calcular el IMC
+        let imc = null;
+        let resultadoIMC = "No clasificado";
+        if (tallaReciente && tallaReciente.peso && tallaReciente.altura) {
+          const peso = parseFloat(tallaReciente.peso);
+          const altura = parseFloat(tallaReciente.altura);
+          const alturaEnMetros = altura / 100;
+          imc = (peso / (alturaEnMetros * alturaEnMetros)).toFixed(2);
+          console.log(`Peso: ${peso}, Altura: ${altura}, IMC: ${imc}`); // Verifica los valores
+          resultadoIMC = clasificarIMC(parseFloat(imc));
+          console.log(`Resultado IMC clasificado: ${resultadoIMC}`); // Verifica el resultado
+        }
 
-      // Consulta para obtener el peso, altura y fecha_modificacion de tallas temporales
-      conexion.query(
-        `SELECT peso, altura, fecha_modificacion FROM tallas_temporales 
+        // Consulta para obtener el peso, altura y fecha_modificacion de tallas temporales
+        conexion.query(
+          `SELECT peso, altura, fecha_modificacion FROM tallas_temporales 
           WHERE id_cliente = $1
           AND peso IS NOT NULL
           AND altura IS NOT NULL
           AND fecha_modificacion IS NOT NULL
           ORDER BY fecha_modificacion ASC`,
-        [identificacion],
-        (errorTemp, resultsTemp) => {
-          if (errorTemp) {
-            return res.status(500).sendFile(__dirname + "/500.html");
-          }
+          [identificacion],
+          (errorTemp, resultsTemp) => {
+            if (errorTemp) {
+              return res.status(500).sendFile(__dirname + "/500.html");
+            }
 
-          // Extrae los pesos, alturas y fechas para el gráfico
-          const pesos = resultsTemp.rows.map((row) => row.peso);
-          const alturas = resultsTemp.rows.map((row) => row.altura);
-          const fechas = resultsTemp.rows.map((row) => {
-            const fecha = new Date(row.fecha_modificacion);
-            return fecha.toLocaleDateString("es-ES", {
-              timeZone: "America/Bogota",
-              year: "numeric",
-              month: "2-digit",
-              hour12: false,
+            // Extrae los pesos, alturas y fechas para el gráfico
+            const pesos = resultsTemp.rows.map((row) => row.peso);
+            console.log("ver el peso a ver que llega", pesos);
+            const alturas = resultsTemp.rows.map((row) => row.altura);
+            const fechas = resultsTemp.rows.map((row) => {
+              const fecha = new Date(row.fecha_modificacion);
+              return fecha.toLocaleDateString("es-ES", {
+                timeZone: "America/Bogota",
+                year: "numeric",
+                month: "2-digit",
+                hour12: false,
+              });
             });
-          });
 
-          res.render("clientes/index_c", {
-            tallaReciente: tallaReciente,
-            imc: imc, // Asegúrate de pasar imc a la vista
-            resultadoIMC: resultadoIMC, // Pasa el resultado del IMC a la vista
-            pesos: pesos,
-            alturas: alturas,
-            fechas: fechas,
-          });
-        }
-      );
-    }
-  );
-});
+            res.render("clientes/index_c", {
+              tallaReciente: tallaReciente,
+              imc: imc, // Asegúrate de pasar imc a la vista
+              resultadoIMC: resultadoIMC, // Pasa el resultado del IMC a la vista
+              pesos: pesos,
+              alturas: alturas,
+              fechas: fechas,
+            });
+          }
+        );
+      }
+    );
+  }
+);
 
 //informacion personal
 
-router.get("/info_personal", verifyClient, authenticateToken, (req, res) => {
+router.get("/info_personal", authenticateToken, verifyClient, (req, res) => {
   // Verifica si 'userData' está configurado correctamente
   console.log("hpta: ", res.locals.userData.id);
   if (!res.locals.userData) {
@@ -2210,7 +2096,7 @@ router.get("/info_personal", verifyClient, authenticateToken, (req, res) => {
       if (error) {
         return res.status(500).sendFile(__dirname + "/500.html"); // Manejo de error
       }
-
+      console.log("informacion del cliente", results.rows);
       res.render("clientes/informacion_personal/ver_info", {
         results: results.rows,
       });
@@ -2218,7 +2104,7 @@ router.get("/info_personal", verifyClient, authenticateToken, (req, res) => {
   );
 });
 
-router.get("/info_cliente/:id", verifyClient, authenticateToken, (req, res) => {
+router.get("/info_cliente/:id", authenticateToken, verifyClient, (req, res) => {
   const clientId = req.params.id;
 
   const clientQuery = `
@@ -2245,7 +2131,7 @@ router.get("/info_cliente/:id", verifyClient, authenticateToken, (req, res) => {
   });
 });
 
-router.get("/mis_planes", authenticateToken, (req, res) => {
+router.get("/mis_planes", authenticateToken, verifyClient, (req, res) => {
   let identificacion = res.locals.userData.id;
 
   conexion.query(
@@ -2271,7 +2157,7 @@ router.get("/mis_planes", authenticateToken, (req, res) => {
   );
 });
 
-router.get("/ayuda", authenticateToken, (req, res) => {
+router.get("/ayuda", authenticateToken, verifyClient, (req, res) => {
   let identificacion = res.locals.userData.id;
 
   conexion.query(
@@ -2419,17 +2305,18 @@ router.get("/sobre_nosotros", (req, res) => {
   res.sendFile(path.join(__dirname, "/views/sobre_nosotros.html"));
 });
 
-router.get("/mi_plan", authenticateToken, (req, res) => {
+router.get("/mi_plan", authenticateToken, verifyClient, (req, res) => {
   let identificacion = res.locals.userData.id;
 
   const planQuery = `
-    SELECT pe.dia, pe.tipo_tren, pe.musculo, pe.ejercicio, pe.series, pe.repeticiones, c.nombre
+    SELECT pe.dia,pe.id_cliente, pe.ejercicio, pe.series, pe.repeticiones, c.nombre
     FROM plan_entrenamiento AS pe
     JOIN clientes AS c ON pe.id_cliente = c.id
     WHERE pe.id_cliente = $1 `;
 
   conexion.query(planQuery, [identificacion], (planError, planResults) => {
     if (planError) {
+      console.log("ver error", planError);
       return res.status(500).sendFile(__dirname + "/500.html");
     }
 

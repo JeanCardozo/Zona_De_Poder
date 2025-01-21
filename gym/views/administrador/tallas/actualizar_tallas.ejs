@@ -22,7 +22,11 @@
     <title>Actualizar tallas</title>
   </head>
   <body class="bg-fondo">
-    <%- include('../plantillas/navbar.ejs') %> <% if (user) { %>
+    <% if (userData.rol == "Administrador") { %> <%-
+    include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
+    "Entrenador") { %> <%-
+    include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %> <% if
+    (user) { %>
 
     <a
       href="/ver_talla  "

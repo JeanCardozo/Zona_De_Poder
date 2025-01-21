@@ -2,7 +2,7 @@ const conexion = require("../database/zona_de_poder_db");
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = "negrosdemierda"; // Asegúrate de mantener esto en secreto
+const SECRET_KEY = "Zonadpr"; // Asegúrate de mantener esto en secreto
 require("dotenv").config();
 const PDFDocument = require("pdfkit"); // Asegúrate de tener pdfkit instalado
 const path = require("path");
@@ -206,8 +206,6 @@ exports.crearclienteS = async (req, res) => {
   }
 };
 
-// Mover la generación del PDF a una ruta separada
-
 // Controlador para renderizar el formulario de actualización (GET)
 
 // Controlador para manejar la actualización de un cliente (POST)
@@ -335,7 +333,6 @@ exports.renovar_cliente = (req, res) => {
     [mensualidad],
     (errorMensualidades, resultsMensualidades) => {
       if (errorMensualidades) {
-        console.log(errorMensualidades);
         return res.status(500).sendFile(__dirname + ".././views/500.html");
       }
 
@@ -398,7 +395,7 @@ exports.renovar_cliente = (req, res) => {
           const clienteNombre = resultsVentas.rows[0].nombre;
 
           const queryInsertMensualidadCliente =
-            "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'), $3, $4, $5)";
+            "INSERT INTO mensualidad_clientes (id_cliente, nombre, fecha_inicio, fecha_fin, id_mensualidad, estado) VALUES ($1, $2, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'),$3, $4, $5)";
           const valuesInsertMensualidadCliente = [
             id_cliente,
             clienteNombre,
@@ -432,8 +429,8 @@ exports.renovar_cliente = (req, res) => {
               conexion.query(
                 queryUpdateEstado,
                 valuesUpdateEstado,
-                valuesInsertMensualidadCliente,
                 (errorUpdate) => {
+                  // <-- El callback correcto
                   if (errorUpdate) {
                     return conexion.query("ROLLBACK", (rollbackErr) => {
                       if (rollbackErr) {
@@ -442,28 +439,26 @@ exports.renovar_cliente = (req, res) => {
                           .sendFile(__dirname + "/500.html");
                       }
                       console.log(errorUpdate);
-                      return res
-                        .status(500)
-                        .sendFile(__dirname + ".././views/500.html");
+                      return res.status(500).sendFile(__dirname + "/500.html");
                     });
                   }
 
                   const queryUpdateCliente =
-                    "UPDATE clientes SET estado = 'Activo', mensualidad = $1 WHERE id = $2";
-                  const valuesUpdateCliente = [total_pagar, id_cliente];
+                    "UPDATE clientes SET estado = 'Activo', id_mensualidad = $1 WHERE id = $2";
+                  const valuesUpdateCliente = [mensualidad, id_cliente];
 
                   conexion.query(
                     queryUpdateCliente,
                     valuesUpdateCliente,
-                    (errorUpdate) => {
-                      if (errorUpdate) {
+                    (errorUpdateCliente) => {
+                      if (errorUpdateCliente) {
                         return conexion.query("ROLLBACK", (rollbackErr) => {
                           if (rollbackErr) {
                             return res
                               .status(500)
                               .sendFile(__dirname + "/500.html");
                           }
-                          console.log(errorUpdate);
+                          console.log(errorUpdateCliente);
                           return res
                             .status(500)
                             .sendFile(__dirname + "/500.html");
@@ -1002,6 +997,7 @@ exports.login = async (req, res) => {
     }
 
     const userData = results.rows[0];
+    console.log("ver el resultado en el login userData", userData);
 
     // Verificación de la contraseña
     if (!(await bcrypt.compare(pass, userData.contraseña))) {
@@ -1024,7 +1020,7 @@ exports.login = async (req, res) => {
     req.session.userData = {
       id: userData.id,
       nombre_usuario: userData.nombre,
-      rol: userData.tipo_de_rol,
+      role: userData.tipo_de_rol,
       imagen_perfil: userData.imagen_perfil
         ? `/profile-image/${userData.id}`
         : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png",
@@ -1056,6 +1052,7 @@ exports.login = async (req, res) => {
       showConfirmButton: false,
       timer: 1000,
       ruta: ruta,
+      userData: req.session.userData, // Aquí pasas los datos del usuario a la vista
     });
   } catch (error) {
     console.error("Error en la base de datos:", error);
@@ -1080,17 +1077,17 @@ function renderLoginPage(res, alertOptions) {
 function generateToken(userData) {
   const userPayload = {
     id: userData.id,
-    role: userData.id_rol,
+    role: userData.id_rol, // Incluye el ID del usuario y su rol en el payload
   };
   return jwt.sign(userPayload, SECRET_KEY, { expiresIn: "2h" });
 }
 
 function setTokenCookie(res, token) {
   res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 2 * 60 * 60 * 1000, // 2 horas
+    httpOnly: true, // Solo accesible a través del protocolo HTTP (no accesible desde JavaScript en el navegador)
+    secure: process.env.NODE_ENV === "production", // Solo se envía a través de HTTPS en producción
+    sameSite: "strict", // Protege contra ataques CSRF
+    maxAge: 2 * 60 * 60 * 1000, // La cookie expira en 2 horas
   });
 }
 
@@ -1183,12 +1180,24 @@ exports.update_af = (req, res) => {
 };
 
 // PLAN DE ENTRENAMIENTO --------------------------------------------------------------------------------------------------------------
+
 exports.verPlanEnt = (req, res) => {
-  // Primera consulta: Obtener los datos del plan de entrenamiento
   const planEntrenamientoQuery = `
-    SELECT id, id_cliente, dias, ejercicio, series, repeticiones 
-    FROM plan_entrenamiento 
-    ORDER BY id ASC
+    SELECT 
+      id_cliente,
+      ARRAY_AGG(JSON_BUILD_OBJECT(
+        'id', id,
+        'dia', dia,
+        'ejercicio', ejercicio,
+        'series', series,
+        'repeticiones', repeticiones
+      )) AS planes
+    FROM 
+      plan_entrenamiento
+    GROUP BY 
+      id_cliente
+    ORDER BY 
+      id_cliente ASC;
   `;
 
   conexion.query(planEntrenamientoQuery, (error, planResults) => {
@@ -1202,11 +1211,8 @@ exports.verPlanEnt = (req, res) => {
         .json({ error: "No se encontraron planes de entrenamiento" });
     }
 
-    const clienteIds = [
-      ...new Set(planResults.rows.map((plan) => plan.id_cliente)),
-    ]; // Elimina duplicados
+    const clienteIds = planResults.rows.map((plan) => plan.id_cliente);
 
-    // Segunda consulta: Obtener los nombres de los clientes
     const clienteQuery = `
       SELECT id, nombre 
       FROM clientes 
@@ -1220,29 +1226,23 @@ exports.verPlanEnt = (req, res) => {
           return res.status(500).sendFile(__dirname + ".././views/500.html");
         }
 
-        // Crear un diccionario para los nombres de los clientes
         const clientes = {};
         clienteResults.rows.forEach((cliente) => {
           clientes[cliente.id] = cliente.nombre;
         });
-        console.log("plan de entrenamiento full", planResults.rows);
-        // Combinar los datos del plan de entrenamiento con los nombres de los clientes
+
         const planesConNombreCliente = planResults.rows.map((plan) => ({
-          id: plan.id,
           id_cliente: plan.id_cliente,
           nombre_cliente: clientes[plan.id_cliente] || "Nombre no encontrado",
-          dias: plan.dias,
-          ejercicio: plan.ejercicio,
-          series: plan.series,
-          repeticiones: plan.repeticiones,
+          planes: plan.planes,
         }));
 
-        // Enviar los datos combinados como respuesta
         return res.status(200).json(planesConNombreCliente);
       }
     );
   });
 };
+
 //CREAR PLAN DE ENTRENAMIENTO CON FORMULARIOS DIFERENTES(DEJARLO TAL CUAL ESTA A MENOS QUE SE QUIERA MODIFICAR LA LOGICA)
 
 exports.mostrarFormularioVacio = (req, res) => {

@@ -20,8 +20,11 @@
     <title>Crear cliente(s)</title>
   </head>
   <body class="bg-fondo">
-    <%- include('../plantillas/navbar.ejs') %> <% if (typeof alert !==
-    "undefined" && alert) { %>
+    <% if (userData.rol == "Administrador") { %> <%-
+    include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
+    "Entrenador") { %> <%-
+    include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %> <% if
+    (typeof alert !== "undefined" && alert) { %>
     <script>
       Swal.fire({
         title: "<%= alertTitle %>",

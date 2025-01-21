@@ -138,7 +138,12 @@
     ></div>
 
     <div class="container mx-auto 1px-4 py-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+        <!-- Calendario -->
+        <div class="col-span-2 bg-white p-4 rounded-lg shadow">
+          <div id="calendari" class="w-full"></div>
+        </div>
+
         <div class="bg-white p-4 rounded-lg shadow" id="mensajeErrorIngresos">
           <h2 class="text-lg font-bold mb-4 text-gray-700 text-center">
             Resumen de ingresos diarios
@@ -199,11 +204,6 @@
               </tbody>
             </table>
           </div>
-        </div>
-
-        <!-- Calendario -->
-        <div class="col-span-2 bg-white p-4 rounded-lg shadow">
-          <div id="calendari" class="w-full"></div>
         </div>
       </div>
     </div>
@@ -355,7 +355,7 @@
               document.getElementById("mensajeErrorIngresos").innerHTML = `
                 <tr>
                   <td colspan="4" class="py-10 text-center text-lg font-semibold text-gray-600">
-                    <i class="fas fa-times-circle text-red-500 text-4xl mb-4"></i>
+                    <i class="fas fa-times-circle text-red-500 text-4xl mb-4 text-center"></i>
                     <div>Todavía no hay ingresos el día de hoy</div>
                   </td>
                 </tr>`;

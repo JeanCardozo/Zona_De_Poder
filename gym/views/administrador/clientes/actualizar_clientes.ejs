@@ -21,7 +21,10 @@
     <title>Actualizar clientes</title>
   </head>
   <body class="bg-fondo">
-    <%- include('../plantillas/navbar.ejs') %>
+    <% if (userData.rol == "Administrador") { %> <%-
+      include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
+      "Entrenador") { %> <%-
+      include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %>
 
     <a
       href="/ver_clientes"

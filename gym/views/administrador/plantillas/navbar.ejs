@@ -74,13 +74,11 @@
             </svg>
           </button>
         </form>
-        <script type="module">
-          console.log(
-            "Datos del usuario en el cliente:",
-            `<%= JSON.stringify(userData) %>`
-          );
+        <script>
+          const userData = <%- JSON.stringify(userData || null) %>;
+          console.log("Datos del usuario en el cliente:", userData);
         </script>
-        <!-- Diseño para la foto de perfil del usuario -->
+
         <div class="relative ml-4">
           <button
             id="profileButton"
@@ -88,7 +86,7 @@
             onclick="toggleProfileDropdown()"
           >
             <img
-              src="<%= userData && userData.imagen_perfil ? userData.imagen_perfil : 'https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png' %>"
+              src="<%= userData?.imagen_perfil %>"
               alt="Perfil"
               class="h-10 w-10 rounded-full object-cover"
               onerror="this.src='https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png';"
@@ -106,9 +104,7 @@
             <% } else { %>
             <p class="p-2 text-gray-600">Sin información</p>
             <% } %>
-            <a
-              href="/logout"
-              class="block p-2 text-gray-700 hover:bg-gray-100 transition-colors"
+            <a href="/logout" class="block p-2 text-gray-700 hover:bg-gray-100"
               >Cerrar sesión</a
             >
           </div>

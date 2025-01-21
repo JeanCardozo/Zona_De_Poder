@@ -60,39 +60,43 @@
         >
       </div>
 
-      <div class="flex items-center space-x-4">
-        <div class="relative ml-4">
-          <button
-            id="profileButton"
-            class="flex items-center focus:outline-none"
-            onclick="toggleProfileDropdown()"
-          >
-            <img
-              src="/profile-image/client/<%= userData.id %>"
-              alt="Imagen de perfil del cliente"
-              class="h-10 w-10 rounded-full object-cover"
-              onerror="this.src='https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png';"
-            />
-          </button>
-          <div
-            id="profileDropdown"
-            class="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-md hidden text-sm"
-          >
-            <% if (userData) { %>
-            <div class="p-2 border-b">
-              <p class="font-semibold">Hola, <%= userData.nombre_usuario %></p>
-              <p class="text-gray-600"><%= userData.rol %></p>
-            </div>
-            <% } else { %>
-            <p class="p-2 text-gray-600">Sin información</p>
-            <% } %>
-            <a
-              href="/logout"
-              class="block p-2 text-gray-700 hover:bg-gray-100 transition-colors"
-              >Cerrar sesión</a
-            >
+      <script>
+        const userData = <%- JSON.stringify(userData || null) %>;
+        console.log("Datos del usuario en el cliente:", userData);
+      </script>
+      
+      <div class="relative ml-4">
+        <button
+          id="profileButton"
+          class="flex items-center focus:outline-none"
+          onclick="toggleProfileDropdown()"
+        >
+          <img
+            src="<%= userData?.imagen_perfil %>"
+            alt="Perfil"
+            class="h-10 w-10 rounded-full object-cover"
+            onerror="this.src='https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png';"
+          />
+        </button>
+        <div
+          id="profileDropdown"
+          class="absolute right-0 mt-2 w-40 bg-white rounded-sm shadow-md hidden text-sm"
+        >
+          <% if (userData) { %>
+          <div class="p-2 border-b">
+            <p class="font-semibold">
+              Hola, <%= userData.nombre_usuario %>
+            </p>
+            <p class="text-gray-600"><%= userData.rol %></p>
           </div>
+          <% } else { %>
+          <p class="p-2 text-gray-600">Sin información</p>
+          <% } %>
+          <a href="/logout" class="block p-2 text-gray-700 hover:bg-gray-100"
+            >Cerrar sesión</a
+          >
         </div>
+      </div>
         <button
           id="mobile-menu-button"
           class="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"

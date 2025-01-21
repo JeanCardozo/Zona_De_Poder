@@ -10,11 +10,14 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const pgSession = require("connect-pg-simple")(session);
 const pool = require("./database/zona_de_poder_db"); // Asegúrate de exportar tu pool de PostgreSQL
+// const { authenticateToken, loadUserData } = require("./middlewares/auth");
 
 dotenv.config();
 
-// Configuración de la sesión global
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use(
   session({
     store: new pgSession({
@@ -33,12 +36,9 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  if (req.session.user) {
-    // Renovar la sesión
-    req.session.touch();
-
-    // Asegurarse de que userData esté disponible para todas las vistas
-    res.locals.userData = req.session.user;
+  if (req.session.userData) {
+    req.session.touch(); // Renueva la sesión
+    res.locals.userData = req.session.userData; // Disponibilidad global
   } else {
     res.locals.userData = null;
   }
@@ -48,8 +48,8 @@ app.use((req, res, next) => {
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// app.use(authenticateToken);
+// app.use(loadUserData);
 
 // Importa y usa las rutas desde el Router
 app.use("/", require("./Router"));
@@ -63,6 +63,25 @@ cron.schedule("0 0 * * *", () => {
 
 app.use(morgan("dev"));
 app.use(cors({ origin: "*" }));
+
+app.use((req, res, next) => {
+  // Si los datos de usuario están en la sesión, los asignamos a res.locals
+  if (req.session.userData) {
+    res.locals.userData = {
+      id_usuario: req.session.userData.id_usuario,
+      nombre_usuario: req.session.userData.nombre_usuario,
+      rol: req.session.userData.rol,
+      tiene_imagen: req.session.userData.tiene_imagen,
+      imagen_perfil: req.session.userData.tiene_imagen
+        ? `/profile-image/${req.session.userData.id_usuario}`
+        : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png",
+    };
+  } else {
+    // Si no hay sesión, dejamos los datos como null
+    res.locals.userData = null;
+  }
+  next();
+});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

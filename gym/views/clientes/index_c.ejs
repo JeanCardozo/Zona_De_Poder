@@ -9,6 +9,11 @@
       rel="stylesheet"
     />
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
@@ -65,20 +70,37 @@
           <script>
             const ctx1 = document.getElementById("myChart1");
 
-            const fechasData =
-              "<%= typeof fechas !== 'undefined' ? fechas : '[]' %>";
-            const pesos =
-              "<%= typeof pesos !== 'undefined' ? JSON.stringify(pesos) : '[]' %>";
-            const fechas = fechasData.split(",");
+            const fechasData = <%- JSON.stringify(fechas) %>;
+            const pesosData = <%- JSON.stringify(pesos) %>;
+
+            // Función para determinar los colores de los segmentos
+            function getSegmentColors(pesos) {
+              let colors = [];
+              for (let i = 1; i < pesos.length; i++) {
+                if (pesos[i] > pesos[i - 1]) {
+                  colors.push("green"); // Subida
+                } else if (pesos[i] < pesos[i - 1]) {
+                  colors.push("red"); // Bajada
+                } else {
+                  colors.push("gray"); // Igual
+                }
+              }
+              return colors;
+            }
+
+            const segmentColors = getSegmentColors(pesosData);
 
             const data = {
-              labels: fechas,
+              labels: fechasData,
               datasets: [
                 {
                   label: "Peso (kg)",
-                  data: pesos,
-                  fill: false,
-                  borderColor: "#3B82F6",
+                  data: pesosData,
+                  segment: {
+                    borderColor: function(ctx) {
+                      return segmentColors[ctx.p0DataIndex];
+                    },
+                  },
                   backgroundColor: "#93C5FD",
                   tension: 0.1,
                   pointRadius: 4,
@@ -338,34 +360,42 @@
               </li>
             </ul>
           </div>
-          <div class="text-center sm:text-left">
+          <div class="text-center">
             <h4 class="text-lg sm:text-xl font-semibold mb-4">Síguenos</h4>
-            <ul
-              class="flex justify-center sm:justify-start space-x-4 sm:space-x-0 sm:space-y-4"
-            >
-              <li class="sm:w-full">
+            <ul class="flex justify-center items-center space-x-4">
+              <li>
                 <a
-                  href="#"
-                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
-                  ><i class="fab fa-facebook-f text-xl sm:text-2xl mr-2"></i>
-                  <span class="hidden sm:inline">Facebook</span></a
+                  href="https://www.facebook.com/zonadepodergym/"
+                  target="_blank"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
+                  <i
+                    class="fa-brands fa-facebook-f text-xl sm:text-2xl mr-2"
+                  ></i>
+                  <span class="hidden sm:inline">Facebook</span>
+                </a>
               </li>
-              <li class="sm:w-full">
+              <li>
                 <a
-                  href="#"
-                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
-                  ><i class="fab fa-instagram text-xl sm:text-2xl mr-2"></i>
-                  <span class="hidden sm:inline">Instagram</span></a
+                  href="https://www.instagram.com/zonadepodergym?igsh=MXByOWVxeGdvcGVscg=="
+                  target="_blank"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
+                  <i
+                    class="fa-brands fa-instagram text-xl sm:text-2xl mr-2"
+                  ></i>
+                  <span class="hidden sm:inline">Instagram</span>
+                </a>
               </li>
-              <li class="sm:w-full">
+              <li>
                 <a
-                  href="#"
-                  class="flex items-center justify-center sm:justify-start text-white hover:text-yellow-400 transition duration-300"
-                  ><i class="fab fa-twitter text-xl sm:text-2xl mr-2"></i>
-                  <span class="hidden sm:inline">Twitter</span></a
+                  href="https://twitter.com/tuperfil"
+                  target="_blank"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
+                  <i class="fa-brands fa-twitter text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Twitter</span>
+                </a>
               </li>
             </ul>
           </div>

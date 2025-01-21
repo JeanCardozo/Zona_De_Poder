@@ -11,6 +11,10 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="../../../src/output.css" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -38,7 +42,6 @@
           >
             <h2 class="text-xl font-bold mb-2"></h2>
             <p><strong>Día:</strong> <%= plan.dia %></p>
-            <p><strong>Músculo:</strong> <%= plan.musculo %></p>
             <p><strong>Ejercicio:</strong> <%= plan.ejercicio %></p>
             <p><strong>Series:</strong> <%= plan.series %></p>
             <p><strong>Repeticiones:</strong> <%= plan.repeticiones %></p>
@@ -96,31 +99,41 @@
               </li>
             </ul>
           </div>
-          <div>
-            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
-            <ul class="space-y-4">
+          <div class="text-center">
+            <h4 class="text-lg sm:text-xl font-semibold mb-4">Síguenos</h4>
+            <ul class="flex justify-center items-center space-x-4">
               <li>
                 <a
-                  href="#"
+                  href="https://www.facebook.com/zonadepodergym/"
+                  target="_blank"
                   class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
-                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
+                  <i
+                    class="fa-brands fa-facebook-f text-xl sm:text-2xl mr-2"
+                  ></i>
+                  <span class="hidden sm:inline">Facebook</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://www.instagram.com/zonadepodergym?igsh=MXByOWVxeGdvcGVscg=="
+                  target="_blank"
                   class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
-                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
+                  <i
+                    class="fa-brands fa-instagram text-xl sm:text-2xl mr-2"
+                  ></i>
+                  <span class="hidden sm:inline">Instagram</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://twitter.com/tuperfil"
+                  target="_blank"
                   class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
-                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
+                  <i class="fa-brands fa-twitter text-xl sm:text-2xl mr-2"></i>
+                  <span class="hidden sm:inline">Twitter</span>
                 </a>
               </li>
             </ul>
