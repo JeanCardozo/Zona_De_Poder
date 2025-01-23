@@ -520,7 +520,7 @@ router.get("/ver_mas_cliente/:id", authenticateToken, (req, res) => {
   const clientQuery = `
     SELECT c.id, c.nombre, c.apellido, c.edad, c.sexo, c.fecha_de_inscripcion, 
            c.correo_electronico, c.numero_telefono, c.id_mensualidad, c.estado,
-           m.id AS id_mensual, m.total_pagar, m.tiempo_plan, c.imagen_perfil, c.imagen_content_type
+           m.id AS id_mensual, m.total_pagar, m.tiempo_plan
     FROM clientes AS c
     LEFT JOIN mensualidades AS m ON c.id_mensualidad = m.id
     WHERE c.id = $1`;
