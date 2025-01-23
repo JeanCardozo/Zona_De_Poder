@@ -20,14 +20,14 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Mis planes</title>
   </head>
   <body class="bg-gray-100">
     <%- include('../../administrador/plantillas/navbar_clientes.ejs') %>
 
     <div class="flex bg-gray-100 min-h-screen py-8">
-      <% if (planesDeEntrenamiento) { %>
-
+      <% if (planesDeEntrenamiento && planesDeEntrenamiento.length > 0) { %>
       <div class="max-w-6xl mx-auto px-4">
         <div class="flex justify-between items-center mb-8">
           <h1 class="text-3xl font-bold text-gray-800">
@@ -48,10 +48,36 @@
           </div>
           <% }); %>
         </div>
-        <% } else { %>
-        <p>No hay planes de entrenamiento disponibles.</p>
-        <% } %>
       </div>
+      <% } else { %>
+      <!-- SweetAlert para la alerta -->
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          Swal.fire({
+            title: "Sin planes de entrenamiento",
+            text: "Actualmente no tienes planes de entrenamiento asignados. Por favor, consulta con tu entrenador o vuelve más tarde.",
+            icon: "info",
+            confirmButtonText: "Entendido",
+            customClass: {
+              confirmButton:
+                "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded",
+            },
+          });
+        });
+      </script>
+
+      <!-- Div donde normalmente irían los planes -->
+
+      <div class="max-w-6xl mx-auto px-4 text-center py-12">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+          Sin planes de entrenamiento
+        </h2>
+        <p class="text-gray-600">
+          Por favor, consulta con tu entrenador o vuelve más tarde.
+        </p>
+      </div>
+
+      <% } %>
     </div>
 
     <footer id="footer" class="bg-gray-800 text-white py-12">
@@ -62,8 +88,8 @@
               <a href="/logout">Zona de Poder<sup>&reg;</sup></a>
             </h3>
             <ul class="space-y-2">
-              <li>Teléfono: +57 123 456 7890</li>
-              <li>Dirección: Calle Principal #123, Ciudad</li>
+              <li>Teléfono: +57 320 9316797</li>
+              <li>Dirección: Calle 6 N°7-20 La Loma, Chaparral, Colombia</li>
             </ul>
           </div>
           <div>
@@ -71,69 +97,54 @@
             <ul class="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="/politicas"
                   class="hover:text-yellow-400 transition duration-300"
                   >Política de privacidad</a
                 >
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/terminos"
                   class="hover:text-yellow-400 transition duration-300"
                   >Términos y condiciones</a
                 >
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/registrar"
                   class="hover:text-yellow-400 transition duration-300"
                   >Nuestros servicios</a
                 >
               </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="right-0 font-semibold mb-4">Síguenos</h4>
+            <ul class="space-y-4">
+              <li>
+                <a
+                  href="https://www.facebook.com/zonadepodergym?mibextid=ZbWKwL "
+                  target="_blank"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-facebook-f text-2xl mr-2"></i> Facebook
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/zonadepodergym?utm_source=qr&igsh=MWVpMWtwcG9xN3hvcQ== "
+                  target="_blank"
+                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
+                >
+                  <i class="fab fa-instagram text-2xl mr-2"></i> Instagram
+                </a>
+              </li>
               <li>
                 <a
                   href="#"
-                  class="hover:text-yellow-400 transition duration-300"
-                  >Contacto</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div class="text-center">
-            <h4 class="text-lg sm:text-xl font-semibold mb-4">Síguenos</h4>
-            <ul class="flex justify-center items-center space-x-4">
-              <li>
-                <a
-                  href="https://www.facebook.com/zonadepodergym/"
-                  target="_blank"
                   class="flex items-center text-white hover:text-yellow-400 transition duration-300"
                 >
-                  <i
-                    class="fa-brands fa-facebook-f text-xl sm:text-2xl mr-2"
-                  ></i>
-                  <span class="hidden sm:inline">Facebook</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.instagram.com/zonadepodergym?igsh=MXByOWVxeGdvcGVscg=="
-                  target="_blank"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
-                >
-                  <i
-                    class="fa-brands fa-instagram text-xl sm:text-2xl mr-2"
-                  ></i>
-                  <span class="hidden sm:inline">Instagram</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://twitter.com/tuperfil"
-                  target="_blank"
-                  class="flex items-center text-white hover:text-yellow-400 transition duration-300"
-                >
-                  <i class="fa-brands fa-twitter text-xl sm:text-2xl mr-2"></i>
-                  <span class="hidden sm:inline">Twitter</span>
+                  <i class="fab fa-twitter text-2xl mr-2"></i> Twitter
                 </a>
               </li>
             </ul>

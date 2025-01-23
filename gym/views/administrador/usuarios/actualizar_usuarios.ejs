@@ -18,10 +18,14 @@
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <title>Actualizar usuarios</title>
+    <title>Actualizar Usuario</title>
   </head>
   <body class="bg-fondo">
-    <%- include('../plantillas/navbar.ejs') %>
+    <% if (userData.rol == "Administrador") { %> <%-
+      include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
+      "Entrenador") { %> <%-
+      include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %>
+
     <a
       href="/ver_usuarios"
       class="inline-flex items-center justify-center py-4 px-6 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
@@ -43,177 +47,123 @@
     </a>
 
     <% if (user) { %>
-    <div class="max-w-7xl mx-auto p-4 rounded-md">
-      <div class="bg-gray-200 border border-gray-300">
-        <div class="text-center p-4 bg-gray-400 font-semibold text-white">
-          Editar usuarios
-        </div>
-        <div class="p-4">
-          <form action="/update_usuarios" method="post" enctype="multipart/form-data">
-            <div class="mb-4">
-              <label for="id" class="block text-sm font-medium text-gray-700"
-                >IDENTIFICACION</label
-              >
-              <input
-                type="number"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="id"
-                name="id"
-                value="<%= user.id %>"
-                readonly
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                for="nombre"
-                class="block text-sm font-medium text-gray-700"
-                >NOMBRE</label
-              >
-              <input
-                type="text"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="nombre"
-                name="nombre"
-                value="<%= user.nombre %>"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                for="apellido"
-                class="block text-sm font-medium text-gray-700"
-                >APELLIDO</label
-              >
-              <input
-                type="text"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="apellido"
-                name="apellido"
-                value="<%= user.apellido %>"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                for="telefono"
-                class="block text-sm font-medium text-gray-700"
-                >TELEFONO</label
-              >
-              <input
-                type="number"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="telefono"
-                name="telefono"
-                value="<%= user.telefono %>"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label
-                for="correo_electronico"
-                class="block text-sm font-medium text-gray-700"
-                >CORREO</label
-              >
-              <input
-                type="email"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="correo_electronico"
-                name="correo_electronico"
-                value="<%= user.correo_electronico %>"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label for="roles" class="block text-sm font-medium text-gray-700">Rol</label>
-              <select
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="roles"
-                name="roles"
-                required
-              >
-                <% roles.forEach(function(role) { %>
+      <div class="max-w-7xl mx-auto p-4 rounded-md">
+        <div class="bg-gray-200 border border-gray-300">
+          <div class="text-center p-4 bg-gray-400 font-semibold text-white">
+            Editar Usuario
+          </div>
+          <div class="p-4">
+            <form id="updateForm" action="/update_usuarios" method="post" enctype="multipart/form-data">
+              <input type="hidden" id="id" name="id" value="<%= user.id %>" />
+      
+              <div class="mb-4">
+                <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" id="nombre" name="nombre" value="<%= user.nombre %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="apellido" class="block text-sm font-medium text-gray-700">Apellido</label>
+                <input type="text" id="apellido" name="apellido" value="<%= user.apellido %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                <input type="number" id="telefono" name="telefono" value="<%= user.telefono %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="correo_electronico" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                <input type="email" id="correo_electronico" name="correo_electronico" value="<%= user.correo_electronico %>" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="contra" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                <input type="password" id="contra" name="contra" placeholder="Dejar vacío para mantener la contraseña actual"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+              </div>
+      
+              <div class="mb-4">
+                <label for="roles" class="block text-sm font-medium text-gray-700">Rol</label>
+                <select name="roles" id="roles" required
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                  <% roles.forEach(function(role) { %>
                   <option value="<%= role.id %>" <%= role.id === user.id_rol ? 'selected' : '' %>>
                     <%= role.tipo_de_rol %>
                   </option>
-                <% }) %>
-              </select>
-            </div>
-            
-            
-
-            <div class="mb-4">
-              <label
-                for="contra"
-                class="block text-sm font-medium text-gray-700"
-                >Contraseña</label
-              >
-              <input
-                type="password"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                id="contra"
-                name="contra"
-                placeholder="Dejar vacío para mantener la contraseña actual"
-              />
-            </div>
-
-            <!-- Campo para la imagen de perfil -->
-          <div class="mb-4">
-            <label for="imagen_perfil" class="block text-sm font-medium text-gray-700">Imagen de Perfil</label>
-            <input
-              type="file"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              id="imagen_perfil"
-              name="imagen_perfil"
-              accept="image/*"
-            />
-            <!-- Mostrar la imagen actual si existe -->
-            <% if (user.imagen_perfil) { %>
-              <img src="/profile-image/<%= user.id %>" alt="Imagen de perfil" class="h-20 w-20 rounded-full mt-2" />
-            <% } else { %>
-              <p class="text-gray-500">No se ha subido una imagen de perfil.</p>
-            <% } %>
+                  <% }) %>
+                </select>
+              </div>
+      
+              <!-- Imagen de perfil -->
+              <div class="mb-4">
+                <label for="imagen_perfil" class="block text-sm font-medium text-gray-700">Imagen de Perfil</label>
+                <input type="file" id="imagen_perfil" name="imagen_perfil"
+                  class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" accept="image/*" />
+                <% if (user.imagen_perfil) { %>
+                <img src="<%= user.imagen_perfil %>" alt="Imagen" class="h-20 w-20 rounded-full mt-2" />
+                <% } else { %>
+                <p class="text-gray-500">No se ha subido una imagen de perfil.</p>
+                <% } %>
+              </div>
+      
+              <!-- Botón de guardar -->
+              <div class="flex justify-between">
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800">
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
-
-            <div class="flex justify-between">
-              <button
-                type="submit"
-                class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-              >
-                Guardar
-              </button>
-            </div>
-          </form>
         </div>
       </div>
-    </div>
-    <% } %>
+      <% } %>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <% if (typeof alert !== "undefined") { %>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Mostrar la alerta de SweetAlert2
-        Swal.fire({
-          title: "<%= alertTitle %>",
-          text: "<%= alertMessage %>",
-          icon: "<%= alertIcon %>",
-          showConfirmButton: true, // El usuario debe presionar OK
-        }).then(() => {
-          // Redirigir después de que el usuario presione OK
-          const ruta = "<%= typeof ruta !== 'undefined' ? ruta : '' %>";
-          if (ruta) {
-            window.location.href = ruta;
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script>
+      document.getElementById('updateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        fetch('/update_usuarios', {
+          method: 'POST',
+          body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.alert) {
+            Swal.fire({
+              title: data.alertTitle,
+              text: data.alertMessage,
+              icon: data.alertIcon,
+              showConfirmButton: data.showConfirmButton,
+              timer: data.timer
+            }).then(() => {
+              if (data.ruta) {
+                window.location.href = data.ruta;
+              }
+            });
+          } else if (data.error) {
+            Swal.fire({
+              title: 'Error',
+              text: data.error,
+              icon: 'error',
+              confirmButtonText: 'Ok'
+            });
           }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            title: 'Error',
+            text: 'Hubo un problema al procesar tu solicitud',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          });
         });
       });
-    </script>
-    <% } %>
-
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
+      </script>
   </body>
 </html>

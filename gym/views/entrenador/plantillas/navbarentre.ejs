@@ -75,10 +75,8 @@
           </button>
         </form>
         <script>
-          console.log(
-            "Datos del usuario en el cliente:",
-            `<%= JSON.stringify(userData) %>`
-          );
+          const userData = <%- JSON.stringify(userData || null) %>;
+          console.log("Datos del usuario en el cliente:", userData);
         </script>
         <!-- Diseño para la foto de perfil del usuario -->
         <div class="relative ml-4">

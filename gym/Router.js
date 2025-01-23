@@ -9,7 +9,7 @@ const path = require("path");
 const crud = require("./controllers/crud");
 const cron = require("node-cron");
 const PDFDocument = require("pdfkit");
-const { log } = require("console");
+const { log, error } = require("console");
 const { descargarPDF } = require("./controllers/crud");
 const { MercadoPagoConfig, Payment, Preference } = require("mercadopago");
 const fs = require("fs");
@@ -52,9 +52,8 @@ async function authenticateToken(req, res, next) {
     req.user = decoded;
     res.locals.userData = decoded;
 
-    if (req.session.userData) {
-      res.locals.userData = { ...res.locals.userData, ...req.session.userData };
-    } else {
+    // Si no hay datos en la sesión, cargarlos desde la base de datos
+    if (!req.session.userData) {
       const query = `
         SELECT u.id AS id_usuario, u.nombre AS nombre_usuario, 
                r.tipo_de_rol AS rol,
@@ -65,23 +64,7 @@ async function authenticateToken(req, res, next) {
       `;
       const result = await conexion.query(query, [decoded.id]);
 
-      if (result.rows.length > 0) {
-        const userData = result.rows[0];
-
-        // Verificar si el usuario es cliente (admite diferentes formatos)
-        if (["Cliente", "Clientes"].includes(userData.rol)) {
-          userData.imagen_perfil = userData.tiene_imagen
-            ? `/profile-image/client/${userData.id_usuario}`
-            : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
-        } else {
-          userData.imagen_perfil = userData.tiene_imagen
-            ? `/profile-image/${userData.id_usuario}`
-            : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
-        }
-
-        req.session.userData = userData;
-        res.locals.userData = { ...res.locals.userData, ...userData };
-      } else {
+      if (result.rows.length === 0) {
         return renderLoginPage(res, {
           status: 401,
           alertTitle: "Acceso Denegado",
@@ -89,8 +72,18 @@ async function authenticateToken(req, res, next) {
           alertIcon: "error",
         });
       }
+
+      const userData = result.rows[0];
+      userData.imagen_perfil = userData.tiene_imagen
+        ? `/profile-image/${userData.id_usuario}`
+        : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png";
+
+      req.session.userData = userData;
     }
 
+    res.locals.userData = { ...res.locals.userData, ...req.session.userData };
+
+    // Renovar el token si está por expirar
     if (isTokenAboutToExpire(decoded)) {
       const newToken = generateToken(decoded);
       setTokenCookie(res, newToken);
@@ -130,9 +123,8 @@ function isTokenAboutToExpire(decoded) {
 
 function generateToken(userData) {
   const userPayload = {
-    id: userData.id, // Asegúrate de incluir el ID del usuario
+    id: userData.id, // Incluir el ID del usuario
     role: userData.id_rol,
-    // Otros campos si es necesario
   };
   return jwt.sign(userPayload, SECRET_KEY, { expiresIn: "2h" });
 }
@@ -176,54 +168,24 @@ function verifyClient(req, res, next) {
 router.get("/profile-image/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
-    console.log(`Solicitud de imagen para el usuario ID: ${userId}`);
-
     const query =
       "SELECT imagen_perfil, imagen_content_type FROM usuarios WHERE id = $1";
     const result = await conexion.query(query, [userId]);
 
     if (result.rows.length > 0 && result.rows[0].imagen_perfil) {
       const { imagen_perfil, imagen_content_type } = result.rows[0];
-      console.log(
-        `Imagen encontrada para el usuario ID ${userId}. Tipo de contenido: ${imagen_content_type}`
-      );
       res.contentType(imagen_content_type);
       res.send(imagen_perfil);
     } else {
-      console.log(
-        `No se encontró imagen para el usuario ID ${userId}. Redirigiendo a imagen por defecto.`
-      );
       res.redirect(
         "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png"
       );
     }
   } catch (error) {
     console.error("Error al obtener la imagen de perfil:", error);
-    res.status(500).sendFile(__dirname + "/500.html");
+    res.status(500).send("Error al obtener la imagen de perfil");
   }
 });
-
-router.get("/profile-image/client/:clientId", async (req, res) => {
-  try {
-    const clientId = req.params.clientId;
-    const query =
-      "SELECT imagen_perfil, imagen_content_type FROM clientes WHERE id = $1";
-    const result = await conexion.query(query, [clientId]);
-
-    if (result.rows.length > 0 && result.rows[0].imagen_perfil) {
-      const { imagen_perfil, imagen_content_type } = result.rows[0];
-      res.contentType(imagen_content_type);
-      res.send(imagen_perfil);
-    } else {
-      res.redirect(
-        "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png"
-      );
-    }
-  } catch (error) {
-    res.status(500).send("Error al obtener la imagen de perfil del cliente");
-  }
-});
-
 router.get("/", async (req, res) => {
   const message = req.query.message;
   let alertMessage = null;
@@ -536,7 +498,7 @@ router.get("/ver_clientes", authenticateToken, (req, res) => {
   const query = `
     SELECT c.id,c.nombre,c.apellido,c.edad,c.sexo,c.fecha_de_inscripcion,c.correo_electronico,c.numero_telefono,
     c.id_mensualidad,c.estado,
-    m.id AS id_mensual,m.total_pagar,m.tiempo_plan, c.imagen_perfil, c.imagen_content_type
+    m.id AS id_mensual,m.total_pagar,m.tiempo_plan
     FROM clientes AS c 
     LEFT JOIN mensualidades AS m ON c.id_mensualidad = m.id
      ORDER BY c.id`;
@@ -862,10 +824,23 @@ router.get("/actualizar_clientes/:id", authenticateToken, async (req, res) => {
     const id = parseInt(req.params.id, 10);
 
     const queryCliente = `
-      SELECT id AS id_cliente, nombre, apellido, edad, sexo, fecha_de_inscripcion, 
-             correo_electronico, numero_telefono, id_mensualidad, estado, imagen_perfil, imagen_content_type 
-      FROM clientes 
-      WHERE id = $1
+      SELECT 
+        c.id AS id_cliente, 
+        c.nombre, 
+        c.apellido, 
+        c.edad, 
+        c.sexo, 
+        c.fecha_de_inscripcion, 
+        c.correo_electronico,
+        c.numero_telefono,
+        c.id_mensualidad, 
+        c.estado,
+        c.contraseña,
+        u.imagen_perfil,
+        u.imagen_content_type
+      FROM clientes c
+      LEFT JOIN usuarios u ON LOWER(c.correo_electronico) = LOWER(u.correo_electronico)
+      WHERE c.id = $1
     `;
 
     const queryMensualidades = `
@@ -873,14 +848,16 @@ router.get("/actualizar_clientes/:id", authenticateToken, async (req, res) => {
       FROM mensualidades
     `;
 
-    const clienteResult = await conexion.query(queryCliente, [id]);
+    const [clienteResult, mensualidadesResult] = await Promise.all([
+      conexion.query(queryCliente, [id]),
+      conexion.query(queryMensualidades),
+    ]);
+
     if (clienteResult.rowCount === 0) {
       return res.status(404).json({ error: "Cliente no encontrado" });
     }
 
     const cliente = clienteResult.rows[0];
-
-    const mensualidadesResult = await conexion.query(queryMensualidades);
     const mensualidades = mensualidadesResult.rows.map((row) => ({
       id_mensu: row.id_mensu,
       tiempo_plan: row.tiempo_plan,
@@ -889,7 +866,7 @@ router.get("/actualizar_clientes/:id", authenticateToken, async (req, res) => {
 
     if (cliente.imagen_perfil) {
       cliente.imagen_perfil = `data:${
-        cliente.imagen_content_type
+        cliente.imagen_content_type || "image/jpeg"
       };base64,${cliente.imagen_perfil.toString("base64")}`;
     }
 
@@ -1029,6 +1006,7 @@ router.get("/create_talla", authenticateToken, (req, res) => {
 //ACTUALIZAR TALLAS
 router.get("/actualizar_tallas/:id", authenticateToken, (req, res) => {
   const id = parseInt(req.params.id, 10);
+  const mensaje = req.query.mensaje;
 
   // Ejecutar ambas consultas en paralelo
   Promise.all([
@@ -1060,6 +1038,7 @@ router.get("/actualizar_tallas/:id", authenticateToken, (req, res) => {
         res.render("administrador/tallas/actualizar_tallas", {
           user: tallas,
           cliente: cliente,
+          mensaje: mensaje,
         });
       } else {
         res.status(404).json({ error: "Data not found" });
@@ -1069,11 +1048,6 @@ router.get("/actualizar_tallas/:id", authenticateToken, (req, res) => {
       res.status(500).sendFile(__dirname + "/500.html");
     });
 });
-
-// router.get("/descargar_pdf/:id", (req, res) => {
-//   const id = parseInt(req.params.id, 10);
-//   crud.descargarPDF(req, res, id); // Descarga el PDF
-// });
 
 // ver comvenios
 router.get("/ver_convenio", authenticateToken, verifyAdmin, (req, res) => {
@@ -1508,16 +1482,21 @@ router.get("/actualizar_f/:id", authenticateToken, verifyAdmin, (req, res) => {
 // Ruta para "Ver Plan Entrenamiento"
 router.get("/ver_plan_ent", authenticateToken, (req, res) => {
   conexion.query(
-    "SELECT pe.id AS id_plan_entrenamiento, pe.id_cliente FROM plan_entrenamiento pe ORDER BY pe.id ASC",
+    "SELECT id, dia, ejercicio, series, repeticiones, id_cliente FROM plan_entrenamiento ORDER BY id ASC",
     (error, results) => {
       if (error) {
+        console.log("Error al obtener los planes de entrenamiento: ", error);
         return res.status(500).sendFile(__dirname + "/500.html");
       }
 
       if (results.rows.length === 0) {
-        return res.status(500).sendFile(__dirname + "/500.html");
+        // Renderiza la página con un mensaje indicando que no hay planes de entrenamiento
+        return res.render("administrador/plan_de_entrenamiento/ver_plan_ent", {
+          planEntrenamiento: [],
+          nombreCliente: null,
+          mensaje: "No hay planes de entrenamiento creados.",
+        });
       }
-
       const clienteId = results.rows[0].id_cliente;
 
       conexion.query(
@@ -1525,6 +1504,7 @@ router.get("/ver_plan_ent", authenticateToken, (req, res) => {
         [clienteId],
         (error, clienteNameResults) => {
           if (error) {
+            console.log("Error al obtener el nombre del cliente: ", error);
             return res.status(500).sendFile(__dirname + "/500.html");
           }
 
@@ -1535,6 +1515,8 @@ router.get("/ver_plan_ent", authenticateToken, (req, res) => {
           res.render("administrador/plan_de_entrenamiento/ver_plan_ent", {
             planEntrenamiento: results.rows,
             nombreCliente: clienteNombre,
+            mensaje: null, // No hay mensaje cuando hay resultados
+            alert: null,
           });
         }
       );
@@ -1850,10 +1832,6 @@ router.get("/cancelar", (req, res) => {
     res.redirect("/?message=cancel_success");
   });
 });
-
-//////////////////////////////////////////pdf
-
-///////////////////////////////////////////////
 
 router.get("/create_plan_ent", authenticateToken, (req, res) => {
   crud.mostrarFormularioVacio(req, res);
@@ -2309,10 +2287,10 @@ router.get("/mi_plan", authenticateToken, verifyClient, (req, res) => {
   let identificacion = res.locals.userData.id;
 
   const planQuery = `
-    SELECT pe.dia,pe.id_cliente, pe.ejercicio, pe.series, pe.repeticiones, c.nombre
-    FROM plan_entrenamiento AS pe
-    JOIN clientes AS c ON pe.id_cliente = c.id
-    WHERE pe.id_cliente = $1 `;
+      SELECT pe.dia, pe.id_cliente, pe.ejercicio, pe.series, pe.repeticiones, c.nombre
+      FROM plan_entrenamiento AS pe
+      JOIN clientes AS c ON pe.id_cliente = c.id
+      WHERE pe.id_cliente = $1 `;
 
   conexion.query(planQuery, [identificacion], (planError, planResults) => {
     if (planError) {
@@ -2321,19 +2299,18 @@ router.get("/mi_plan", authenticateToken, verifyClient, (req, res) => {
     }
 
     if (planResults.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "Plan de entrenamiento no encontrado" });
+      return res.render("clientes/informacion_personal/mi_plan_ent", {
+        nombreCliente: null,
+        planesDeEntrenamiento: [],
+      });
     }
 
-    // Agrupar los resultados por cliente
     const planesDeEntrenamiento = planResults.rows;
     const nombreCliente = planesDeEntrenamiento[0].nombre;
-    console.log("melos", planesDeEntrenamiento);
-    // Responder con los datos del plan agrupados
+
     res.render("clientes/informacion_personal/mi_plan_ent", {
       nombreCliente,
-      planesDeEntrenamiento, // Fíjate que estamos pasando 'planesDeEntrenamiento'
+      planesDeEntrenamiento,
     });
   });
 });
@@ -2344,5 +2321,4 @@ router.use((req, res) => {
     message: "Lo sentimos, la página que estás buscando no existe.",
   });
 });
-
 module.exports = router;

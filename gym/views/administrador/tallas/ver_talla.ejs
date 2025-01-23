@@ -20,14 +20,10 @@
     <title>Ver tallas</title>
   </head>
   <body class="bg-fondo">
-    <% if (userData.rol == "Administrador") { %> <%-
-    include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
-    "Entrenador") { %> <%-
-    include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %>
+    <%- include('../plantillas/navbar.ejs') %>
 
     <div class="container mx-auto p-5">
       <a
-        href="<%= userData.rol == 'Administrador' ? '/index_admin' : '/index_entrenador' %>"
         class="btn mt-4 inline-flex items-center border border-red-400 bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-700"
       >
         Volver

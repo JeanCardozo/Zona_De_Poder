@@ -88,6 +88,12 @@
         <div class="p-4">
           <form action="/update_tallas" method="post">
             <input type="hidden" id="id" name="id" value="<%= user.id %>" />
+            <input
+              type="hidden"
+              id="userData"
+              name="userData"
+              value="<%= userData %>"
+            />
 
             <div class="mb-4">
               <label for="id" class="block text-sm font-medium text-gray-700"
@@ -291,7 +297,6 @@
     </div>
 
     <% } %> <% if (typeof mensaje !== 'undefined') { %>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       Swal.fire({
@@ -305,10 +310,10 @@
         if (result.isConfirmed) {
           // Redirigir a la creación de plan con el id_cliente
           window.location.href =
-            "/create_plan_ent?id_cliente=<%= id_cliente %>";
+            "/create_plan_ent?id_cliente=<%= cliente.id %>";
         } else {
           // Redirigir a la página de ver tallas
-          window.location.href = "/ver_talla";
+          window.location.href = "/ver_talla?id_cliente=<%= cliente.id %>";
         }
       });
     </script>

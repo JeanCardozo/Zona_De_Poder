@@ -50,7 +50,7 @@
       <div class="max-w-7xl mx-auto p-4 rounded-md">
         <div class="bg-gray-200 border border-gray-300">
           <div class="text-center p-4 bg-gray-400 font-semibold text-white">
-            Editar Registro
+            Editar Clientes
           </div>
           <div class="p-4">
             <form id="updateForm" action="/update_cliente" method="post" enctype="multipart/form-data">
@@ -89,7 +89,18 @@
                 <input type="email" id="correo_electronico" name="correo_electronico" value="<%= cliente.correo_electronico %>" required
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
               </div>
-      
+              <div class="form-group mb-4">
+                <label for="contraseña" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                <input 
+                type="password"
+                id="contra" 
+                name="contra"
+                placeholder="Dejar vacío para mantener la constraseña actual"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
+                  dark:placeholder-gray-400
+                  dark:border-gray-600" />
+              </div>
+              
               <div class="mb-4">
                 <label for="numero_telefono" class="block text-sm font-medium text-gray-700">TELÉFONO</label>
                 <input type="number" id="numero_telefono" name="numero_telefono" value="<%= cliente.numero_telefono %>" required

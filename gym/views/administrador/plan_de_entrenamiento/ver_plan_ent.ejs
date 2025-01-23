@@ -22,10 +22,11 @@
     <title>Ver plan de entrenamiento</title>
   </head>
   <body class="bg-fondo"> 
-    <% if (userData.rol == "Administrador") { %> <%-
-      include('../plantillas/navbar.ejs') %> <% } else if (userData.rol ==
-      "Entrenador") { %> <%-
-      include('../../entrenador/plantillas/navbarentre.ejs') %> <% } %>
+    <% if (userData.rol == "Administrador") { %>
+      <%- include('../plantillas/navbar.ejs') %>
+    <% } else if (userData.rol == "Entrenador") { %>
+      <%- include('../../entrenador/plantillas/navbarentre.ejs') %>
+    <% } %>
 
     <div class="px-10 mx-auto mt-4 p-5">
       <div class="flex justify-start gap-2 mb-4">
@@ -43,8 +44,8 @@
           <table class="min-w-full table-auto text-xs
            sm:text-sm lg:text-base text-left text-gray-500
       
-            dark:text-gray-400">
-        <thead class="text-xm bg-gray-500 text-center ">
+            dark:text-gray-400 rounded-lg">
+        <thead class="text-xm bg-gray-500 text-center rounded-lg">
           <tr class="text-white">
             <th scope="col" class="px-4 py-6">Plan</th>
             <th scope="col" class="px-4 py-6">Identificacion</th>
@@ -53,12 +54,19 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
+          
         </tbody>
       </table>
+        
       <div id="pagination" class="w-full flex justify-center"></div>
 
     </div>
-
+    <div
+      id="mensajeSinPlanes"
+      class="hidden bg-gray-500 border border-gray-500 rounded-lg text-center text-white text-lg font-semibold p-6 mt-4 shadow-sm"
+    >
+      No hay planes de entrenamiento disponibles.
+    </div>
     <script defer>
       const divPagination = document.getElementById('pagination');
       const searchInput = document.getElementById('searchInput');
@@ -72,25 +80,38 @@
           const response = await fetch('/verPlanEnt', {
             method: 'POST',
           });
-    
+
           if (!response.ok) {
             throw new Error(
               "La solicitud no fue exitosa: " + response.statusText
             );
           }
-    
+
           return await response.json();
         } catch (error) {
           console.error('Error al obtener datos:', error);
+          document.getElementById("mensajeSinPlanes").textContent =
+            "No hay planes de entrenamiento creados";
+          document.getElementById("mensajeSinPlanes").classList.remove("hidden");
+          document.querySelector("table").classList.add("hidden");
           return [];
         }
       }
+
     
       async function inicializar() {
-        datos = await getData();
-        filteredData = datos;
-        actualizarTablaYPaginacion();
-      }
+  datos = await getData();
+  if (datos.length === 0) {
+    document.getElementById("mensajeSinPlanes").classList.remove("hidden");
+    document.querySelector("table").classList.add("hidden");
+    return; // Salir de la función, ya que no hay datos para mostrar
+  }
+  document.getElementById("mensajeSinPlanes").classList.add("hidden");
+  document.querySelector("table").classList.remove("hidden");
+  filteredData = datos;
+  actualizarTablaYPaginacion();
+}
+
     
       function actualizarTablaYPaginacion() {
         const totalPages = Math.ceil(filteredData.length / itemsPorPagina);
@@ -222,6 +243,8 @@
 
               // Generar contenido de la tabla
               let planContent = `
+              
+
                 <table class="min-w-full bg-white mb-4">
                   <thead class="bg-gray-800 text-white text-xl">
                     <tr>
@@ -232,6 +255,7 @@
                     </tr>
                   </thead>
                   <tbody class="text-gray-700">
+                    
               `;
 
               for (const [dia, ejercicios] of Object.entries(ejerciciosPorDia)) {
@@ -270,10 +294,17 @@
         }
       });
       </script>
-      
-      
-      
-
+      <% if (mensaje) { %>
+        <script>
+          Swal.fire({
+            title: "Información",
+            text: "<%= mensaje %>",
+            icon: "info",
+            timer: 1200,
+            showConfirmButton: false,
+          });
+        </script>
+      <% } %>
     <script>
       // Obtener elementos del DOM
       const inputSearch = document.getElementById("inputSearch");

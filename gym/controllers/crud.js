@@ -141,8 +141,8 @@ exports.crearclienteS = async (req, res) => {
     await conexion.query("BEGIN");
 
     const queryClientes = `
-      INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado, contraseña, imagen_perfil, imagen_content_type)
-       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota', $6, $7, $8, $9, 'Activo', $10, $11, $12) RETURNING id
+      INSERT INTO clientes (id, nombre, apellido, edad, sexo, fecha_de_inscripcion, correo_electronico, numero_telefono, id_mensualidad, id_usuario, estado, contraseña)
+       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota', $6, $7, $8, $9, 'Activo', $10) RETURNING id
     `;
     const valuesClientes = [
       id,
@@ -155,8 +155,6 @@ exports.crearclienteS = async (req, res) => {
       mensualidad,
       usuario,
       hashedPassword,
-      imagenBuffer,
-      imagenContentType,
     ];
 
     const resultClientes = await conexion.query(queryClientes, valuesClientes);
@@ -182,9 +180,9 @@ exports.crearclienteS = async (req, res) => {
     ]);
 
     const queryUsuarios = `
-      INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado)
-       VALUES ($1, $2, $3, $4, $5, $6, 3, 'Activo')
-    `;
+  INSERT INTO usuarios (id, nombre, apellido, telefono, correo_electronico, contraseña, id_rol, estado, imagen_perfil, imagen_content_type)
+  VALUES ($1, $2, $3, $4, $5, $6, 3, 'Activo', $7, $8)
+`;
     await conexion.query(queryUsuarios, [
       id,
       nombre,
@@ -192,6 +190,8 @@ exports.crearclienteS = async (req, res) => {
       numero,
       correo,
       hashedPassword,
+      imagenBuffer, // Nuevo dato
+      imagenContentType, // Nuevo dato
     ]);
 
     // Confirmar la transacción
@@ -212,26 +212,26 @@ exports.crearclienteS = async (req, res) => {
 exports.update_cliente = async (req, res) => {
   try {
     await uploadAsync(req, res);
-    console.log("Archivo subido correctamente o no se subió ningún archivo.");
 
-    let {
-      id,
-      nombre,
-      apellido,
-      edad,
-      sexo,
-      correo_electronico,
-      numero_telefono,
-      id_mensualidad,
-    } = req.body;
+    console.log("Archivo subido correctamente o no se subió ningún archivo.");
+    console.log("req.body:  ", req.body);
+
+    const id = parseInt(req.body.id, 10);
+    if (isNaN(id)) {
+      throw new Error("ID no válido.");
+    }
+    const nombre = req.body.nombre;
+    const apellido = req.body.apellido;
+    const edad = parseInt(req.body.edad, 10);
+    const sexo = req.body.sexo;
+    const correo_electronico = req.body.correo_electronico;
+    const numero_telefono = parseInt(req.body.numero_telefono, 10);
+    const id_mensualidad = parseInt(req.body.id_mensualidad, 10);
+    const estado = req.body.estado;
+    const contraseña = req.body.contra;
 
     console.log("Datos recibidos:", req.body);
-
     // Convertir y validar tipos de datos
-    id = parseInt(id, 10);
-    edad = parseInt(edad, 10);
-    id_mensualidad = id_mensualidad ? parseInt(id_mensualidad, 10) : null;
-    numero_telefono = parseInt(numero_telefono, 10);
 
     console.log("Datos convertidos:", {
       id,
@@ -254,26 +254,58 @@ exports.update_cliente = async (req, res) => {
     await conexion.query("BEGIN");
     console.log("Transacción iniciada.");
 
-    const queryUpdateCliente = `
-      UPDATE clientes 
-      SET nombre = $1, apellido = $2, edad = $3, sexo = $4, 
-          correo_electronico = $5, numero_telefono = $6, id_mensualidad = $7
-      WHERE id = $8
-    `;
+    let query;
+    let values;
 
-    const valuesUpdateCliente = [
-      nombre,
-      apellido,
-      edad,
-      sexo,
-      correo_electronico,
-      numero_telefono,
-      id_mensualidad,
-      id,
-    ];
+    if (contraseña) {
+      const hashedPassword = await bcrypt.hash(contraseña, 10);
+      query = `
+        UPDATE clientes 
+        SET nombre = $1, apellido = $2, edad = $3, sexo = $4, 
+            correo_electronico = $5, numero_telefono = $6, id_mensualidad = $7, contraseña = $8
+        WHERE id = $9
+      `;
+      values = [
+        nombre,
+        apellido,
+        edad,
+        sexo,
+        correo_electronico,
+        numero_telefono,
+        id_mensualidad,
+        hashedPassword,
+        id,
+      ];
+
+      // Actualizar la contraseña en la tabla de usuarios
+      const queryUpdateUsuario = `
+        UPDATE usuarios 
+        SET contraseña = $1
+        WHERE id = $2
+      `;
+      const valuesUpdateUsuario = [hashedPassword, id];
+      await conexion.query(queryUpdateUsuario, valuesUpdateUsuario);
+    } else {
+      query = `
+        UPDATE clientes 
+        SET nombre = $1, apellido = $2, edad = $3, sexo = $4, 
+            correo_electronico = $5, numero_telefono = $6, id_mensualidad = $7
+        WHERE id = $8
+      `;
+      values = [
+        nombre,
+        apellido,
+        edad,
+        sexo,
+        correo_electronico,
+        numero_telefono,
+        id_mensualidad,
+        id,
+      ];
+    }
 
     // Actualizar los datos principales del cliente
-    await conexion.query(queryUpdateCliente, valuesUpdateCliente);
+    await conexion.query(query, values);
     console.log("Datos del cliente actualizados.");
 
     // Actualizar la imagen solo si se ha subido una nueva
@@ -281,15 +313,13 @@ exports.update_cliente = async (req, res) => {
       const imagenBuffer = req.file.buffer;
       const imagenContentType = req.file.mimetype;
 
-      const queryUpdateImagen = `
-        UPDATE clientes 
+      const queryUpdateImagenUsuario = `
+        UPDATE usuarios 
         SET imagen_perfil = $1, imagen_content_type = $2
         WHERE id = $3
       `;
-
-      const valuesUpdateImagen = [imagenBuffer, imagenContentType, id];
-      await conexion.query(queryUpdateImagen, valuesUpdateImagen);
-      console.log("Imagen del cliente actualizada.");
+      const valuesUpdateImagenUsuario = [imagenBuffer, imagenContentType, id];
+      await conexion.query(queryUpdateImagenUsuario, valuesUpdateImagenUsuario);
     }
 
     // Confirmar la transacción
@@ -589,11 +619,9 @@ exports.update_usuarios = async (req, res) => {
     const correo = req.body.correo_electronico;
     const contraseña = req.body.contra;
     const rol = req.body.roles;
-
     const queryRoles = "SELECT id, tipo_de_rol FROM roles";
     const rolesResult = await conexion.query(queryRoles);
     const roles = rolesResult.rows;
-
     let query;
     let values;
 
@@ -652,6 +680,10 @@ exports.update_usuarios = async (req, res) => {
   } catch (error) {
     console.error("Error al actualizar el usuario:", error);
 
+    const queryRoles = "SELECT id, tipo_de_rol FROM roles";
+    const rolesResult = await conexion.query(queryRoles);
+    const roles = rolesResult.rows;
+
     return res.render("administrador/usuarios/actualizar_usuarios", {
       user: {
         id: req.body.id,
@@ -660,7 +692,7 @@ exports.update_usuarios = async (req, res) => {
         telefono: req.body.telefono,
         correo: req.body.correo_electronico,
       },
-      roles: [],
+      roles,
       alert: true,
       alertTitle: "Error",
       alertMessage: "Error en la operación.",
@@ -717,7 +749,7 @@ exports.update_tallas = (req, res) => {
   const id = parseInt(req.body.id, 10);
   const peso = parseFloat(req.body.peso);
   const altura = parseFloat(req.body.altura);
-  const id_cliente = parseFloat(req.body.id_cliente); // Asumiendo que esta es la columna correcta del formulario
+  const id_cliente = parseFloat(req.body.id_cliente);
   const medida_pecho = parseFloat(req.body.medida_pecho);
   const medida_brazo = parseFloat(req.body.medida_brazo);
   const medida_cintura = parseFloat(req.body.medida_cintura);
@@ -732,8 +764,12 @@ exports.update_tallas = (req, res) => {
     return res.status(400).json({ error: "Invalid ID" });
   }
 
-  const query =
-    "UPDATE tallas SET medida_pecho = $1, medida_brazo = $2, medida_cintura = $3, medida_abdomen = $4, medida_cadera = $5, medida_pierna = $6, medida_pantorrilla = $7, peso = $9, altura = $10 WHERE id = $8";
+  const query = `
+    UPDATE tallas 
+    SET medida_pecho = $1, medida_brazo = $2, medida_cintura = $3, medida_abdomen = $4, 
+        medida_cadera = $5, medida_pierna = $6, medida_pantorrilla = $7, peso = $9, altura = $10 
+    WHERE id = $8`;
+
   const values = [
     medida_pecho,
     medida_brazo,
@@ -752,7 +788,6 @@ exports.update_tallas = (req, res) => {
       console.log(error);
       return res.status(500).sendFile(__dirname + ".././views/500.html");
     } else {
-      // Buscar los datos del usuario en la base de datos
       const queryUser = "SELECT * FROM tallas WHERE id = $1";
       conexion.query(queryUser, [id], (errorUser, resultsUser) => {
         if (errorUser) {
@@ -760,8 +795,7 @@ exports.update_tallas = (req, res) => {
           return res.status(500).sendFile(__dirname + ".././views/500.html");
         }
 
-        // Cambia la consulta para que coincida con el nombre de la columna correcta en la tabla 'clientes'
-        const queryCliente = "SELECT * FROM clientes WHERE id = $1"; // Asegúrate de que la columna sea 'id' o el nombre correcto
+        const queryCliente = "SELECT * FROM clientes WHERE id = $1";
         conexion.query(
           queryCliente,
           [id_cliente],
@@ -773,13 +807,12 @@ exports.update_tallas = (req, res) => {
                 .sendFile(__dirname + ".././views/500.html");
             }
 
-            // Renderizar la vista con los datos del cliente y del usuario (tallas)
-            res.render("administrador/tallas/actualizar_tallas", {
-              mensaje: "Tallas actualizadas con éxito.",
-              id_cliente: id_cliente,
-              user: resultsUser.rows[0], // Datos de las tallas
-              cliente: resultsCliente.rows[0], // Datos del cliente (para WhatsApp)
-            });
+            // Asegúrate de pasar userData al renderizado de la vista
+            res.redirect(
+              `/actualizar_tallas/${id_cliente}?mensaje=${encodeURIComponent(
+                "Tallas actualizadas con éxito."
+              )}`
+            );
           }
         );
       });
@@ -1000,7 +1033,8 @@ exports.login = async (req, res) => {
     console.log("ver el resultado en el login userData", userData);
 
     // Verificación de la contraseña
-    if (!(await bcrypt.compare(pass, userData.contraseña))) {
+    const isPasswordValid = await bcrypt.compare(pass, userData.contraseña);
+    if (!isPasswordValid) {
       return renderLoginPage(res, {
         alertTitle: "Error",
         alertMessage: "Identificación o contraseña incorrecta",
@@ -1020,7 +1054,7 @@ exports.login = async (req, res) => {
     req.session.userData = {
       id: userData.id,
       nombre_usuario: userData.nombre,
-      role: userData.tipo_de_rol,
+      role: userData.id_rol,
       imagen_perfil: userData.imagen_perfil
         ? `/profile-image/${userData.id}`
         : "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png",
@@ -1067,7 +1101,7 @@ exports.login = async (req, res) => {
 function renderLoginPage(res, alertOptions) {
   return res.render("login_index", {
     alert: true,
-    ...alertOptions,
+    ...alertOptipo_de_roltions,
     showConfirmButton: true,
     timer: 1500,
     ruta: "login_index",
@@ -1202,6 +1236,7 @@ exports.verPlanEnt = (req, res) => {
 
   conexion.query(planEntrenamientoQuery, (error, planResults) => {
     if (error) {
+      console.log("ver monda error ", error);
       return res.status(500).sendFile(__dirname + "../views/500.html");
     }
 
@@ -1223,6 +1258,7 @@ exports.verPlanEnt = (req, res) => {
       [clienteIds],
       (clienteError, clienteResults) => {
         if (clienteError) {
+          console.log("ver monda error 2 ", error);
           return res.status(500).sendFile(__dirname + ".././views/500.html");
         }
 
