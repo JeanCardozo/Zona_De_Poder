@@ -93,15 +93,15 @@
       Volver al inicio
     </a>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <% if (typeof alert !== "undefined") { %>
-
+    <% if (typeof alertTitle !== "undefined" && typeof alertMessage !==
+    "undefined") { %>
     <script>
       Swal.fire({
         title: "<%= alertTitle %>",
         text: "<%= alertMessage %>",
         icon: "<%= alertIcon %>",
-        showConfirmButton: <%= showConfirmButton %>,
-        timer: <%= timer %>,
+        showConfirmButton: "<%= showConfirmButton %>",
+        timer: "<%= timer %>",
       }).then(() => {
         if ("<%= ruta %>") {
           window.location.href = "<%= ruta %>";

@@ -1101,7 +1101,7 @@ exports.login = async (req, res) => {
 function renderLoginPage(res, alertOptions) {
   return res.render("login_index", {
     alert: true,
-    ...alertOptipo_de_roltions,
+    ...alertOptions,
     showConfirmButton: true,
     timer: 1500,
     ruta: "login_index",
