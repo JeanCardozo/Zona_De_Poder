@@ -363,10 +363,10 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
 
 router.get("/events", async (req, res) => {
   try {
-    const result = await conexion.query("SELECT * FROM eventos");
-    const eventos = result.rows.map((evento) => ({
-      title: evento.nombre,
-      start: evento.fecha,
+    const snapshot = await db.collection("eventos").get();
+    const eventos = snapshot.docs.map((doc) => ({
+      title: doc.data().nombre,
+      start: doc.data().fecha,
     }));
 
     res.json(eventos);
@@ -377,7 +377,7 @@ router.get("/events", async (req, res) => {
 });
 
 ////////////////////////////////////////////////////////////////// ver pqrs///////////////////////////////////////////////////////////////////////////////////////////////////
-router.get("/ver_pqrs", authenticateToken, verifyAdmin, (req, res) => {
+router.get("/ver_pqrs", authenticateToken, verifyAdmin, async (req, res) => {
   const message = req.query.message;
   let alertMessage = null;
   if (message === "success") {
@@ -386,17 +386,18 @@ router.get("/ver_pqrs", authenticateToken, verifyAdmin, (req, res) => {
       text: "Cambios Realizados Con Exito.",
     };
   }
-  conexion.query("SELECT * FROM pqrs ORDER BY id", (error, results) => {
-    if (error) {
-      res.status(500).sendFile(__dirname + "/500.html");
-    }
-    console.log("moda", results.rows);
+  try {
+    const snapshot = await db.collection("pqrs").orderBy("id").get();
+    const results = snapshot.docs.map((doc) => doc.data());
+    console.log("moda", results);
 
     res.render("administrador/pqrs/ver_pqrs", {
       alertMessage: alertMessage,
-      results: results.rows,
+      results: results,
     });
-  });
+  } catch (error) {
+    res.status(500).sendFile(__dirname + "/500.html");
+  }
 });
 //ver ROLES
 
