@@ -137,9 +137,9 @@
       class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"
     ></div>
 
-    <div class="container mx-auto 1px-4 py-8">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Fila 1: Resumen general -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
-        <!-- Fila 1 -->
         <div class="bg-white p-4 rounded-lg shadow" id="mensajeErrorVentas">
           <h2 class="text-lg font-bold mb-4 text-gray-700 text-center">
             Resumen general de ventas
@@ -153,8 +153,8 @@
           <h2 class="text-lg font-bold mb-4 text-gray-700 text-center">
             Resumen de ingresos diarios
           </h2>
-          <div className="p-2 flex items-center justify-center">
-            <div className="w-6 h-6 relative">
+          <div class="p-2 flex items-center justify-center">
+            <div class="w-6 h-6 relative">
               <canvas id="myCharts"></canvas>
             </div>
           </div>
@@ -192,9 +192,12 @@
           </div>
           <% } %>
         </div>
+      </div>
 
-        <!-- Fila 2 -->
-        <div class="2 bg-white p-4 rounded-lg shadow">
+      <!-- Fila 2: Resumen de Mensualidades Vencidas y Calendario -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 max-w-6xl mx-auto">
+        <!-- Bloque de Resumen de Mensualidades Vencidas -->
+        <div class="bg-white p-4 rounded-lg shadow">
           <h2 class="text-lg font-semibold mb-4 text-gray-800 text-center">
             <% if (datosVentasVencidas.length > 0) { %> Resumen de Mensualidades
             Vencidas <% } %>
@@ -216,14 +219,13 @@
                   <td class="py-4 px-5 text-center">
                     <%= new
                     Date(mensusven.fecha_fin).toLocaleDateString('es-ES', {
-                    year: 'numeric', month: 'long', day: 'numeric' }) %>
+                    year: 'numeric', month: 'long', day: 'numeric', }) %>
                   </td>
-
                   <td class="py-4 px-5 text-center">
                     <a
                       href="#"
                       class="bg-green-500 text-white font-bold py-1 px-3 rounded text-xs renovar-btn"
-                      data-id="<%=mensusven.id%>"
+                      data-id="<%= mensusven.id %>"
                       >Renovar</a
                     >
                   </td>
@@ -231,7 +233,7 @@
                 <% }); %> <% } else { %>
                 <tr>
                   <td
-                    colspan="4"
+                    colspan="3"
                     class="py-10 text-center text-lg font-semibold text-gray-600"
                   >
                     <i
@@ -244,11 +246,48 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Paginación -->
+          <div class="flex justify-center mt-4">
+            <div class="inline-flex items-center space-x-4">
+              <% if (currentPage > 1) { %>
+              <a
+                href="?page=<%= currentPage - 1 %>"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 flex items-center justify-center"
+                aria-label="Página anterior"
+              >
+                <i class="fas fa-chevron-left"></i>
+              </a>
+              <% } %>
+
+              <span
+                class="px-4 py-2 bg-blue-500 text-white rounded flex items-center justify-center"
+              >
+                <%= currentPage %>
+              </span>
+
+              <% if (currentPage < totalPages) { %>
+              <a
+                href="?page=<%= currentPage + 1 %>"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 flex items-center justify-center"
+                aria-label="Página siguiente"
+              >
+                <i class="fas fa-chevron-right"></i>
+              </a>
+              <% } %>
+            </div>
+          </div>
         </div>
 
-        <!-- Calendario -->
-        <div class="col-span-2 bg-white p-4 rounded-lg shadow">
-          <div id="calendari" class="w-full"></div>
+        <!-- Bloque de Calendario -->
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-4 text-gray-800 text-center">
+            Calendario de Eventos
+          </h2>
+          <div
+            id="calendari"
+            class="w-full mx-auto p-4 border border-gray-300 rounded-lg shadow-sm"
+          ></div>
         </div>
       </div>
     </div>

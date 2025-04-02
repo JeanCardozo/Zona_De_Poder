@@ -18,6 +18,7 @@ const mercadopago = require("mercadopago");
 const { title } = require("process");
 const format = require("pg-format");
 const moment = require("moment");
+const { Op } = require("sequelize");
 const {
   InstalledAddOnContextImpl,
 } = require("twilio/lib/rest/marketplace/v1/installedAddOn");
@@ -242,10 +243,7 @@ router.get("/logout", (req, res) => {
 // Administrador
 router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
   try {
-    // Obtener la fecha actual en formato 'YYYY-MM-DD'
     const fechaHoy = new Date().toISOString();
-
-    // Configuración de opciones para la zona horaria de Bogotá
     const opciones = {
       timeZone: "America/Bogota",
       year: "numeric",
@@ -254,17 +252,51 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       hour12: false,
     };
 
-    // Convertir la fecha actual a la zona horaria de Bogotá y formatear solo la fecha
-    const fechaHoyBogota = new Date().toLocaleDateString("en-CA", opciones); // Formato 'YYYY-MM-DD' para la consulta SQL
+    const page = parseInt(req.query.page) || 1; // Página actual (por defecto, 1)
+    const limit = 7; // Número de clientes por página
+    const offset = (page - 1) * limit; // Calcular el desplazamiento
 
-    // Consulta SQL para obtener el total de ventas por mes y otros datos
+    const fechaHoyBogota = new Date().toLocaleDateString("en-CA", opciones);
+
+    // Consulta SQL para obtener el total de ventas vencidas
+    const queryTotalVentasVencidas = `
+      SELECT COUNT(*) AS total
+      FROM mensualidad_clientes
+      WHERE estado = 'Vencida';
+    `;
+    const resultTotalVentasVencidas = await conexion.query(
+      queryTotalVentasVencidas
+    );
+    const totalVentasVencidas = parseInt(
+      resultTotalVentasVencidas.rows[0].total,
+      10
+    );
+
+    // Calcular el número total de páginas
+    const totalPages = Math.ceil(totalVentasVencidas / limit);
+
+    // Consulta SQL para obtener las ventas vencidas con paginación
+    const queryVentasVencidas = `
+      SELECT *
+      FROM mensualidad_clientes
+      WHERE estado = 'Vencida'
+      ORDER BY fecha_fin DESC
+      LIMIT $1 OFFSET $2;
+    `;
+    const resultVentasVencidas = await conexion.query(queryVentasVencidas, [
+      limit,
+      offset,
+    ]);
+    const datosVentasVencidas = resultVentasVencidas.rows;
+
+    // Otras consultas (sin cambios)
     const queryVentas = `
       SELECT 
         mc.id AS id_ventas, 
         mc.fecha_inicio, 
         m.id AS id_mensualidad, 
         m.total_pagar,
-        TO_CHAR(mc.fecha_inicio, 'Mon YYYY') AS mes_anio -- Formato de mes y año
+        TO_CHAR(mc.fecha_inicio, 'Mon YYYY') AS mes_anio
       FROM 
         mensualidad_clientes AS mc 
       INNER JOIN 
@@ -272,11 +304,9 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       ORDER BY 
         mc.fecha_inicio DESC;
     `;
-
     const resultVentas = await conexion.query(queryVentas);
     const datosVentas = resultVentas.rows;
 
-    // Calcular la suma total por mes para ventas
     const datosSumaPorMes = datosVentas.reduce((acc, curr) => {
       const mes = curr.mes_anio;
       if (!acc[mes]) {
@@ -286,13 +316,11 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       return acc;
     }, {});
 
-    // Convertir el objeto de suma a un arreglo para que sea más fácil de usar en el frontend
     const datosSumaArray = Object.keys(datosSumaPorMes).map((mes) => ({
       mes: mes,
       total: datosSumaPorMes[mes],
     }));
 
-    // Consulta SQL para obtener datos de ingresos de clientes ingresados hoy
     const queryIngresosHoy = `
       SELECT 
         ic.fecha_ingresos,
@@ -304,13 +332,11 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       ORDER BY 
         ic.fecha_ingresos DESC;
     `;
-
     const resultIngresosHoy = await conexion.query(queryIngresosHoy, [
       fechaHoyBogota,
     ]);
     const datosIngresosHoy = resultIngresosHoy.rows;
 
-    // Nueva consulta SQL para obtener los últimos 5 registros de la tabla 'clientes'
     const queryUltimosClientes = `
       SELECT 
         c.nombre, 
@@ -325,28 +351,16 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
         c.fecha_de_inscripcion DESC
       LIMIT 5;
     `;
-
     const resultUltimosClientes = await conexion.query(queryUltimosClientes);
     const ultimosClientes = resultUltimosClientes.rows;
 
-    // Nueva consulta SQL para obtener solo los datos de ventas con estado 'Vencida'
-    const queryVentasVencidas = `
-      SELECT * FROM mensualidad_clientes WHERE estado = 'Vencida' ORDER BY fecha_fin DESC LIMIT 7;`;
-
-    const resultVentasVencidas = await conexion.query(queryVentasVencidas);
-    const datosVentasVencidas = resultVentasVencidas.rows;
-
     const querymensualidades = `
-      SELECT * FROM mensualidades`;
-
+      SELECT * FROM mensualidades
+    `;
     const resultMensualidades = await conexion.query(querymensualidades);
     const datosMensualidades = resultMensualidades.rows;
-    console.log(
-      "para el renovarcliente a ver que es la informaicon que esta mandando",
-      datosVentasVencidas
-    );
 
-    // Renderizar la vista con los datos de todas las consultas
+    // Renderizar la vista con los datos y la información de paginación
     res.render("administrador/index", {
       datosVentas: datosVentas,
       datosSumaPorMes: datosSumaArray,
@@ -354,6 +368,8 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       ultimosClientes: ultimosClientes,
       datosVentasVencidas: datosVentasVencidas,
       datosMensualidades: datosMensualidades,
+      currentPage: page, // Página actual
+      totalPages: totalPages, // Total de páginas
     });
   } catch (error) {
     console.error("Error al obtener los datos:", error);
