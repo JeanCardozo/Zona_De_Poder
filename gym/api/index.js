@@ -23,6 +23,15 @@ app.use((req, res) => {
   });
 });
 
+// Manejar errores internos
+app.use((err, req, res, next) => {
+  console.error("Error interno del servidor:", err);
+  res.status(500).render("error", {
+    title: "Error interno del servidor",
+    message: "Ocurrió un problema inesperado. Por favor, inténtalo más tarde.",
+  });
+});
+
 // Exportar la aplicación como función serverless
 module.exports = app;
 module.exports.handler = serverless(app);

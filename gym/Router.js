@@ -198,15 +198,21 @@ router.get("/", async (req, res) => {
       showConfirmButton: false,
     };
   }
-  const queryEventos = `SELECT nombre, fecha, estado FROM eventos ORDER BY fecha`;
-  const resultEventos = await conexion.query(queryEventos);
-  const datosEventos = resultEventos.rows;
+  try {
+    const queryEventos = `SELECT nombre, fecha, estado FROM eventos ORDER BY fecha`;
+    const resultEventos = await conexion.query(queryEventos);
+    const datosEventos = resultEventos.rows;
 
-  // Pasamos los datos reales a la vista
-  res.render("index_p", {
-    alertMessage: alertMessage, // Cambiamos 'message' por 'alertMessage'
-    datosEventos: datosEventos,
-  });
+    res.render("index_p", {
+      datosEventos: datosEventos,
+    });
+  } catch (error) {
+    console.error("Error al obtener los eventos:", error);
+    res.status(500).render("error", {
+      title: "Error interno del servidor",
+      message: "No se pudieron cargar los eventos.",
+    });
+  }
 });
 
 // Login
