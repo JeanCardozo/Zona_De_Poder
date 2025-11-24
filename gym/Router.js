@@ -24,16 +24,25 @@ const {
 } = require("twilio/lib/rest/marketplace/v1/installedAddOn");
 
 router.use((req, res, next) => {
-  if (req.session.userData) {
-    res.locals.userData = req.session.userData;
-    console.log(
-      "Middleware global: userData en res.locals",
-      res.locals.userData
-    );
-  } else {
-    res.locals.userData = null;
+  try {
+    // Asegurarse de que req.session existe
+    if (!req.session) {
+      req.session = {};
+    }
+
+    // Asegurarse de que userData está disponible en locals
+    if (req.session && req.session.userData) {
+      res.locals.userData = req.session.userData;
+      console.log("Middleware global: userData disponible");
+    } else {
+      res.locals.userData = null;
+    }
+
+    next();
+  } catch (err) {
+    console.error("Error en middleware global:", err);
+    next();
   }
-  next();
 });
 
 async function authenticateToken(req, res, next) {
