@@ -1017,7 +1017,7 @@ exports.login = async (req, res) => {
       `SELECT u.id, u.contraseña, u.estado, u.id_rol, r.tipo_de_rol, u.nombre, u.imagen_perfil, u.imagen_content_type
        FROM usuarios as u
        INNER JOIN roles as r ON u.id_rol = r.id 
-       WHERE u.id = $1`,
+       WHERE u.id = $1::bigint::bigint`,
       [user],
     );
 
