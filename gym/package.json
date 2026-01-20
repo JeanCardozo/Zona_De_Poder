@@ -48,6 +48,7 @@
     "pg": "^8.12.0",
     "pg-format": "^1.0.4",
     "pg-hstore": "^2.3.4",
+    "postgres": "^3.4.8",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "resolve-url-loader": "^5.0.0",

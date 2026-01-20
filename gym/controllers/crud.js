@@ -382,7 +382,7 @@ exports.renovar_cliente = (req, res) => {
       // Calcular la fecha final
       let fechaInicio = new Date();
       fechaInicio.setTime(
-        fechaInicio.getTime() + new Date().getTimezoneOffset() * 60000
+        fechaInicio.getTime() + new Date().getTimezoneOffset() * 60000,
       );
 
       if (isNaN(fechaInicio.getTime())) {
@@ -506,15 +506,15 @@ exports.renovar_cliente = (req, res) => {
 
                         res.redirect("/index_admin");
                       });
-                    }
+                    },
                   );
-                }
+                },
               );
-            }
+            },
           );
         });
       });
-    }
+    },
   );
 };
 
@@ -810,10 +810,10 @@ exports.update_tallas = (req, res) => {
             // Asegúrate de pasar userData al renderizado de la vista
             res.redirect(
               `/actualizar_tallas/${id_cliente}?mensaje=${encodeURIComponent(
-                "Tallas actualizadas con éxito."
-              )}`
+                "Tallas actualizadas con éxito.",
+              )}`,
             );
-          }
+          },
         );
       });
     }
@@ -1018,7 +1018,7 @@ exports.login = async (req, res) => {
        FROM usuarios as u
        INNER JOIN roles as r ON u.id_rol = r.id 
        WHERE u.id = $1`,
-      [user]
+      [user],
     );
 
     if (results.rows.length === 0) {
@@ -1062,7 +1062,7 @@ exports.login = async (req, res) => {
 
     console.log(
       "Datos del usuario guardados en la sesión:",
-      req.session.userData
+      req.session.userData,
     );
 
     req.session.userData;
@@ -1274,7 +1274,7 @@ exports.verPlanEnt = (req, res) => {
         }));
 
         return res.status(200).json(planesConNombreCliente);
-      }
+      },
     );
   });
 };
@@ -1293,7 +1293,7 @@ exports.mostrarFormularioVacio = (req, res) => {
         id_cliente: null,
         actividades: actividadesResults.rows,
       });
-    }
+    },
   );
 };
 
@@ -1784,7 +1784,7 @@ exports.verUsuarios = (req, res) => {
       }
 
       res.status(200).json(results.rows);
-    }
+    },
   );
 };
 
@@ -1911,7 +1911,7 @@ exports.actualizarEstadosMensualidades = () => {
     if (error) {
       console.error(
         "Error al actualizar los estados de mensualidad_clientes:",
-        error
+        error,
       );
       return;
     }
@@ -1927,7 +1927,7 @@ exports.actualizarEstadosMensualidades = () => {
       if (error) {
         console.error(
           "Error al obtener los clientes con mensualidades vencidas:",
-          error
+          error,
         );
         return;
       }
@@ -1949,11 +1949,11 @@ exports.actualizarEstadosMensualidades = () => {
         if (error) {
           console.error(
             "Error al actualizar el estado de los clientes:",
-            error
+            error,
           );
         } else {
           console.log(
-            `${results.rowCount} clientes actualizados a 'Inactivo'.`
+            `${results.rowCount} clientes actualizados a 'Inactivo'.`,
           );
         }
       });
@@ -1990,7 +1990,7 @@ exports.ventasDiarias = async (req, res) => {
 
     await conexion.query(
       "INSERT INTO mensualidad_clientes (fecha_inicio, id_mensualidad) VALUES ($1, $2)",
-      [fechaInicio, 5]
+      [fechaInicio, 5],
     );
 
     // Redirige al cliente a la ruta deseada

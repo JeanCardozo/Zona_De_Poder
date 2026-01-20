@@ -188,7 +188,7 @@ router.get("/profile-image/:userId", async (req, res) => {
       res.send(imagen_perfil);
     } else {
       res.redirect(
-        "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png"
+        "https://raw.githubusercontent.com/JeanCardozo/audios/main/acceso.png",
       );
     }
   } catch (error) {
@@ -280,11 +280,11 @@ router.get("/index_admin", authenticateToken, verifyAdmin, async (req, res) => {
       WHERE estado = 'Vencida';
     `;
     const resultTotalVentasVencidas = await conexion.query(
-      queryTotalVentasVencidas
+      queryTotalVentasVencidas,
     );
     const totalVentasVencidas = parseInt(
       resultTotalVentasVencidas.rows[0].total,
-      10
+      10,
     );
 
     // Calcular el número total de páginas
@@ -474,7 +474,7 @@ router.get("/actualizar/:id", authenticateToken, verifyAdmin, (req, res) => {
       } else {
         res.status(404).json({ error: "Rol no encontrado" });
       }
-    }
+    },
   );
 });
 
@@ -617,7 +617,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
       LEFT JOIN mensualidades AS m ON c.id_mensualidad = m.id
       LEFT JOIN mensualidad_clientes AS v ON c.id = v.id_cliente
       WHERE c.id = $1`,
-      [id_cliente]
+      [id_cliente],
     );
 
     if (result.rows.length === 0) {
@@ -638,7 +638,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
 
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="factura_${cliente.nombre}_${cliente.apellido}.pdf"`
+      `attachment; filename="factura_${cliente.nombre}_${cliente.apellido}.pdf"`,
     );
     res.setHeader("Content-Type", "application/pdf");
     doc.pipe(res);
@@ -710,7 +710,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
       {
         label: "Fecha de transacción ",
         value: new Date(cliente.fecha_de_inscripcion).toLocaleDateString(
-          "es-CO"
+          "es-CO",
         ),
       },
       { label: "Vendedor ", value: "Laura del Sol Hernandez" },
@@ -793,7 +793,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
       {
         width: columnWidths[2],
         align: "right",
-      }
+      },
     );
 
     // Total
@@ -804,7 +804,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
       {
         width: columnWidths[3],
         align: "right",
-      }
+      },
     );
 
     // Línea final antes del total
@@ -828,7 +828,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
         {
           width: columnWidths[2],
           align: "right",
-        }
+        },
       )
       .text(
         `$ ${cliente.total_pagar.toLocaleString()}`,
@@ -837,7 +837,7 @@ router.get("/cliente/pdf/:id_cliente", authenticateToken, async (req, res) => {
         {
           width: columnWidths[3],
           align: "right",
-        }
+        },
       );
 
     doc.end();
@@ -932,7 +932,7 @@ router.get("/ver_usuarios", authenticateToken, verifyAdmin, (req, res) => {
         results: results.rows,
         loggedUserId: req.user.id,
       });
-    }
+    },
   );
 });
 
@@ -949,7 +949,7 @@ router.get("/create_usuarios", authenticateToken, verifyAdmin, (req, res) => {
       res.render("administrador/usuarios/create_usuarios", {
         roles: results.rows,
       });
-    }
+    },
   );
 });
 
@@ -994,9 +994,9 @@ router.get(
         } else {
           res.status(404).json({ error: "User not found" });
         }
-      }
+      },
     );
-  }
+  },
 );
 
 // -------------------------------------------
@@ -1014,7 +1014,7 @@ router.get("/ver_talla", authenticateToken, (req, res) => {
       }
 
       res.render("administrador/tallas/ver_talla", { results: results.rows });
-    }
+    },
   );
 });
 
@@ -1030,7 +1030,7 @@ router.get("/create_talla", authenticateToken, (req, res) => {
       res.render("administrador/tallas/create_talla", {
         results: results.rows,
       });
-    }
+    },
   );
 });
 
@@ -1049,7 +1049,7 @@ router.get("/actualizar_tallas/:id", authenticateToken, (req, res) => {
         (error, results) => {
           if (error) return reject(error);
           resolve(results.rows[0]);
-        }
+        },
       );
     }),
     // Consulta para obtener el cliente
@@ -1060,7 +1060,7 @@ router.get("/actualizar_tallas/:id", authenticateToken, (req, res) => {
         (error, results) => {
           if (error) return reject(error);
           resolve(results.rows[0]);
-        }
+        },
       );
     }),
   ])
@@ -1103,7 +1103,7 @@ router.get("/ver_convenio", authenticateToken, verifyAdmin, (req, res) => {
         alertMessage: alertMessage,
         results: results.rows,
       });
-    }
+    },
   );
 });
 
@@ -1130,7 +1130,7 @@ router.get("/actualizar_convenio/:id", authenticateToken, (req, res) => {
       } else {
         res.status(404).json({ error: "mensualidad no encontrada" });
       }
-    }
+    },
   );
 });
 
@@ -1199,7 +1199,7 @@ router.get(
       .catch((error) => {
         res.status(500).sendFile(__dirname + "/500.html");
       });
-  }
+  },
 );
 
 router.get(
@@ -1214,9 +1214,9 @@ router.get(
           return res.status(500).sendFile(__dirname + "/500.html");
         }
         res.json(results.rows);
-      }
+      },
     );
-  }
+  },
 );
 
 //eliminar mensualidades
@@ -1235,7 +1235,7 @@ router.get("/eliminarMensu/:id", authenticateToken, verifyAdmin, (req, res) => {
         return res.status(500).sendFile(__dirname + "/500.html");
       }
       res.redirect("/ver_mensualidad");
-    }
+    },
   );
 });
 
@@ -1271,9 +1271,9 @@ router.get(
           alertMessage: alertMessage,
           results: results.rows,
         });
-      }
+      },
     );
-  }
+  },
 );
 
 // editar grupo muscular
@@ -1294,7 +1294,7 @@ router.get("/actualizar_g/:id", authenticateToken, verifyAdmin, (req, res) => {
       } else {
         res.status(404).json({ error: "Grupo muscular no encontrado" });
       }
-    }
+    },
   );
 });
 
@@ -1391,11 +1391,11 @@ ORDER BY mc.id;
                       res.render("administrador/ventas/ver_ventas", {
                         results: updatedResults.rows,
                       });
-                    }
+                    },
                   );
-                }
+                },
               );
-            }
+            },
           );
         } else {
           // Renderizar la vista si no hay actualizaciones necesarias
@@ -1403,7 +1403,7 @@ ORDER BY mc.id;
             results: results.rows,
           });
         }
-      }
+      },
     );
   } catch (error) {
     console.error("Error al procesar la solicitud:", error);
@@ -1466,9 +1466,9 @@ router.get(
           return res.status(500).sendFile(__dirname + "/500.html");
         }
         res.json(results.rows);
-      }
+      },
     );
-  }
+  },
 );
 
 //ACTUALIZAR
@@ -1549,9 +1549,9 @@ router.get("/ver_plan_ent", authenticateToken, (req, res) => {
             mensaje: null, // No hay mensaje cuando hay resultados
             alert: null,
           });
-        }
+        },
       );
-    }
+    },
   );
 });
 
@@ -1595,7 +1595,7 @@ router.get("/get_actividad_fisica", authenticateToken, (req, res) => {
         return res.status(500).sendFile(__dirname + "/500.html");
       }
       res.json({ ejercicios: results.rows });
-    }
+    },
   );
 });
 
@@ -1787,7 +1787,7 @@ router.get("/success", async (req, res) => {
 
     // Redirigir al login con alertas
     res.redirect(
-      `/login_index?alert=success&message=Registro exitoso. Ahora puedes iniciar sesión.`
+      `/login_index?alert=success&message=Registro exitoso. Ahora puedes iniciar sesión.`,
     );
   } catch (error) {
     console.error("Error al procesar el registro temporal:", error);
@@ -1884,7 +1884,7 @@ router.post("/guardar_plan", async (req, res) => {
       INSERT INTO plan_entrenamiento (id_cliente, dia, ejercicio,series,repeticiones)
       VALUES %L RETURNING id
     `,
-      values
+      values,
     );
 
     const result = await conexion.query(query);
@@ -1992,7 +1992,7 @@ router.get(
   async (req, res) => {
     console.log(
       "Datos de res.locals.userData en la ruta:",
-      res.locals.userData
+      res.locals.userData,
     );
     if (!res.locals.userData) {
       return res
@@ -2071,11 +2071,11 @@ router.get(
               alturas: alturas,
               fechas: fechas,
             });
-          }
+          },
         );
-      }
+      },
     );
-  }
+  },
 );
 
 //informacion personal
@@ -2109,7 +2109,7 @@ router.get("/info_personal", authenticateToken, verifyClient, (req, res) => {
       res.render("clientes/informacion_personal/ver_info", {
         results: results.rows,
       });
-    }
+    },
   );
 });
 
@@ -2162,7 +2162,7 @@ router.get("/mis_planes", authenticateToken, verifyClient, (req, res) => {
         results: results.rows,
       });
       console.log("mondades", results.rows);
-    }
+    },
   );
 });
 
@@ -2180,7 +2180,7 @@ router.get("/ayuda", authenticateToken, verifyClient, (req, res) => {
       res.render("clientes/informacion_personal/ayuda", {
         results: results.rows,
       });
-    }
+    },
   );
 });
 
@@ -2352,4 +2352,5 @@ router.use((req, res) => {
     message: "Lo sentimos, la página que estás buscando no existe.",
   });
 });
+
 module.exports = router;
